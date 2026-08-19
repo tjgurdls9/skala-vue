@@ -17,6 +17,7 @@ import vOnce from './components/vOnce.vue'
 import vMemo from './components/vMemo.vue'
 import vOnEventHandler from './components/vOnEventHandler.vue'
 import vOnEventObject from './components/vOnEventObject.vue'
+import vOnEventModifier from './components/vOnEventModifier.vue'
 </script>
 
 <template>
@@ -107,6 +108,11 @@ import vOnEventObject from './components/vOnEventObject.vue'
     <br />
 
     <vOnEventObject />
+    <br />
+    <hr />
+    <br />
+
+    <vOnEventModifier />
     <br />
     <hr />
     <br />
