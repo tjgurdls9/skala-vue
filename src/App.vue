@@ -18,10 +18,17 @@ import vMemo from './components/vMemo.vue'
 import vOnEventHandler from './components/vOnEventHandler.vue'
 import vOnEventObject from './components/vOnEventObject.vue'
 import vOnEventModifier from './components/vOnEventModifier.vue'
+import Task1WhetherMockup from './components/Task1WhetherMockup.vue'
+import vModelFormDataBinding from './components/vModelFormDataBinding.vue'
 </script>
 
 <template>
-  <div style="padding: 20px">
+  <div class="practice-container">
+    <Task1WhetherMockup />
+    <br />
+    <hr />
+    <br />
+
     <SampleOne />
     <br />
     <hr />
@@ -116,8 +123,17 @@ import vOnEventModifier from './components/vOnEventModifier.vue'
     <br />
     <hr />
     <br />
+
+    <vModelFormDataBinding />
+    <br />
+    <hr />
+    <br />
   </div>
 </template>
+
+<style>
+@import '@/assets/practice.css';
+</style>
 
 <style scoped>
 header {
