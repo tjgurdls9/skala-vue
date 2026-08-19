@@ -13,14 +13,49 @@ import vBindShorthand from './components/vBindShorthand.vue'
 <template>
   <div style="padding: 20px">
     <SampleOne />
+    <br />
+    <hr />
+    <br />
+
     <SampleTwo />
+    <br />
+    <hr />
+    <br />
+
     <vHtml />
+    <br />
+    <hr />
+    <br />
+
     <vHtmlXSS />
+    <br />
+    <hr />
+    <br />
+
     <vText />
+    <br />
+    <hr />
+    <br />
+
     <vBind />
+    <br />
+    <hr />
+    <br />
+
     <vBindClassBinding />
+    <br />
+    <hr />
+    <br />
+
     <vBindStyleBinding />
+    <br />
+    <hr />
+    <br />
+
     <vBindShorthand />
+    <br />
+    <hr />
+    <br />
   </div>
 </template>
 
