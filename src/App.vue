@@ -1,23 +1,27 @@
 <script setup>
-import { RouterLink, RouterView } from 'vue-router'
-import HelloWorld from './components/HelloWorld.vue'
+import SampleOne from './components/practices/basic/SampleOne.vue'
+import SampleTwo from './components/practices/basic/SampleTwo.vue'
+import vHtml from './components/vHtml.vue'
+import vHtmlXSS from './components/vHtmlXSS.vue'
+import vText from './components/vText.vue'
+import vBind from './components/vBindBasic.vue'
+import vBindClassBinding from './components/vBindClassBinding.vue'
+import vBindStyleBinding from './components/vBindStyleBinding.vue'
+import vBindShorthand from './components/vBindShorthand.vue'
 </script>
 
 <template>
-  <header>
-    <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" />
-
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
-
-      <nav>
-        <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/about">About</RouterLink>
-      </nav>
-    </div>
-  </header>
-
-  <RouterView />
+  <div style="padding: 20px">
+    <SampleOne />
+    <SampleTwo />
+    <vHtml />
+    <vHtmlXSS />
+    <vText />
+    <vBind />
+    <vBindClassBinding />
+    <vBindStyleBinding />
+    <vBindShorthand />
+  </div>
 </template>
 
 <style scoped>
