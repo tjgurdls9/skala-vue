@@ -20,6 +20,16 @@ import vOnEventObject from './components/vOnEventObject.vue'
 import vOnEventModifier from './components/vOnEventModifier.vue'
 import Task1WhetherMockup from './components/Task1WhetherMockup.vue'
 import vModelFormDataBinding from './components/vModelFormDataBinding.vue'
+import vModelModifier from './components/vModelModifier.vue'
+import vStyleScoped from './components/vStyleScoped.vue'
+import vReactiveRef from './components/vReactiveRef.vue'
+import vReactiveReactive from './components/vReactiveReactive.vue'
+import vComputedBasic from './components/vComputedBasic.vue'
+import vWatchBasic from './components/vWatchBasic.vue'
+import vWatchMulti from './components/vWatchMulti.vue'
+import vWatchDeep from './components/vWatchDeep.vue'
+import vWatchReactive from './components/vWatchReactive.vue'
+import vWatchEffect from './components/vWatchEffect.vue'
 </script>
 
 <template>
@@ -125,6 +135,56 @@ import vModelFormDataBinding from './components/vModelFormDataBinding.vue'
     <br />
 
     <vModelFormDataBinding />
+    <br />
+    <hr />
+    <br />
+
+    <vModelModifier />
+    <br />
+    <hr />
+    <br />
+
+    <vStyleScoped />
+    <br />
+    <hr />
+    <br />
+
+    <vReactiveRef />
+    <br />
+    <hr />
+    <br />
+
+    <vReactiveReactive />
+    <br />
+    <hr />
+    <br />
+
+    <vComputedBasic />
+    <br />
+    <hr />
+    <br />
+
+    <vWatchBasic />
+    <br />
+    <hr />
+    <br />
+
+    <vWatchMulti />
+    <br />
+    <hr />
+    <br />
+
+    <vWatchDeep />
+    <br />
+    <hr />
+    <br />
+
+    <vWatchReactive />
+    <br />
+    <hr />
+    <br />
+
+    <vWatchEffect />
     <br />
     <hr />
     <br />

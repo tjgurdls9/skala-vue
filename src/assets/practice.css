@@ -126,3 +126,28 @@ input:focus {
 .btn-external:active {
   background-color: #2c8a5f;
 }
+/* watch 계열 실습의 모니터링 로그 박스 */
+.monitor {
+  margin-top: 16px;
+  padding: 12px 16px;
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  font-weight: 500;
+}
+.monitor h3 {
+  margin-top: 0;
+}
+.monitor p {
+  margin: 4px 0;
+}
+/* 타겟(특정 속성) 감시 모니터 */
+.monitor.target {
+  background-color: #f3efff;
+  border-color: #b8a9f0;
+}
+/* 자동 deep 감시 모니터 */
+.monitor.auto {
+  background-color: #fff5f5;
+  border-color: #f5b7b1;
+}
