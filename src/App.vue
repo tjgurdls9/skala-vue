@@ -8,6 +8,9 @@ import vBind from './components/vBindBasic.vue'
 import vBindClassBinding from './components/vBindClassBinding.vue'
 import vBindStyleBinding from './components/vBindStyleBinding.vue'
 import vBindShorthand from './components/vBindShorthand.vue'
+import vIfElse from './components/vIfElse.vue'
+import vShow from './components/vShow.vue'
+import vFor from './components/vFor.vue'
 </script>
 
 <template>
@@ -53,6 +56,21 @@ import vBindShorthand from './components/vBindShorthand.vue'
     <br />
 
     <vBindShorthand />
+    <br />
+    <hr />
+    <br />
+
+    <vIfElse />
+    <br />
+    <hr />
+    <br />
+
+    <vShow />
+    <br />
+    <hr />
+    <br />
+
+    <vFor />
     <br />
     <hr />
     <br />
