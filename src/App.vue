@@ -11,6 +11,12 @@ import vBindShorthand from './components/vBindShorthand.vue'
 import vIfElse from './components/vIfElse.vue'
 import vShow from './components/vShow.vue'
 import vFor from './components/vFor.vue'
+import vPre from './components/vPre.vue'
+import vCloak from './components/vCloak.vue'
+import vOnce from './components/vOnce.vue'
+import vMemo from './components/vMemo.vue'
+import vOnEventHandler from './components/vOnEventHandler.vue'
+import vOnEventObject from './components/vOnEventObject.vue'
 </script>
 
 <template>
@@ -71,6 +77,36 @@ import vFor from './components/vFor.vue'
     <br />
 
     <vFor />
+    <br />
+    <hr />
+    <br />
+
+    <vPre />
+    <br />
+    <hr />
+    <br />
+
+    <vCloak />
+    <br />
+    <hr />
+    <br />
+
+    <vOnce />
+    <br />
+    <hr />
+    <br />
+
+    <vMemo />
+    <br />
+    <hr />
+    <br />
+
+    <vOnEventHandler />
+    <br />
+    <hr />
+    <br />
+
+    <vOnEventObject />
     <br />
     <hr />
     <br />
