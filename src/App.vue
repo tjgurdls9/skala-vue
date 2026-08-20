@@ -18,8 +18,7 @@ import vMemo from './components/vMemo.vue'
 import vOnEventHandler from './components/vOnEventHandler.vue'
 import vOnEventObject from './components/vOnEventObject.vue'
 import vOnEventModifier from './components/vOnEventModifier.vue'
-import Task1WhetherMockup from './components/Task1WhetherMockup.vue'
-import Task2WeatherComposition from './components/Task2WeatherComposition.vue'
+import WeatherParent from './components/WeatherParent.vue'
 import vModelFormDataBinding from './components/vModelFormDataBinding.vue'
 import vModelModifier from './components/vModelModifier.vue'
 import vStyleScoped from './components/vStyleScoped.vue'
@@ -35,16 +34,12 @@ import vLifecycleHook from './components/vLifecycleHook.vue'
 import vPropsEmits from './components/vPropsEmits.vue'
 import SlotDefaultParent from './components/SlotDefaultParent.vue'
 import SlotNamedParent from './components/SlotNamedParent.vue'
+import SlotScopedParent from './components/SlotScopedParent.vue'
 </script>
 
 <template>
   <div class="practice-container">
-    <Task1WhetherMockup />
-    <br />
-    <hr />
-    <br />
-
-    <Task2WeatherComposition />
+    <WeatherParent />
     <br />
     <hr />
     <br />
@@ -215,6 +210,11 @@ import SlotNamedParent from './components/SlotNamedParent.vue'
     <br />
 
     <SlotNamedParent />
+    <br />
+    <hr />
+    <br />
+
+    <SlotScopedParent />
     <br />
     <hr />
     <br />

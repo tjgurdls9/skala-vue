@@ -1,5 +1,9 @@
 <script setup>
 import { ref, computed, watch, watchEffect } from 'vue'
+// 1. 컴포넌트 파일명 국룰 표기법(PascalCase) 매칭 수입
+import BaseDashboardCard from './BaseDashboardCard.vue'
+import SearchBar from './SearchBar.vue'
+import WeatherCard from './WeatherCard.vue'
 
 const GRADE_STANDARD = {
   temp: { bestMin: 20, bestMax: 26, okMin: 16, okMax: 30 },
@@ -174,71 +178,42 @@ const showDetail = (item) => {
 
 <template>
   <div class="practice-section">
-    <h2>🌤️과제 2: 날씨 (컴포지션)</h2>
+    <h2>⛅ 과제 3: 날씨 (컴포넌트)</h2>
     <div class="dashboard-wrapper">
-      <section class="search-box">
-        <h3>🔍 도시 검색</h3>
-        <input
-          type="text"
-          :value="searchQuery"
-          @input="(e) => (searchQuery = e.target.value)"
-          placeholder="검색할 도시 이름 입력"
-        />
-        <p>
-          검색 중인 도시: <strong>{{ searchQuery || '(전체)' }}</strong>
-        </p>
+      <BaseDashboardCard>
+        <SearchBar :current-query="searchQuery" @update-query="(val) => (searchQuery = val)" />
+
         <p>
           마케팅 총 예산(만원):
-          <input v-model.number="marketingBudget" type="number" min="0" step="100" />
+          <input
+            v-model.number="marketingBudget"
+            class="budget-input"
+            autocomplete="off"
+            type="number"
+            min="0"
+            step="100"
+          />
         </p>
         <p v-if="topCity" class="top-city">
           가장 먼저 집행할 도시: <strong>{{ topCity.name }}</strong> {{ topCity.budget }}만원 ({{
             topCity.share
           }}%)
         </p>
-      </section>
+      </BaseDashboardCard>
 
-      <section class="list-box">
+      <BaseDashboardCard>
         <h3>🏙️ 지역별 날씨 현황</h3>
 
-        <div
+        <WeatherCard
           v-for="item in budgetPlan"
           :key="item.id"
-          class="weather-card"
-          @click="selectedCityInfo = `${item.name}이 선택되었습니다.`"
-        >
-          <h4>{{ item.name }} ({{ item.status }})</h4>
-          <p>현재 기온: {{ item.temp }}°C</p>
-          <p>현재 습도: {{ item.humidity }}%</p>
-          <p>미세먼지수치: {{ item.microdust }}</p>
-
-          <span v-if="item.temp >= 25" class="badge hot">🔥 더움 (25도 이상)</span>
-          <span v-else class="badge cool">❄️ 선선함 (25도 미만)</span>
-
-          <span v-if="item.humidity >= 60" class="badge humid">🌫️ 습함 (60% 이상)</span>
-          <span v-else-if="item.humidity >= 40" class="badge good">🍀 상쾌함 (40~59%)</span>
-          <span v-else class="badge dry">🌵 건조함 (40% 미만)</span>
-
-          <span v-if="item.microdust >= 50" class="badge bad">😷 나쁨 (50 이상)</span>
-          <span v-else class="badge fine">😀 좋음 (50 미만)</span>
-
-          <hr class="card-divider" />
-          <h5 class="decision-title">📊 의사결정 보조 지표</h5>
-          <p class="score-line">
-            <span class="badge priority" :class="`p-${item.priority}`">
-              우선순위 {{ item.priority }}
-            </span>
-            <span class="badge code">등급 {{ item.code }}</span>
-            <span class="badge segment">{{ item.segment.label }}</span>
-            <span class="badge budget">{{ item.budget }}만원 ({{ item.share }}%)</span>
-          </p>
-          <p class="plan-comment">{{ item.segment.plan }}</p>
-
-          <button class="btn-detail" @click.stop="showDetail(item)">상세보기</button>
-        </div>
+          :city-item="item"
+          @select-card="(msg) => (selectedCityInfo = msg)"
+          @click-detail="showDetail"
+        />
 
         <p v-if="!budgetPlan.length" class="empty-result">검색어와 일치하는 도시가 없습니다. 🥲</p>
-      </section>
+      </BaseDashboardCard>
 
       <details class="monitor log-box">
         <summary>👁️‍🗨️ Watcher 로그 보기 ({{ logs.length }}건)</summary>
@@ -255,17 +230,15 @@ const showDetail = (item) => {
   </div>
 </template>
 
-<style>
-@import '@/assets/exercise.css';
-</style>
-
 <style scoped>
 .dashboard-wrapper {
   width: auto;
   margin: 0;
 }
-.search-box input[type='number'] {
+.budget-input {
   width: 100px;
+  padding: 8px;
+  font-size: 14px;
 }
 .top-city {
   background: #fff8e1;
@@ -273,64 +246,17 @@ const showDetail = (item) => {
   padding: 8px 10px;
   border-radius: 4px;
 }
-.badge {
-  margin: 0 4px 4px 0;
-}
-.humid {
-  background-color: #a4b0be;
-}
-.good {
-  background-color: #a8d879;
-}
-.dry {
-  background-color: #ffbf75;
-}
-.bad {
-  background-color: #a29bfe;
-}
-.fine {
-  background-color: #fd79a8;
-}
-.card-divider {
-  border: none;
-  border-top: 1px solid #dee2e6;
-  margin: 12px 0 8px;
-}
-.decision-title {
-  margin: 0 0 8px;
-  font-size: 13px;
-  color: #495057;
-}
-.score-line {
-  margin: 0;
-}
-.p-A {
-  background-color: #d63031;
-}
-.p-B {
-  background-color: #e17055;
-}
-.p-C {
-  background-color: #b2bec3;
-}
-.code {
-  background-color: #636e72;
-}
-.segment {
-  background-color: #00b894;
-}
-.budget {
-  background-color: #0984e3;
-}
-.plan-comment {
-  margin: 6px 0 0;
-  font-size: 13px;
-  line-height: 1.5;
-  color: #495057;
-}
 .empty-result {
   text-align: center;
   color: #868e96;
   padding: 12px 0;
+}
+.status-bar {
+  background: #e8f5e9;
+  padding: 10px;
+  text-align: center;
+  color: #2e7d32;
+  font-weight: bold;
+  border-radius: 6px;
 }
 </style>

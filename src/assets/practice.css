@@ -151,3 +151,10 @@ input:focus {
   background-color: #fff5f5;
   border-color: #f5b7b1;
 }
+/* 슬롯 실습용 카드 박스 */
+.base-card {
+  margin-top: 12px;
+  padding: 12px 16px;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+}
