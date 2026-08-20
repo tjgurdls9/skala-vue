@@ -19,6 +19,7 @@ import vOnEventHandler from './components/vOnEventHandler.vue'
 import vOnEventObject from './components/vOnEventObject.vue'
 import vOnEventModifier from './components/vOnEventModifier.vue'
 import Task1WhetherMockup from './components/Task1WhetherMockup.vue'
+import Task2WeatherComposition from './components/Task2WeatherComposition.vue'
 import vModelFormDataBinding from './components/vModelFormDataBinding.vue'
 import vModelModifier from './components/vModelModifier.vue'
 import vStyleScoped from './components/vStyleScoped.vue'
@@ -35,6 +36,11 @@ import vWatchEffect from './components/vWatchEffect.vue'
 <template>
   <div class="practice-container">
     <Task1WhetherMockup />
+    <br />
+    <hr />
+    <br />
+
+    <Task2WeatherComposition />
     <br />
     <hr />
     <br />
