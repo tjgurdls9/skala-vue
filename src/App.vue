@@ -33,6 +33,8 @@ import vWatchReactive from './components/vWatchReactive.vue'
 import vWatchEffect from './components/vWatchEffect.vue'
 import vLifecycleHook from './components/vLifecycleHook.vue'
 import vPropsEmits from './components/vPropsEmits.vue'
+import SlotDefaultParent from './components/SlotDefaultParent.vue'
+import SlotNamedParent from './components/SlotNamedParent.vue'
 </script>
 
 <template>
@@ -203,6 +205,16 @@ import vPropsEmits from './components/vPropsEmits.vue'
     <br />
 
     <vPropsEmits />
+    <br />
+    <hr />
+    <br />
+
+    <SlotDefaultParent />
+    <br />
+    <hr />
+    <br />
+
+    <SlotNamedParent />
     <br />
     <hr />
     <br />
