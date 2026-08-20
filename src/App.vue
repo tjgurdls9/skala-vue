@@ -31,6 +31,8 @@ import vWatchMulti from './components/vWatchMulti.vue'
 import vWatchDeep from './components/vWatchDeep.vue'
 import vWatchReactive from './components/vWatchReactive.vue'
 import vWatchEffect from './components/vWatchEffect.vue'
+import vLifecycleHook from './components/vLifecycleHook.vue'
+import vPropsEmits from './components/vPropsEmits.vue'
 </script>
 
 <template>
@@ -191,6 +193,16 @@ import vWatchEffect from './components/vWatchEffect.vue'
     <br />
 
     <vWatchEffect />
+    <br />
+    <hr />
+    <br />
+
+    <vLifecycleHook />
+    <br />
+    <hr />
+    <br />
+
+    <vPropsEmits />
     <br />
     <hr />
     <br />
