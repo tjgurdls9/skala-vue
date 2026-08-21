@@ -1,290 +1,54 @@
 <script setup>
-import SampleOne from './components/practices/basic/SampleOne.vue'
-import SampleTwo from './components/practices/basic/SampleTwo.vue'
-import vHtml from './components/vHtml.vue'
-import vHtmlXSS from './components/vHtmlXSS.vue'
-import vText from './components/vText.vue'
-import vBind from './components/vBindBasic.vue'
-import vBindClassBinding from './components/vBindClassBinding.vue'
-import vBindStyleBinding from './components/vBindStyleBinding.vue'
-import vBindShorthand from './components/vBindShorthand.vue'
-import vIfElse from './components/vIfElse.vue'
-import vShow from './components/vShow.vue'
-import vFor from './components/vFor.vue'
-import vPre from './components/vPre.vue'
-import vCloak from './components/vCloak.vue'
-import vOnce from './components/vOnce.vue'
-import vMemo from './components/vMemo.vue'
-import vOnEventHandler from './components/vOnEventHandler.vue'
-import vOnEventObject from './components/vOnEventObject.vue'
-import vOnEventModifier from './components/vOnEventModifier.vue'
-import WeatherParent from './components/WeatherParent.vue'
-import vModelFormDataBinding from './components/vModelFormDataBinding.vue'
-import vModelModifier from './components/vModelModifier.vue'
-import vStyleScoped from './components/vStyleScoped.vue'
-import vReactiveRef from './components/vReactiveRef.vue'
-import vReactiveReactive from './components/vReactiveReactive.vue'
-import vComputedBasic from './components/vComputedBasic.vue'
-import vWatchBasic from './components/vWatchBasic.vue'
-import vWatchMulti from './components/vWatchMulti.vue'
-import vWatchDeep from './components/vWatchDeep.vue'
-import vWatchReactive from './components/vWatchReactive.vue'
-import vWatchEffect from './components/vWatchEffect.vue'
-import vLifecycleHook from './components/vLifecycleHook.vue'
-import vPropsEmits from './components/vPropsEmits.vue'
-import SlotDefaultParent from './components/SlotDefaultParent.vue'
-import SlotNamedParent from './components/SlotNamedParent.vue'
-import SlotScopedParent from './components/SlotScopedParent.vue'
+import { RouterLink, RouterView } from 'vue-router'
+import UnitToggler from './components/weather/UnitToggler.vue'
 </script>
 
 <template>
-  <div class="practice-container">
-    <WeatherParent />
-    <br />
+  <div class="app-container">
+    <h1>⛅ 종합실습 5: 스토어적용</h1>
     <hr />
-    <br />
 
-    <SampleOne />
-    <br />
-    <hr />
-    <br />
+    <nav class="navigation-bar">
+      <div class="nav-links">
+        <RouterLink to="/" class="nav-item">🌤️ 날씨 대시보드</RouterLink>
+        <span class="divider">|</span>
+        <RouterLink to="/about" class="nav-item">ℹ️ 서비스 소개</RouterLink>
+        <span class="divider">|</span>
+        <RouterLink to="/summary" class="nav-item">📋 지표 요약</RouterLink>
+        <span class="divider">|</span>
+        <RouterLink to="/practice" class="nav-item">🧪 단원별 실습</RouterLink>
+      </div>
 
-    <SampleTwo />
-    <br />
-    <hr />
-    <br />
+      <UnitToggler />
+    </nav>
 
-    <vHtml />
-    <br />
-    <hr />
-    <br />
-
-    <vHtmlXSS />
-    <br />
-    <hr />
-    <br />
-
-    <vText />
-    <br />
-    <hr />
-    <br />
-
-    <vBind />
-    <br />
-    <hr />
-    <br />
-
-    <vBindClassBinding />
-    <br />
-    <hr />
-    <br />
-
-    <vBindStyleBinding />
-    <br />
-    <hr />
-    <br />
-
-    <vBindShorthand />
-    <br />
-    <hr />
-    <br />
-
-    <vIfElse />
-    <br />
-    <hr />
-    <br />
-
-    <vShow />
-    <br />
-    <hr />
-    <br />
-
-    <vFor />
-    <br />
-    <hr />
-    <br />
-
-    <vPre />
-    <br />
-    <hr />
-    <br />
-
-    <vCloak />
-    <br />
-    <hr />
-    <br />
-
-    <vOnce />
-    <br />
-    <hr />
-    <br />
-
-    <vMemo />
-    <br />
-    <hr />
-    <br />
-
-    <vOnEventHandler />
-    <br />
-    <hr />
-    <br />
-
-    <vOnEventObject />
-    <br />
-    <hr />
-    <br />
-
-    <vOnEventModifier />
-    <br />
-    <hr />
-    <br />
-
-    <vModelFormDataBinding />
-    <br />
-    <hr />
-    <br />
-
-    <vModelModifier />
-    <br />
-    <hr />
-    <br />
-
-    <vStyleScoped />
-    <br />
-    <hr />
-    <br />
-
-    <vReactiveRef />
-    <br />
-    <hr />
-    <br />
-
-    <vReactiveReactive />
-    <br />
-    <hr />
-    <br />
-
-    <vComputedBasic />
-    <br />
-    <hr />
-    <br />
-
-    <vWatchBasic />
-    <br />
-    <hr />
-    <br />
-
-    <vWatchMulti />
-    <br />
-    <hr />
-    <br />
-
-    <vWatchDeep />
-    <br />
-    <hr />
-    <br />
-
-    <vWatchReactive />
-    <br />
-    <hr />
-    <br />
-
-    <vWatchEffect />
-    <br />
-    <hr />
-    <br />
-
-    <vLifecycleHook />
-    <br />
-    <hr />
-    <br />
-
-    <vPropsEmits />
-    <br />
-    <hr />
-    <br />
-
-    <SlotDefaultParent />
-    <br />
-    <hr />
-    <br />
-
-    <SlotNamedParent />
-    <br />
-    <hr />
-    <br />
-
-    <SlotScopedParent />
-    <br />
-    <hr />
-    <br />
+    <RouterView />
   </div>
 </template>
 
 <style>
 @import '@/assets/practice.css';
+@import '@/assets/exercise.css';
 </style>
 
 <style scoped>
-header {
-  line-height: 1.5;
-  max-height: 100vh;
+/* exercise.css의 .app-container는 max-width 900px, margin: 40px 10px 이라 좁고 좌측에 붙는다.
+   practice.css의 div.practice-container가 쓰는 max-width(1200px)를 따와서 넓히고 가운데로 옮긴다. */
+.app-container {
+  max-width: 1200px;
+  margin: 40px auto;
 }
 
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
+/* exercise.css의 .navigation-bar는 justify-content: center 다.
+   링크는 가운데 두고 단위 토글만 오른쪽 끝으로 밀기 위해 space-between으로 덮는다. */
+.navigation-bar {
+  justify-content: space-between;
+  /* 링크 묶음과 단위 토글이 붙지 않도록 최소 간격을 준다 */
+  gap: 24px;
+  flex-wrap: wrap;
 }
-
-nav {
-  width: 100%;
-  font-size: 12px;
-  text-align: center;
-  margin-top: 2rem;
-}
-
-nav a.router-link-exact-active {
-  color: var(--color-text);
-}
-
-nav a.router-link-exact-active:hover {
-  background-color: transparent;
-}
-
-nav a {
-  display: inline-block;
-  padding: 0 1rem;
-  border-left: 1px solid var(--color-border);
-}
-
-nav a:first-of-type {
-  border: 0;
-}
-
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
-
-  nav {
-    text-align: left;
-    margin-left: -1rem;
-    font-size: 1rem;
-
-    padding: 1rem 0;
-    margin-top: 1rem;
-  }
+.nav-links {
+  display: flex;
+  align-items: center;
 }
 </style>

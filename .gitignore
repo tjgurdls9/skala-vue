@@ -40,3 +40,6 @@ __screenshots__/
 
 # 교재
 *.pdf
+
+# API 키 등 로컬 비밀값 (과제 6: Axios)
+.env
