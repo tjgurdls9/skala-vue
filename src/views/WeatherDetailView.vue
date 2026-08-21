@@ -153,20 +153,20 @@ const goBack = () => {
 }
 .segment-label {
   font-weight: bold;
-  color: #00b894;
+  color: var(--color-accent);
 }
 .footnote {
   font-size: 13px;
-  color: #868e96;
+  color: #8e8e93;
 }
 .loading {
   text-align: center;
-  color: #868e96;
+  color: #8e8e93;
   padding: 12px 0;
 }
 .not-found {
   text-align: center;
-  color: #868e96;
+  color: #8e8e93;
   padding: 12px 0;
 }
 .detail-actions {

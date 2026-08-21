@@ -166,13 +166,13 @@ const goDetail = (item) => {
 }
 .summary-table th,
 .summary-table td {
-  padding: 10px 8px;
+  padding: 12px 8px;
   text-align: left;
-  border-bottom: 1px solid #dee2e6;
+  border-bottom: 1px solid #f0f0f2;
 }
 .summary-table th {
-  background: #f1f3f5;
-  color: #495057;
+  background: transparent;
+  color: #8e8e93;
   font-weight: 600;
 }
 .summary-table tbody tr {
@@ -185,22 +185,25 @@ const goDetail = (item) => {
 .summary-table tfoot td {
   font-weight: bold;
   border-bottom: none;
-  border-top: 3px double #495057;
+  border-top: 2px solid #e5e5ea;
 }
 .badge {
   display: inline-block;
-  padding: 4px 8px;
+  padding: 4px 10px;
   font-size: 12px;
-  border-radius: 4px;
-  color: #fff;
+  font-weight: 600;
+  border-radius: var(--radius-pill);
 }
 .p-A {
-  background-color: #d63031;
+  background-color: #ffe5e5;
+  color: #ff3b30;
 }
 .p-B {
-  background-color: #e17055;
+  background-color: #fff4e5;
+  color: #ff9500;
 }
 .p-C {
-  background-color: #b2bec3;
+  background-color: #eef1f4;
+  color: #636366;
 }
 </style>

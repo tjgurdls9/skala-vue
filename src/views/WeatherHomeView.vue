@@ -194,16 +194,17 @@ const goDetail = (item) => {
   margin: 0;
 }
 .holiday-banner {
-  background: #e7f5ff;
-  border-left: 4px solid #339af0;
-  padding: 8px 10px;
-  border-radius: 4px;
+  background: #e5f3ff;
+  color: #007aff;
+  padding: 10px 14px;
+  border-radius: var(--radius-control);
   margin: 0 0 12px;
 }
 .btn-refresh {
   float: right;
   font-size: 12px;
-  padding: 4px 10px;
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
 }
 .budget-input {
   width: 100px;
@@ -214,22 +215,22 @@ const goDetail = (item) => {
   font-variant-numeric: tabular-nums;
 }
 .top-city {
-  background: #fff8e1;
-  border-left: 4px solid #f39c12;
-  padding: 8px 10px;
-  border-radius: 4px;
+  background: #fff4e5;
+  color: #ff9500;
+  padding: 10px 14px;
+  border-radius: var(--radius-control);
 }
 .empty-result {
   text-align: center;
-  color: #868e96;
+  color: #8e8e93;
   padding: 12px 0;
 }
 .status-bar {
-  background: #e8f5e9;
+  background: #e6f9ed;
   padding: 10px;
   text-align: center;
-  color: #2e7d32;
+  color: #248a5e;
   font-weight: bold;
-  border-radius: 6px;
+  border-radius: var(--radius-control);
 }
 </style>
