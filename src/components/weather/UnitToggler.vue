@@ -5,15 +5,23 @@ import { useConfigStore } from '../../stores/configStore.js'
 // 전역 저장소 포인터 확보
 const configStore = useConfigStore()
 
-const unitName = computed(() => (configStore.unit === 'fahrenheit' ? '화씨' : '섭씨'))
+// el-switch는 boolean model이 필요하다. 화씨일 때 true로 매핑해서 store와 이어붙인다.
+const isFahrenheit = computed({
+  get: () => configStore.unit === 'fahrenheit',
+  set: () => configStore.toggleUnit(),
+})
 </script>
 
 <template>
   <div class="unit-toggler">
-    <span class="unit-label">
-      날씨단위: <strong>{{ unitName }}({{ configStore.unitSymbol }})</strong>
-    </span>
-    <button @click="configStore.toggleUnit">단위변경</button>
+    <span class="unit-label">날씨단위</span>
+    <el-switch
+      v-model="isFahrenheit"
+      inline-prompt
+      active-text="°F"
+      inactive-text="°C"
+      style="--el-switch-on-color: var(--color-accent)"
+    />
   </div>
 </template>
 

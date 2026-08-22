@@ -1,209 +1,129 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import axios from 'axios'
+import { computed } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
 import BaseDashboardCard from '../components/weather/BaseDashboardCard.vue'
-import { storeToRefs } from 'pinia'
-import { weatherList as cityRegistry, buildBudgetPlan, MAX_SCORE } from '../data/weatherMock.js'
-import { fetchCityWeather } from '../data/weatherApi.js'
-import { useBudgetStore } from '../stores/budgetStore.js'
+import { buildRegionalOutlook, buildOpsMode, EXEC_MAX_SCORE } from '../data/weatherMock.js'
+import { useWeatherStore } from '../stores/weatherStore.js'
+import { DataAnalysis } from '@element-plus/icons-vue'
 
 const router = useRouter()
 
-// 과제 5: 대시보드와 같은 예산을 본다. 한쪽에서 바꾸면 다른 쪽도 같이 바뀐다.
-const budgetStore = useBudgetStore()
-const { total } = storeToRefs(budgetStore)
-
-// 과제 6: 요약 표도 실시간 날씨로 등급/예산을 매긴다.
-const weatherList = ref([])
-const isLoading = ref(false)
-
-const loadWeather = async () => {
-  isLoading.value = true
-  try {
-    weatherList.value = await axios.all(cityRegistry.map(fetchCityWeather))
-  } catch (error) {
-    console.error('통신 중 에러가 발생했습니다:', error)
-    alert('날씨 데이터를 가져오지 못했습니다. API 키 활성화 여부나 주소를 확인하세요.')
-  } finally {
-    isLoading.value = false
-  }
-}
-
-onMounted(loadWeather)
+// 과제 6: 요약 표도 실시간 날씨로 등급과 기상 영향 점수를 매긴다.
+// 11차: 이 화면이 axios로 17개 도시를 따로 다시 부르고 있었다. 대시보드·상세와 같은 데이터라
+// 스토어 하나만 보면 된다 — 탭을 오갈 때마다 17회씩 재조회하던 걸 없앴다.
+// (App.vue가 앱 시작 시 한 번 load()를 부르고, 스토어가 결과를 캐시한다.)
+const weatherStore = useWeatherStore()
+const { list: weatherList, isLoading } = storeToRefs(weatherStore)
 
 // 목록 화면은 검색으로 걸러진 도시만 보지만, 요약은 항상 전체 도시를 본다.
-const budgetPlan = computed(() => buildBudgetPlan(weatherList.value, total.value))
+const budgetPlan = computed(() => buildRegionalOutlook(weatherList.value))
 
-const totalScore = computed(() => budgetPlan.value.reduce((sum, item) => sum + item.grade.score, 0))
+const totalScore = computed(() => budgetPlan.value.reduce((sum, item) => sum + item.execScore, 0))
 
-const totalShare = computed(() => budgetPlan.value.reduce((sum, item) => sum + item.share, 0))
+// el-table의 show-summary가 호출하는 합계 행 조립기. 순서는 el-table-column 배치 순서와 같아야 한다.
+const getSummary = () => [
+  '합계',
+  '-',
+  `${totalScore.value}`,
+  '-',
+  '-',
+  `${budgetPlan.value.length}개 지역`,
+]
 
-const totalBudget = computed(() => budgetPlan.value.reduce((sum, item) => sum + item.budget, 0))
+// 11차: '세그먼트'(교재 과제 산출물)는 실데이터에서 거의 전 지역이 '옥외 활동 적합'으로 찍혀
+// 표에서 아무것도 구분해주지 못한다. 교재 산출물이라 지우지는 않고, 실제로 갈라지는 축인
+// 운영 모드를 옆에 같이 세운다.
+const opsTagType = { normal: 'success', indoor: 'info', reduced: 'warning', halt: 'danger' }
+const opsOf = (row) => buildOpsMode(row)
+
+const priorityTagType = (priority) => ({ A: 'danger', B: 'warning', C: 'info' })[priority]
 
 const goDetail = (item) => {
   router.push({
     name: 'WeatherDetail',
     params: { cityId: item.id },
-    query: { share: item.share, budget: item.budget, priority: item.priority },
+    query: { priority: item.priority },
   })
 }
 </script>
 
 <template>
   <div class="practice-section">
-    <h2>📋 의사결정 보조 지표 요약</h2>
+    <h2>
+      <el-icon><DataAnalysis /></el-icon> 의사결정 보조 지표 요약
+    </h2>
 
     <BaseDashboardCard>
-      <p>
-        마케팅 총 예산(만원):
-        <input
-          v-model.number="total"
-          class="budget-input"
-          autocomplete="off"
-          type="number"
-          min="0"
-          step="100"
-        />
-        <span class="preset">
-          <button @click="budgetStore.setTotal(500)">500</button>
-          <button @click="budgetStore.setTotal(1000)">1000</button>
-          <button @click="budgetStore.setTotal(2000)">2000</button>
-        </span>
-      </p>
       <p class="guide">
-        현재 배정 예산 <strong>{{ budgetStore.totalLabel }}</strong> — 날씨 대시보드와 같은 값을
-        봅니다. 한쪽에서 바꾸면 다른 쪽도 바뀝니다.
-      </p>
-      <p class="guide">
-        전체 도시를 집행 점수(최고 {{ MAX_SCORE }}점) 높은 순으로 정렬했습니다. 행을 클릭하면 해당
-        도시의 상세 페이지로 이동합니다.
+        전국 지역을 기상 영향 점수(최고 {{ EXEC_MAX_SCORE }}점) 높은 순으로 정렬했습니다. 행을
+        클릭하면 해당 지역의 상세 분석으로 이동합니다.
       </p>
     </BaseDashboardCard>
 
-    <p v-if="isLoading && !budgetPlan.length" class="guide">실시간 날씨를 불러오는 중입니다...</p>
+    <el-skeleton v-if="isLoading && !budgetPlan.length" :rows="5" animated />
 
     <BaseDashboardCard v-if="budgetPlan.length">
-      <table class="summary-table">
-        <thead>
-          <tr>
-            <th>도시</th>
-            <th>등급</th>
-            <th>점수</th>
-            <th>점유율</th>
-            <th>예산</th>
-            <th>우선순위</th>
-            <th>세그먼트</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="item in budgetPlan" :key="item.id" @click="goDetail(item)">
-            <td>{{ item.name }}</td>
-            <td>{{ item.code }}</td>
-            <td>{{ item.grade.score }}</td>
-            <td>{{ item.share }}%</td>
-            <td>{{ item.budget }}만원</td>
-            <td>
-              <span class="badge priority" :class="`p-${item.priority}`">{{ item.priority }}</span>
-            </td>
-            <td>{{ item.segment.label }}</td>
-          </tr>
-        </tbody>
-        <tfoot>
-          <tr>
-            <td>합계</td>
-            <td>-</td>
-            <td>{{ totalScore }}</td>
-            <td>{{ totalShare }}%</td>
-            <td>{{ totalBudget }}만원</td>
-            <td>-</td>
-            <td>{{ budgetPlan.length }}개 도시</td>
-          </tr>
-        </tfoot>
-      </table>
-      <p class="guide">
-        도시별 점유율을 각각 반올림해서 더하기 때문에 합계가 100%에서 1~2% 어긋날 수 있습니다.
-      </p>
+      <!-- 교재 249p: 표를 el-table로 교체. show-summary + summary-method가 하단 합계 행을 대신 그려준다 -->
+      <el-table
+        :data="budgetPlan"
+        style="width: 100%"
+        show-summary
+        :summary-method="getSummary"
+        @row-click="goDetail"
+      >
+        <el-table-column prop="name" label="도시" />
+        <el-table-column prop="code" label="등급" />
+        <el-table-column label="점수" align="right">
+          <template #default="{ row }">{{ row.execScore }}</template>
+        </el-table-column>
+        <el-table-column label="검토 우선순위">
+          <template #default="{ row }">
+            <el-tag :type="priorityTagType(row.priority)">{{ row.priority }}</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="운영 모드" min-width="110">
+          <template #default="{ row }">
+            <el-tag :type="opsTagType[opsOf(row).key]" effect="light">
+              {{ opsOf(row).label }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="세그먼트" min-width="150">
+          <template #default="{ row }">{{ row.segment.label }}</template>
+        </el-table-column>
+      </el-table>
     </BaseDashboardCard>
   </div>
 </template>
 
 <style scoped>
-.budget-input {
-  width: 100px;
-  padding: 8px;
-  font-size: 14px;
-  /* 회계 표기: 금액 입력란은 우측 정렬하고 자릿수를 등폭으로 맞춘다 */
-  text-align: right;
-  font-variant-numeric: tabular-nums;
+/* 6차: "유리 위 유리" 방지 — WeatherHomeView.vue와 같은 이유 */
+.practice-section {
+  background: transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  border: none;
+  box-shadow: none;
+  width: 100%;
+}
+/* 12차: 사진 위 h2 처리는 base.css로 올려서 전 라우트가 같은 규칙을 쓴다 */
+.budget-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 .preset {
-  margin-left: 8px;
+  margin-left: 4px;
 }
-.preset button {
-  margin-right: 4px;
-}
+/* 8차: #868e96은 반투명 유리 위에서 대비가 모자라 흐리게 읽혔다 — 앱 표준 보조 텍스트 색으로 */
 .guide {
   font-size: 13px;
-  color: #868e96;
+  color: #6e6e73;
   margin: 8px 0 0;
 }
-.summary-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 14px;
-  /* 회계 표기: 자릿수가 세로로 맞도록 등폭 숫자를 쓴다 */
-  font-variant-numeric: tabular-nums;
-}
-/* 회계 표기: 수량/비율/금액 열은 우측 정렬 (3.점수 4.점유율 5.예산) */
-.summary-table th:nth-child(3),
-.summary-table th:nth-child(4),
-.summary-table th:nth-child(5),
-.summary-table td:nth-child(3),
-.summary-table td:nth-child(4),
-.summary-table td:nth-child(5) {
-  text-align: right;
-}
-.summary-table th,
-.summary-table td {
-  padding: 12px 8px;
-  text-align: left;
-  border-bottom: 1px solid #f0f0f2;
-}
-.summary-table th {
-  background: transparent;
-  color: #8e8e93;
-  font-weight: 600;
-}
-.summary-table tbody tr {
+/* el-table 행 클릭이 이동으로 이어지는 걸 시각적으로 알려준다 */
+:deep(.el-table__row) {
   cursor: pointer;
-}
-.summary-table tbody tr:hover {
-  background: #f8f9fa;
-}
-/* 회계 표기: 합계 행 위는 이중선으로 구분한다 */
-.summary-table tfoot td {
-  font-weight: bold;
-  border-bottom: none;
-  border-top: 2px solid #e5e5ea;
-}
-.badge {
-  display: inline-block;
-  padding: 4px 10px;
-  font-size: 12px;
-  font-weight: 600;
-  border-radius: var(--radius-pill);
-}
-.p-A {
-  background-color: #ffe5e5;
-  color: #ff3b30;
-}
-.p-B {
-  background-color: #fff4e5;
-  color: #ff9500;
-}
-.p-C {
-  background-color: #eef1f4;
-  color: #636366;
 }
 </style>

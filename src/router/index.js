@@ -37,7 +37,7 @@ const router = createRouter({
       path: '/practice',
       name: 'Practice',
       component: () => import('../views/PracticeView.vue'),
-      meta: { title: '단원별 실습' },
+      meta: { title: '실습 아카이브' },
     },
     {
       // 위 라우트와 매칭되지 않는 모든 경로를 받는 Catch-all Route. 반드시 맨 마지막에 둔다.

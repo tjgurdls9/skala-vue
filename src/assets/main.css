@@ -1,11 +1,11 @@
 @import './base.css';
 
-#app {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  font-weight: normal;
-}
+/* 7차: 원래 Vite/Vue 스캐폴드가 남긴 #app 규칙(max-width 1280px + body display:flex centering)이
+   진짜 범인이었다 — App.vue의 .app-container가 이미 max-width:1440px으로 폭을 정하는데, 이
+   #app 규칙이 조상에서 flex 컨테이너를 만들어 자식(#app)을 "내용물 크기만큼" shrink-to-fit 시켜서
+   페이지마다(표가 있는 페이지, 2단 그리드가 있는 페이지 등) #app 폭이 서로 다르게 계산됐다.
+   ("탭 옮길 때마다 폭이 들썩인다"/"페이지 너비가 안 맞는다" 버그의 실제 원인).
+   .app-container가 폭을 전담하므로 이 레거시 규칙은 지운다. */
 
 a,
 .green {
@@ -18,16 +18,5 @@ a,
 @media (hover: hover) {
   a:hover {
     background-color: hsla(160, 100%, 37%, 0.2);
-  }
-}
-
-@media (min-width: 1024px) {
-  body {
-    display: flex;
-    place-items: center;
-  }
-
-  #app {
-    padding: 0 2rem;
   }
 }

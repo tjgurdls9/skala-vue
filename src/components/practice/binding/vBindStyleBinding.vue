@@ -24,7 +24,7 @@ const baseBoxStyle = ref({
     <br />
     <div :style="[baseBoxStyle, { width: boxwidth + 'px' }]">
       <p style="color: white; padding: 10px; text-align: center">
-        가로 크기: {{ boxWidth }}px 박스
+        가로 크기: {{ boxwidth }}px 박스
       </p>
     </div>
   </div>

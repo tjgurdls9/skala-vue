@@ -1,11 +1,13 @@
-/* 1. 전체 최외곽 컨테이너 레벨 정의 */
+/* 1. 전체 최외곽 컨테이너 레벨 정의
+   Liquid Glass 2차: 셸 자체는 투명하게 비운다. 유리 위에 유리를 겹치면 뒤 배경이 두 번
+   뿌옇게 깔려서 색이 죽는다. 배경 그라데이션 위에 내비/카드만 유리판으로 떠 있게 한다. */
 .app-container {
   max-width: 900px;
   margin: 40px 10px 40px 10px;
   padding: 30px 40px;
-  background-color: #ffffff;
+  background-color: transparent;
   border-radius: var(--radius-card);
-  box-shadow: var(--shadow-card);
+  box-shadow: none;
   font-family:
     'Pretendard',
     -apple-system,
@@ -45,15 +47,25 @@ h1 {
   margin-bottom: 8px;
 }
 
+/* 유리 내비게이션 바. 스크롤해도 위에 붙어 있으면서 아래 콘텐츠가 유리 밑으로 지나간다 —
+   이 "밑으로 흐르는 게 비쳐 보이는" 순간이 리퀴드 글라스의 핵심이다. */
 .navigation-bar {
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: #f2f2f7;
-  padding: 8px 15px;
-  border-radius: var(--radius-pill);
-  box-shadow: none;
+  background-color: var(--glass-bg-strong);
+  background-image: var(--glass-sheen);
+  -webkit-backdrop-filter: var(--glass-blur-strong);
+  backdrop-filter: var(--glass-blur-strong);
+  border: 1px solid var(--glass-border);
+  padding: 8px 14px;
+  /* 링크가 줄바꿈되면 바가 두 줄로 부푼다. pill(999px)이면 그때 거대한 캡슐이 되니 카드 라운드를 쓴다. */
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-glass);
   margin-bottom: 20px;
+  position: sticky;
+  top: 16px;
+  z-index: 20;
 }
 .nav-item {
   text-decoration: none;
@@ -68,6 +80,8 @@ h1 {
 }
 .nav-item:hover {
   color: #1c1c1e;
+  /* main.css의 전역 a:hover가 초록 배경을 깔아버린다. 유리 위에 초록 사각형이 뜨는 걸 막는다. */
+  background-color: rgba(255, 255, 255, 0.5);
 }
 .divider {
   margin: 0 4px;
@@ -77,8 +91,10 @@ h1 {
 /* 🔥 Vue Router가 활성화된 링크 태그에 자동으로 부여하는 클래스 스펙: iOS 세그먼트 컨트롤처럼 선택된 탭에 흰 배경 필 */
 .navigation-bar .router-link-exact-active {
   color: var(--color-accent);
-  background-color: #ffffff;
-  box-shadow: var(--shadow-card);
+  background-color: rgba(255, 255, 255, 0.9);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 2px 8px rgba(28, 32, 56, 0.12);
 }
 
 /* 과제페이지 스타일 - Component 분리 후 각 페이지별로 이동 */
@@ -88,11 +104,15 @@ h1 {
 }
 .search-box,
 .list-box {
-  background: #f8f9fa;
+  background-color: var(--glass-bg-thin);
+  background-image: var(--glass-sheen);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
   padding: 15px;
-  border-radius: 8px;
+  border-radius: var(--radius-card);
   margin-bottom: 15px;
-  border: 1px solid #e9ecef;
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-glass);
 }
 /* 전역 input 오염 방지 - 도시 검색창에만 적용 */
 .search-box input {

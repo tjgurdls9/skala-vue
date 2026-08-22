@@ -42,6 +42,41 @@
   --radius-control: 12px;
   --radius-pill: 999px;
   --shadow-card: 0 8px 30px rgba(0, 0, 0, 0.08);
+  /* 6차: apple-design 스킬 표준 이징 커브. 일반 ease보다 시작은 느긋하고 끝은 단호하게 붙어서
+     "애플스러운" 모션感을 준다 — hover/포커스 등 짧은 상호작용 전환에 두루 쓴다. */
+  --apple-ease: cubic-bezier(0.25, 0.1, 0.25, 1);
+
+  /* Liquid Glass 토큰 (2026-08-21 2차, 5차/6차에서 다시 손봄)
+     유리는 뒤에 비칠 게 있어야 유리로 보인다. 배경은 이제 무지개 블롭이 아니라
+     `.weather-scene`(맨 아래 참고) — 실시간 날씨 하나를 앱 전체 배경으로 쓴다. */
+
+  /* 유리판 위쪽 모서리에 빛이 스치는 느낌. 이게 없으면 그냥 "뿌연 판"이다. */
+  --glass-sheen: linear-gradient(
+    150deg,
+    rgba(255, 255, 255, 0.6) 0%,
+    rgba(255, 255, 255, 0.12) 40%,
+    rgba(255, 255, 255, 0) 62%
+  );
+
+  --glass-bg: rgba(255, 255, 255, 0.4);
+  --glass-bg-strong: rgba(255, 255, 255, 0.48);
+  --glass-bg-thin: rgba(255, 255, 255, 0.28);
+  /* saturate가 없으면 blur만 먹어서 뿌옇게 죽는다. 채도를 올려야 유리 너머 색이 산다. */
+  --glass-blur: saturate(200%) blur(30px);
+  --glass-blur-strong: saturate(220%) blur(34px);
+  /* 6차: 실제 굴절(SVG feDisplacementMap, App.vue의 #glass-refraction)을 쓰는 표면 전용 블러.
+     blur를 세게 걸면 굴절로 만든 미세한 물결이 다 뭉개져서 안 보인다 — 그래서 훨씬 약하게 쓴다.
+     url(#glass-refraction)과 항상 세트로 쓸 것. */
+  --glass-refract-blur: saturate(200%) blur(6px);
+  --glass-border: rgba(255, 255, 255, 0.78);
+  /* 위아래 1px 스페큘러 하이라이트 + 바깥 그림자. 유리 판의 두께감은 여기서 나온다.
+     아래쪽 하이라이트가 있어야 판이 "떠 있는 두께"로 보이고 종이처럼 안 보인다. */
+  --shadow-glass:
+    inset 0 1px 0 rgba(255, 255, 255, 0.95), inset 0 -1px 0 rgba(255, 255, 255, 0.4),
+    0 1px 2px rgba(20, 24, 60, 0.08), 0 14px 40px rgba(20, 24, 60, 0.16);
+  --shadow-glass-raised:
+    inset 0 1px 0 rgba(255, 255, 255, 1), inset 0 -1px 0 rgba(255, 255, 255, 0.5),
+    0 2px 6px rgba(20, 24, 60, 0.1), 0 24px 60px rgba(20, 24, 60, 0.22);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -55,6 +90,34 @@
 
     --color-heading: var(--vt-c-text-dark-1);
     --color-text: var(--vt-c-text-dark-2);
+
+    --glass-sheen: linear-gradient(
+      150deg,
+      rgba(255, 255, 255, 0.16) 0%,
+      rgba(255, 255, 255, 0.04) 40%,
+      rgba(255, 255, 255, 0) 62%
+    );
+
+    --glass-bg: rgba(30, 32, 42, 0.42);
+    --glass-bg-strong: rgba(30, 32, 42, 0.6);
+    --glass-bg-thin: rgba(30, 32, 42, 0.3);
+    --glass-border: rgba(255, 255, 255, 0.18);
+    --shadow-glass:
+      inset 0 1px 0 rgba(255, 255, 255, 0.14), 0 1px 2px rgba(0, 0, 0, 0.3),
+      0 10px 34px rgba(0, 0, 0, 0.42);
+    --shadow-glass-raised:
+      inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 2px 4px rgba(0, 0, 0, 0.34),
+      0 18px 50px rgba(0, 0, 0, 0.5);
+  }
+}
+
+/* backdrop-filter 미지원 브라우저에서는 반투명이 그냥 "배경 비침"으로 끝나 글씨가 안 읽힌다.
+   그럴 땐 불투명 판으로 되돌린다. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  :root {
+    --glass-bg: rgba(255, 255, 255, 0.95);
+    --glass-bg-strong: rgba(255, 255, 255, 0.97);
+    --glass-bg-thin: rgba(255, 255, 255, 0.9);
   }
 }
 
@@ -66,16 +129,88 @@
   font-weight: normal;
 }
 
+/* 6차: 무지개 블롭 → CSS 합성 하늘 → 실사(Unsplash, 공개 라이선스) 사진으로 배경을 바꿔왔다.
+   .app-backdrop-layer(App.vue, position: fixed로 뷰포트 전체를 덮는 계층)에 이 클래스들을 붙여서
+   쓴다 — 히어로 안에 가두지 않고 앱 전체의 "지금 있는 배경"으로 확장한 것.
+   4장은 서로 다른 사진(다른 시간대·다른 색감)이라 그대로 쓰면 테마를 넘길 때마다 이질감이 든다 —
+   그래서 모든 장면에 같은 블루 오버레이 + 같은 saturate/contrast 필터를 얹어 톤을 하나로 묶었다.
+   실사진은 그 자체로 결(질감)이 풍부해서 굴절 필터가 왜곡할 디테일도 따로 안 만들어도 된다. */
+.weather-scene {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  transition: background-image 1s ease;
+  /* 12차 가독성 수정: 원본 사진은 밝은 구름과 먹구름의 명암 차가 너무 컸다. 유리 카드는
+     반투명(--glass-bg: 흰색 40%)이라 배경이 어두운 자리에 놓이면 카드째로 어두워져
+     본문 글자(#303133)가 안 읽혔다 — /summary에서 실제로 확인한 버그다.
+     대비를 낮추고 밝기를 올려 사진의 "검은 바닥"을 없앤다. 분위기는 남기고 극단만 깎는다. */
+  filter: saturate(88%) contrast(78%) brightness(1.16);
+}
+/* 그 위에 균일한 흰 베일을 한 겹 더 깐다. 사진 어디에 카드가 놓이든 유리 뒤의 밝기가
+   비슷해지므로, 화면을 스크롤해도 카드 가독성이 들쭉날쭉하지 않다. */
+/* 12차: 각 라우트의 페이지 제목 h2는 유리 카드 밖, 사진 배경에 직접 얹혀 있다.
+   practice.css가 h2를 다크 텍스트(#1c1c1e)로 고정해놔서 먹구름 배경에서는 거의 안 보였다
+   — App.vue가 h1에 대해 이미 고쳤던 것과 같은 버그가 h2에 그대로 남아 있었다. */
+.practice-section > h2 {
+  color: #f5f5f7;
+  text-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.62),
+    0 2px 12px rgba(0, 0, 0, 0.4);
+  border-bottom-color: rgba(255, 255, 255, 0.38);
+}
+
+.weather-scene::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.22);
+}
+.weather-scene.weather-clear {
+  background-image:
+    linear-gradient(180deg, rgba(20, 60, 110, 0.18) 0%, rgba(20, 60, 110, 0.08) 100%),
+    url('/weather/clear.jpg');
+}
+.weather-scene.weather-clouds {
+  background-image:
+    linear-gradient(180deg, rgba(20, 60, 110, 0.2) 0%, rgba(20, 60, 110, 0.12) 100%),
+    url('/weather/clouds.jpg');
+}
+.weather-scene.weather-rain {
+  background-image:
+    linear-gradient(180deg, rgba(10, 30, 60, 0.3) 0%, rgba(10, 30, 60, 0.18) 100%),
+    url('/weather/rain.jpg');
+}
+.weather-scene.weather-snow {
+  background-image:
+    /* 11차: 눈 테마만 오버레이를 차갑게(청록 쪽) 밀어서 흰 구름 하늘을 설운(雪雲) 하늘로 읽히게
+       한다. 맑음/흐림/비와 같은 사진 언어(지평선 없는 전면 하늘)를 유지하면서 구분만 준다. */
+    linear-gradient(180deg, rgba(24, 74, 128, 0.34) 0%, rgba(38, 92, 140, 0.18) 100%),
+    url('/weather/snow.jpg');
+  /* 원본이 밝은 낮 하늘이라 brightness 보정은 필요 없다. 채도를 더 빼서 한기를 준다 */
+  filter: saturate(62%) contrast(104%);
+}
+
+/* 9차: 실습 아카이브의 목차 앵커(#단원)로 점프할 때 뚝 끊기지 않고 부드럽게 이동한다.
+   동작 최소화를 켠 사용자에게는 즉시 이동시켜야 하므로 미디어 쿼리로 감싼다. */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
 body {
   min-height: 100vh;
   color: var(--color-text);
-  background: var(--color-background);
+  /* 실제 배경은 App.vue의 .app-backdrop-layer(fixed)가 맡는다. 여기는 그게 로드되기 전
+     아주 짧은 순간에만 보이는 수수한 바탕색이다. */
+  background: #eef1f8;
   transition:
     color 0.5s,
     background-color 0.5s;
   line-height: 1.6;
   font-family:
-    Inter,
+    Pretendard,
     -apple-system,
     BlinkMacSystemFont,
     'Segoe UI',
@@ -91,4 +226,151 @@ body {
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* 6차: "입력창 같은 부분도 덜렁 놓지 말고 디자인 먹여라" — Element Plus 폼 컨트롤이 기본 흰
+   배경/회색 테두리 그대로 떠 있던 걸 유리 톤으로 통일한다. Element Plus 자체 CSS가 단일 클래스
+   selector라 특별히 강하게 안 눌러도 이긴다(우리 CSS가 index.css보다 나중에 로드된다). */
+.el-input__wrapper {
+  /* Element Plus 자체 규칙이 --el-input-bg-color(사실상 흰색) CSS 변수로 배경을 덮어써서
+     !important 없이는 안 먹혔다 — 실제로 rgb(255,255,255)로 완전 불투명하게 나오는 걸 확인함 */
+  background-color: rgba(255, 255, 255, 0.5) !important;
+  box-shadow: 0 0 0 1px var(--glass-border) inset !important;
+  -webkit-backdrop-filter: saturate(160%) blur(8px);
+  backdrop-filter: saturate(160%) blur(8px);
+  transition: box-shadow 0.2s var(--apple-ease);
+}
+.el-input__wrapper:hover {
+  background-color: rgba(255, 255, 255, 0.68) !important;
+}
+.el-input__wrapper.is-focus {
+  box-shadow: 0 0 0 2px var(--color-accent) inset !important;
+}
+/* 8차: 스텝 버튼이 흰 박스 + 진한 세로 구분선으로 각져 보였다. 구분선을 지우고 버튼 자체를
+   투명하게 둬서, 유리 필드 위에 화살표만 얹힌 것처럼 보이게 한다(호버 때만 살짝 밝아짐). */
+.el-input-number__decrease,
+.el-input-number__increase {
+  background-color: transparent !important;
+  border: none !important;
+  color: #6e6e73;
+  transition: background-color 0.2s var(--apple-ease);
+}
+.el-input-number__decrease:hover,
+.el-input-number__increase:hover {
+  background-color: rgba(255, 255, 255, 0.6) !important;
+  color: var(--color-accent);
+}
+/* 숫자를 가운데가 아니라 왼쪽으로 — 라벨/다른 텍스트와 같은 축에 정렬된다.
+   Element Plus가 같은 선택자로 text-align:center를 걸어둬서(computed로 확인) !important 필요 */
+.el-input-number .el-input__inner {
+  text-align: left !important;
+  font-variant-numeric: tabular-nums;
+}
+
+/* type 없는 기본(회색) 버튼만 유리로. --primary/--success 등 색 버튼은 :not()으로 빼서
+   그 자체 색(파랑/초록 등)을 그대로 유지하고 블러만 살짝 얹는다 — 처음엔 이 구분이 없어서
+   "메인 대시보드로 돌아가기" 같은 primary 버튼까지 흰 유리로 덮여버리는 걸 실제로 확인했다. */
+.el-button:not([class*='el-button--']) {
+  background-color: rgba(255, 255, 255, 0.5) !important;
+  border-color: var(--glass-border) !important;
+  -webkit-backdrop-filter: saturate(160%) blur(8px);
+  backdrop-filter: saturate(160%) blur(8px);
+  /* 알약(pill) 대신 애플다운 둥근 사각형. 8px 미만은 스킬 기준 안티패턴이라 10px로 */
+  border-radius: 10px !important;
+}
+.el-tag {
+  border-radius: 8px !important;
+}
+/* 8차: 위 전역 radius가 el-button-group까지 먹어서 붙어 있어야 할 3개 버튼(500/1000/2000)이
+   각각 둥근 사각형으로 떨어져 보였다 — 그룹은 바깥 모서리만 둥글게 되돌린다. */
+.el-button-group > .el-button:not(:first-child):not(:last-child) {
+  border-radius: 0 !important;
+}
+.el-button-group > .el-button:first-child:not(:last-child) {
+  border-radius: 10px 0 0 10px !important;
+}
+.el-button-group > .el-button:last-child:not(:first-child) {
+  border-radius: 0 10px 10px 0 !important;
+}
+.el-button:not([class*='el-button--']):not(.is-link):hover {
+  background-color: rgba(255, 255, 255, 0.82) !important;
+  border-color: var(--glass-border) !important;
+}
+/* primary/success/danger 등 색이 있는 버튼은 그 색을 살리되 유리 블러만 얹는다 */
+.el-button--primary,
+.el-button--success,
+.el-button--warning,
+.el-button--danger {
+  -webkit-backdrop-filter: saturate(160%) blur(8px);
+  backdrop-filter: saturate(160%) blur(8px);
+}
+
+/* 세그먼트: 클릭(선택)해야만 튀어나오던 걸 hover만 해도 반응하도록. 선택된 항목은 그대로 둔다 */
+.el-segmented__item:not(.is-selected) {
+  transition:
+    transform 0.2s var(--apple-ease),
+    background-color 0.2s var(--apple-ease);
+  /* 실제 iOS/macOS 세그먼트 컨트롤도 알약이 아니라 둥근 사각형이다 */
+  border-radius: 8px;
+}
+.el-segmented__item:not(.is-selected):hover {
+  transform: translateY(-1px);
+  background-color: rgba(255, 255, 255, 0.55);
+}
+
+/* 7차: "기존 거는 싹 다 리퀴드 글라스로 덮어라" — el-alert/el-table가 유리 카드 안에서 자기만
+   Element Plus 기본 파스텔 배경/각진 테두리로 튀고 있었다("유리 안쪽에 덜렁 기본 템플릿").
+   처음엔 의미 색(info/success 등)을 반투명 색상 배경으로 옮겼는데, 하늘 사진 자체가 이미 파란
+   계열이라 파란 알림이 배경에 묻혀 텍스트 대비가 깨졌다 — "톤앤매너는 하나로 족해" 피드백과도
+   맞물려서, 배경은 다른 카드와 같은 흰 유리 한 가지로 통일하고 의미 색은 아이콘에만 남긴다. */
+.el-alert {
+  background-color: var(--glass-bg-strong) !important;
+  background-image: var(--glass-sheen);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-control);
+  -webkit-backdrop-filter: url(#glass-refraction) var(--glass-refract-blur);
+  backdrop-filter: url(#glass-refraction) var(--glass-refract-blur);
+}
+.el-alert .el-alert__title {
+  color: #1c1c1e;
+}
+.el-alert .el-alert__description {
+  color: #48484f;
+}
+.el-alert--info .el-alert__icon {
+  color: #0a5fd8;
+}
+.el-alert--success .el-alert__icon {
+  color: #248a5e;
+}
+.el-alert--warning .el-alert__icon {
+  color: #a85f00;
+}
+.el-alert--danger .el-alert__icon {
+  color: #c62d22;
+}
+
+/* el-table: 불투명 흰 배경 + 각진 셀 테두리 대신 투명 배경 + 옅은 유리 구분선 */
+.el-table {
+  --el-table-bg-color: transparent;
+  --el-table-tr-bg-color: transparent;
+  --el-table-header-bg-color: transparent;
+  --el-table-row-hover-bg-color: rgba(255, 255, 255, 0.4);
+  --el-table-border-color: var(--glass-border);
+  background: transparent !important;
+  font-size: 14px;
+}
+/* 8차: 셀만 투명하게 해놨더니 정작 tr이 불투명 흰색(computed로 rgb(255,255,255) 확인)이라
+   표 전체가 유리 카드 안에 홀로 떠 있는 흰 슬래브로 보였다 — 행까지 투명하게 내린다. */
+.el-table tr,
+.el-table th.el-table__cell,
+.el-table td.el-table__cell {
+  background: transparent !important;
+}
+.el-table__header-wrapper th {
+  background-color: rgba(255, 255, 255, 0.3) !important;
+  font-weight: 600;
+}
+.el-table__inner-wrapper::before {
+  display: none;
 }

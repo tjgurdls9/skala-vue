@@ -1,7 +1,8 @@
 /* 최상위 컨테이너 중앙 정렬 및 배경 세팅 */
 div.practice-container {
-  max-width: 1200px;
-  width: 800px;
+  /* 8차: 여기만 max-width 800px이라 /practice에 들어가면 본문이 갑자기 좁아졌다 —
+     "전체 페이지 너비를 통일감 있게" 피드백에 따라 app-container(1440px) 폭을 그대로 쓴다. */
+  width: 100%;
   margin: 0 auto;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   color: #2c3e50;
@@ -12,10 +13,16 @@ div.practice-section {
   padding: 10px 20px 20px 20px;
   margin-top: 10px;
   margin-bottom: 24px;
-  background-color: #ffffff;
-  border: none;
+  background-color: var(--glass-bg);
+  background-image: var(--glass-sheen);
+  /* 8차: 여기만 --glass-blur(blur 30px)를 써서 뒤 하늘이 균일한 파란 덩어리로 뭉개졌다 —
+     앱의 다른 카드는 전부 굴절 + 약한 블러라 실습 화면만 톤이 달라 보였다("톤앤매너는 하나로
+     족해"). 같은 처리로 통일한다. */
+  -webkit-backdrop-filter: url(#glass-refraction) var(--glass-refract-blur);
+  backdrop-filter: url(#glass-refraction) var(--glass-refract-blur);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-card);
-  box-shadow: var(--shadow-card);
+  box-shadow: var(--shadow-glass);
 }
 /* 세션 대제목 (h1) 스타일링 */
 h1 {
@@ -57,25 +64,31 @@ button {
   font-size: 14px;
   font-weight: 500;
   color: #1c1c1e; /* 진한 회색 텍스트 */
-  background-color: #f1f3f5; /* 차분한 연회색 배경 */
-  border: none;
+  background-color: rgba(255, 255, 255, 0.55); /* 유리 컨트롤 */
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-control);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    0 1px 2px rgba(28, 32, 56, 0.08);
   cursor: pointer;
   transition: all 0.15s ease;
 }
 /* 마우스 호버(Hover) 효과 - 비활성화가 아닐 때만 작동 */
 button:not(:disabled):hover {
-  background-color: #e9ecef; /* 호버 시 한 단계 짙은 회색 */
+  background-color: rgba(255, 255, 255, 0.78); /* 유리가 밝아지며 떠오른다 */
   color: #1c1c1e;
 }
 /* 클릭(Active) 시 효과 - 비활성화가 아닐 때만 작동 */
 button:not(:disabled):active {
-  background-color: #dee2e6; /* 눌렸을 때 조금 더 짙은 회색 */
+  background-color: rgba(240, 240, 245, 0.85); /* 눌리면 가라앉는다 */
+  box-shadow: inset 0 1px 3px rgba(28, 32, 56, 0.14);
 }
 /* 비활성화(Disabled) 상태 제어 - 마우스 반응 및 눌림 방지 */
 button:disabled {
-  background-color: #f8f9fa; /* 더 옅은 회색으로 톤다운 */
-  color: #adb5bd; /* 흐릿한 텍스트 */
+  background-color: rgba(255, 255, 255, 0.35); /* 더 옅게 톤다운 */
+  color: #8e8e93; /* 반투명 배경 위에서 #adb5bd는 너무 흐려 안 읽힌다 */
   cursor: not-allowed;
 
   /* 핵심: 호버/클릭 인터랙션 완전 차단 */
@@ -87,8 +100,10 @@ input {
   padding: 8px 12px;
   font-size: 14px;
   color: #1c1c1e;
-  background-color: #f2f2f7; /* iOS 필드 배경 톤 */
-  border: 1px solid transparent;
+  background-color: rgba(255, 255, 255, 0.5); /* 유리 필드 */
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-control);
   outline: none;
   transition:
@@ -111,7 +126,8 @@ input:focus {
   color: #ffffff;
   background-color: var(--color-accent);
   border: none;
-  border-radius: var(--radius-pill);
+  /* 8차: 마지막까지 남아 있던 알약 버튼. 다른 버튼들과 같은 둥근 사각형으로 통일 */
+  border-radius: 10px;
   cursor: pointer;
   transition: background-color 0.15s ease; /* 색상 전환만 깔끔하게 적용 */
 }
@@ -127,9 +143,11 @@ input:focus {
 .monitor {
   margin-top: 16px;
   padding: 12px 16px;
-  background-color: #f8f9fa;
-  border: 1px solid #dee2e6;
-  border-radius: 6px;
+  background-color: rgba(255, 255, 255, 0.45);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-control);
   font-weight: 500;
 }
 .monitor h3 {
@@ -140,18 +158,19 @@ input:focus {
 }
 /* 타겟(특정 속성) 감시 모니터 */
 .monitor.target {
-  background-color: #f3efff;
-  border-color: #b8a9f0;
+  background-color: rgba(243, 239, 255, 0.6);
+  border-color: rgba(184, 169, 240, 0.7);
 }
 /* 자동 deep 감시 모니터 */
 .monitor.auto {
-  background-color: #fff5f5;
-  border-color: #f5b7b1;
+  background-color: rgba(255, 245, 245, 0.6);
+  border-color: rgba(245, 183, 177, 0.7);
 }
 /* 슬롯 실습용 카드 박스 */
 .base-card {
   margin-top: 12px;
   padding: 12px 16px;
-  border: 1px solid #e9ecef;
-  border-radius: 6px;
+  background-color: rgba(255, 255, 255, 0.4);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-control);
 }
