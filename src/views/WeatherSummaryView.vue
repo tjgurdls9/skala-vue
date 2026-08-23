@@ -181,7 +181,7 @@ const goDetail = (item) => {
 }
 .guide {
   font-size: 13px;
-  color: #6e6e73;
+  color: #48515f;
   margin: 0 0 14px;
 }
 
@@ -203,7 +203,7 @@ const goDetail = (item) => {
 }
 .overview-key {
   font-size: 12px;
-  color: #6e6e73;
+  color: #48515f;
 }
 .overview-val {
   font-size: 26px;
@@ -214,7 +214,7 @@ const goDetail = (item) => {
 .overview-val small {
   font-size: 13px;
   font-weight: 600;
-  color: #8a8a90;
+  color: #48515f;
   margin-left: 2px;
 }
 
@@ -285,7 +285,7 @@ const goDetail = (item) => {
 .rank-num {
   font-size: 12px;
   font-weight: 700;
-  color: #8a8a90;
+  color: #48515f;
   font-variant-numeric: tabular-nums;
   text-align: right;
 }
@@ -319,11 +319,11 @@ const goDetail = (item) => {
   font-weight: 600;
 }
 .rank-grade {
-  color: #6e6e73;
+  color: #48515f;
 }
 .rank-code {
   font-size: 12px;
-  color: #8a8a90;
+  color: #48515f;
   font-variant-numeric: tabular-nums;
   text-align: right;
 }

@@ -57,10 +57,9 @@ const FEATURES = [
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #f5f5f7;
-  text-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.55),
-    0 2px 14px rgba(0, 0, 0, 0.35);
+  /* 13차-k: 배경을 다시 어둡게 내렸으므로 카드 '밖'의 제목은 밝은 글자다.
+     (카드 안쪽은 밝은 유리판이라 진한 글자를 그대로 쓴다 — 여기서 뒤집지 않는다.) */
+  color: #eef2f8;
 }
 .about-card {
   max-width: 720px;
@@ -98,11 +97,11 @@ const FEATURES = [
 .about-check {
   flex-shrink: 0;
   margin-top: 3px;
-  color: #248a5e;
+  color: #14563a;
 }
 .about-note {
   margin: 0 0 18px;
   font-size: 13px;
-  color: #6e6e73;
+  color: #48515f;
 }
 </style>

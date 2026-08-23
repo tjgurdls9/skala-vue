@@ -1128,10 +1128,10 @@ export const execPriority = (score) => {
 
 // 점수 구간 → 라벨/색. 지도·카드·표가 모두 이 한 곳을 본다.
 export const execGrade = (score) => {
-  if (score >= 75) return { label: '우수', tone: 'success', color: '#248a5e' }
-  if (score >= 55) return { label: '양호', tone: 'info', color: '#0a5fd8' }
-  if (score >= 35) return { label: '주의', tone: 'warning', color: '#a85f00' }
-  return { label: '미흡', tone: 'danger', color: '#c62d22' }
+  if (score >= 75) return { label: '우수', tone: 'success', color: '#1c7048' }
+  if (score >= 55) return { label: '양호', tone: 'info', color: '#0a53c0' }
+  if (score >= 35) return { label: '주의', tone: 'warning', color: '#8a4e00' }
+  return { label: '미흡', tone: 'danger', color: '#ad251c' }
 }
 
 // 가장 크게 깎아먹은 축을 찾는다(만점 대비 손실이 가장 큰 항목)
@@ -1165,28 +1165,28 @@ export const OPS_MODES = {
     key: 'normal',
     label: '정상 운영',
     tone: 'success',
-    color: '#248a5e',
+    color: '#1c7048',
     summary: '평소대로 운영합니다. 옥외 활동에 제약이 없습니다.',
   },
   indoor: {
     key: 'indoor',
     label: '실내 전환',
     tone: 'info',
-    color: '#0a5fd8',
+    color: '#0a53c0',
     summary: '옥외 동선을 실내·비대면 채널로 옮깁니다.',
   },
   reduced: {
     key: 'reduced',
     label: '단축 운영',
     tone: 'warning',
-    color: '#a85f00',
+    color: '#8a4e00',
     summary: '체류 시간이 짧아 운영 시간과 인력을 줄입니다.',
   },
   halt: {
     key: 'halt',
     label: '중단 검토',
     tone: 'danger',
-    color: '#c62d22',
+    color: '#ad251c',
     summary: '옥외 활동을 중단하고 안전 조치를 우선합니다.',
   },
 }

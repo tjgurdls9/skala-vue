@@ -261,7 +261,7 @@ const pad = (index) => String(index + 1).padStart(2, '0')
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.14em;
-  color: #191f28;
+  color: rgba(206, 221, 243, 0.82);
 }
 .lab-title {
   margin: 4px 0 0;
@@ -274,7 +274,7 @@ const pad = (index) => String(index + 1).padStart(2, '0')
 .lab-sub {
   margin: 6px 0 0;
   font-size: 14px;
-  color: #191f28;
+  color: rgba(214, 226, 244, 0.86);
 }
 
 /* --- 목차 그리드 --- */
@@ -310,7 +310,7 @@ const pad = (index) => String(index + 1).padStart(2, '0')
   font-weight: 800;
   /* 참고 사이트는 불투명 흰 카드라 옅은 회색 번호도 읽혔지만, 우리 카드는 반투명이라
      뒤 하늘이 밝은 구간에서 번호가 그대로 날아갔다 — 대비를 올린다. */
-  color: #6e6e73;
+  color: #48515f;
   font-variant-numeric: tabular-nums;
 }
 .lab-index-body {
@@ -326,10 +326,10 @@ const pad = (index) => String(index + 1).padStart(2, '0')
 }
 .lab-index-desc {
   font-size: 12px;
-  color: #6e6e73;
+  color: #48515f;
 }
 .lab-index-arrow {
-  color: #6e6e73;
+  color: #48515f;
   flex-shrink: 0;
 }
 .lab-index-item:hover .lab-index-arrow {
@@ -359,7 +359,7 @@ const pad = (index) => String(index + 1).padStart(2, '0')
   font-size: 26px;
   font-weight: 800;
   line-height: 1;
-  color: #191f28;
+  color: rgba(226, 236, 250, 0.7);
   font-variant-numeric: tabular-nums;
 }
 .lab-section-titles {
@@ -373,12 +373,12 @@ const pad = (index) => String(index + 1).padStart(2, '0')
   margin: 0;
   font-size: 20px;
   font-weight: 700;
-  color: #191f28;
+  color: #f2f6fc;
 }
 .lab-section-desc {
   margin: 2px 0 0;
   font-size: 13px;
-  color: #191f28;
+  color: rgba(214, 226, 244, 0.82);
 }
 .lab-toc-link {
   display: inline-flex;
@@ -387,11 +387,11 @@ const pad = (index) => String(index + 1).padStart(2, '0')
   flex-shrink: 0;
   font-size: 12px;
   font-weight: 600;
-  color: #191f28;
+  color: rgba(200, 220, 245, 0.9);
   text-decoration: none;
 }
 .lab-toc-link:hover {
-  color: #cfe6ff;
+  color: #ffffff;
 }
 
 .lab-section-body {

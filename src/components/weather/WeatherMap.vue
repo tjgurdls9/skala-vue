@@ -32,7 +32,9 @@ const VIEW_BOX = computed(() => {
   return `${V.x - pad} ${V.y - pad} ${V.w + pad * 2} ${V.h + pad * 2}`
 })
 
-const regions = koreaMap.regions
+// 13차-f: 시·도 경계 레이어를 걷어냈다. 지도에 굵은 선(시·도)과 얇은 선(시군구)이
+// 같이 있으면 "굵은 선은 뭔가 다른 단위인가?"를 매번 판단하게 된다.
+// 데이터·클릭 단위는 시·군 하나뿐이니 선도 하나면 된다.
 // 12차: 도형은 251개(자치구까지)지만 데이터·클릭 단위는 '시·군' 162개다.
 // 구는 행정 단위일 뿐 기상 관측 단위가 아니라, 서울 25개 구가 각각 다른 지역인 것처럼
 // 보이면 오히려 헷갈린다. 그래서 각 도형은 소속 시·군(group)만 들고 있고,
@@ -101,6 +103,7 @@ const onAreaClick = (event) => {
     <!-- 12차: 호버·클릭을 도형 251개에 각각 걸지 않고 svg 하나에서 위임 처리한다.
          리스너가 251개에서 3개로 줄고, mouseenter처럼 버블링하지 않는 이벤트에 기대지 않아
          입력 경로(실제 마우스·터치·자동화 도구)에 상관없이 같은 결과가 나온다. -->
+    <div class="map-frame">
     <svg
       class="map-svg"
       :viewBox="VIEW_BOX"
@@ -121,8 +124,6 @@ const onAreaClick = (event) => {
         :style="shape.fill ? { fill: shape.fill } : null"
         :data-group="shape.group"
       />
-      <!-- 시도 경계는 클릭 대상이 아니라 형태를 읽기 위한 선이다 -->
-      <path v-for="region in regions" :key="region.name" :d="region.d" class="map-region" />
 
       <!-- 울릉도·독도. 13차: 이름표를 뺐다 — 지도에서 이름이 붙은 곳이 이 둘뿐이라
            오히려 그 둘만 특별해 보였다. 형태만 두고 이름은 판독부가 맡는다. -->
@@ -136,6 +137,7 @@ const onAreaClick = (event) => {
       />
 
     </svg>
+    </div>
 
     <!-- 호버한 지역 정보. 지도 위에 툴팁을 띄우면 좁은 화면에서 잘리므로 아래 고정 영역에 쓴다 -->
     <div class="map-readout">
@@ -157,10 +159,10 @@ const onAreaClick = (event) => {
     </div>
 
     <ul class="map-legend">
-      <li><i style="background: #248a5e"></i>우수</li>
-      <li><i style="background: #0a5fd8"></i>양호</li>
-      <li><i style="background: #a85f00"></i>주의</li>
-      <li><i style="background: #c62d22"></i>미흡</li>
+      <li><i style="background: #14563a"></i>우수</li>
+      <li><i style="background: #0a53c0"></i>양호</li>
+      <li><i style="background: #8a4e00"></i>주의</li>
+      <li><i style="background: #ad251c"></i>미흡</li>
     </ul>
   </div>
 </template>
@@ -171,10 +173,27 @@ const onAreaClick = (event) => {
   flex-direction: column;
   align-items: center;
 }
+/* 지도가 놓이는 면. 살짝 파인 듯한 안쪽 그림자로 '지도판'을 만든다 */
+.map-frame {
+  width: 100%;
+  padding: 14px 10px;
+  border-radius: var(--radius-card);
+  background: rgba(255, 255, 255, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: inset 0 1px 3px rgba(24, 40, 80, 0.08);
+}
+/* 13차-g: 지도가 허공에 뜬 것처럼 보였다 — 육지 외곽에 아무 경계도 없어서
+   '지도'가 아니라 '떠 있는 얼룩'으로 읽혔다. 두 가지로 붙잡는다:
+   (1) 지도를 담는 면(.map-frame)을 만들어 지도가 놓인 자리를 명시하고
+   (2) 육지 덩어리에 그림자를 줘서 면 위에 놓인 것으로 보이게 한다. */
 .map-svg {
   width: 100%;
   height: auto;
   overflow: visible;
+  /* drop-shadow는 도형의 알파 실루엣을 따라간다 — 시군구 251개의 합집합,
+     즉 국토 외곽선을 따로 계산하지 않고도 바깥 테두리에만 그림자가 생긴다. */
+  filter: drop-shadow(0 1px 1px rgba(24, 40, 80, 0.28))
+    drop-shadow(0 6px 14px rgba(24, 40, 80, 0.16));
   /* 12차: 지도를 고정 높이로 자르면 큰 화면에서는 작고 작은 화면에서는 사이드바가 넘친다.
      우리나라는 세로로 긴 형태라 폭을 늘려도 높이만 커질 뿐이라, 결국 세로 여유가 상한이다.
      그래서 화면 높이에서 사이드바의 나머지 요소(검색 카드·제목·판독부·범례·여백 ≈ 480px)를
@@ -192,8 +211,9 @@ const onAreaClick = (event) => {
 .map-area {
   fill: rgba(28, 32, 56, 0.14);
   fill-opacity: 0.22;
-  stroke: rgba(28, 32, 56, 0.18);
-  stroke-width: 0.4;
+  /* 13차-f: 이제 지도의 유일한 경계선이다. 시·도 선을 지운 만큼 조금 또렷하게. */
+  stroke: rgba(28, 32, 56, 0.28);
+  stroke-width: 0.5;
   vector-effect: non-scaling-stroke;
   cursor: pointer;
   transition:
@@ -220,17 +240,6 @@ const onAreaClick = (event) => {
   pointer-events: none;
 }
 
-/* 12차 버그: 시·도 경계가 흰 면(fill 0.55)으로 칠해진 채 시군구 위에 그려져 있었다.
-   SVG는 칠해진 도형이 포인터를 받으므로, 이 판이 지도 전체를 덮어 아래 시군구의 호버·클릭이
-   하나도 닿지 않았다(JS로 직접 이벤트를 쏘면 동작해서 더 늦게 알았다).
-   시·도는 이제 '경계선'만 담당한다 — 면을 없애고 포인터도 통과시킨다. */
-.map-region {
-  fill: none;
-  pointer-events: none;
-  stroke: rgba(28, 32, 56, 0.5);
-  stroke-width: 0.9;
-  stroke-linejoin: round;
-}
 
 .map-point {
   cursor: pointer;
@@ -282,7 +291,7 @@ const onAreaClick = (event) => {
 }
 .map-readout-hint {
   font-size: 12px;
-  color: #6e6e73;
+  color: #48515f;
 }
 
 .map-legend {

@@ -1,4 +1,5 @@
 <script setup>
+import { onMounted, onBeforeUnmount } from 'vue'
 import { RouterView, useRoute } from 'vue-router'
 import UnitToggler from './components/weather/UnitToggler.vue'
 import { House, DataAnalysis, MagicStick } from '@element-plus/icons-vue'
@@ -18,9 +19,55 @@ const weatherThemeStore = useWeatherThemeStore()
 // load()는 스토어에서 캐시되므로 각 화면이 또 불러도 중복 요청이 되지 않는다.
 useWeatherStore().load()
 
-// 12차: 여기 있던 pointermove 추적(커서 위치를 --px/--py로 흘려보내던 것)은 지웠다.
-// 그걸 쓰던 분광·스페큘러 레이어를 전부 걷어냈기 때문이다 — 호버 반응은 이제 순수 CSS로
-// 유리 자체의 투명도·채도·높이만 바꾼다(base.css '유리 표면의 호버 반응' 참고).
+// --- 13차-j: 리퀴드 글래스 (2) 반사 ---------------------------------------
+// 애플의 리퀴드 글래스는 기기를 기울이면 스페큘러가 움직인다. 웹에는 기울기가 없으므로
+// 커서를 가상 광원으로 삼는다 — 커서가 카드의 어느 쪽에 있느냐를 각도로 바꿔서
+// 모서리를 도는 conic 그라디언트(--lightangle)를 회전시킨다.
+//
+// 12차에도 커서 추적을 붙였다가 지웠는데, 그때는 판 한가운데에 흰 원을 그려서
+// '원형 그라디언트를 덧댄 티'가 났다. 이번엔 빛이 모서리 링을 따라 돌기만 한다.
+const GLASS_SELECTOR = '.base-dashboard-card, .weather-card, .navigation-bar'
+let rafId = 0
+let pending = null
+// 13차-l: atan2는 ±180도에서 값이 튄다. 각도에 전환이 걸린 지금은 그 순간
+// 빛이 카드를 한 바퀴 돌아버리므로, 직전 각도에서 가장 가까운 표현으로 이어붙인다.
+// (예: 179도 -> -179도가 아니라 181도로 준다.)
+const lastAngle = new WeakMap()
+
+const flush = () => {
+  rafId = 0
+  if (!pending) return
+  const { card, angle } = pending
+  pending = null
+  card.style.setProperty('--lightangle', `${angle}deg`)
+  // 광원의 반대쪽으로 그림자를 민다(빛에서 멀어지는 방향)
+  const rad = ((angle - 90) * Math.PI) / 180
+  card.style.setProperty('--lx', `${(-Math.cos(rad) * 16).toFixed(1)}px`)
+  card.style.setProperty('--ly', `${(-Math.sin(rad) * 16).toFixed(1)}px`)
+}
+
+const onPointerMove = (event) => {
+  const card = event.target.closest?.(GLASS_SELECTOR)
+  if (!card) return
+  const r = card.getBoundingClientRect()
+  // 카드 중심에서 커서로 향하는 방향 = 광원이 있는 쪽
+  const dx = event.clientX - (r.left + r.width / 2)
+  const dy = event.clientY - (r.top + r.height / 2)
+  const raw = Math.round((Math.atan2(dy, dx) * 180) / Math.PI) + 90
+  const prev = lastAngle.get(card)
+  const angle = prev === undefined ? raw : prev + ((((raw - prev) % 360) + 540) % 360) - 180
+  lastAngle.set(card, angle)
+  pending = { card, angle }
+  if (!rafId) rafId = requestAnimationFrame(flush)
+}
+
+onMounted(() => {
+  window.addEventListener('pointermove', onPointerMove, { passive: true })
+})
+onBeforeUnmount(() => {
+  window.removeEventListener('pointermove', onPointerMove)
+  if (rafId) cancelAnimationFrame(rafId)
+})
 </script>
 
 <template>
@@ -30,6 +77,29 @@ useWeatherStore().load()
        주름유리(왜곡 유리)의 표현이지 리퀴드 글라스의 표현이 아니다.
        지금은 균질한 블러(--glass-surface) + 가장자리 렌즈 띠 + 스페큘러/분광으로 간다.
        자세한 이유는 base.css의 --glass-surface 주석 참고. -->
+
+  <!-- 13차-j: 리퀴드 글래스의 굴절. 변위 맵은 R=가로 램프, G=세로 램프다.
+       feDisplacementMap은 (채널값/255 - 0.5)만큼 픽셀을 민다 — 그래서 램프를 깔면
+       중앙(0.5)은 0, 왼쪽 끝은 왼쪽으로, 오른쪽 끝은 오른쪽으로 밀린다.
+       즉 판 전체가 바깥으로 벌어지는 볼록 렌즈가 된다. 난수도 아니고 잘라낸 띠도 아니라
+       경계선이 생기지 않는다(앞선 두 번의 실패가 정확히 그 두 가지였다).
+       맵은 data URI SVG로 만든다 — 이미지 파일을 추가하지 않기 위해서다. -->
+  <svg class="filter-defs" aria-hidden="true">
+    <filter id="lg-refract" x="-10%" y="-10%" width="120%" height="120%">
+      <feImage
+        href="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cdefs%3E%3ClinearGradient id='r' x1='0' y1='0' x2='1' y2='0'%3E%3Cstop offset='0' stop-color='rgb(0,128,0)'/%3E%3Cstop offset='1' stop-color='rgb(255,128,0)'/%3E%3C/linearGradient%3E%3ClinearGradient id='g' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='rgb(0,0,0)'/%3E%3Cstop offset='1' stop-color='rgb(0,255,0)'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='120' height='120' fill='url(%23r)'/%3E%3Crect width='120' height='120' fill='url(%23g)' style='mix-blend-mode:screen'/%3E%3C/svg%3E"
+        preserveAspectRatio="none"
+        result="rampMap"
+      />
+      <feDisplacementMap
+        in="SourceGraphic"
+        in2="rampMap"
+        scale="26"
+        xChannelSelector="R"
+        yChannelSelector="G"
+      />
+    </filter>
+  </svg>
 
   <!-- 뷰포트 전체를 덮는 고정 배경. 히어로 안에 갇혀 있던 "지금 날씨"를 앱 전체로 끌어올렸다.
        13차: 지금까지 한 장짜리 div의 클래스만 바꿔 끼웠다. .weather-scene에 걸어둔
@@ -63,7 +133,7 @@ useWeatherStore().load()
         mode="horizontal"
         router
         background-color="transparent"
-        text-color="#7f8c8d"
+        text-color="#4e5968"
         active-text-color="#ffffff"
         :ellipsis="false"
         class="nav-menu"
@@ -141,12 +211,12 @@ useWeatherStore().load()
   font-size: 34px;
   line-height: 1;
   letter-spacing: -0.02em;
-  color: #191f28;
+  color: #f2f6fc;
   white-space: nowrap;
 }
 .wordmark-thin {
   font-weight: 300;
-  color: #8b95a1;
+  color: rgba(226, 236, 250, 0.75);
 }
 .wordmark-bold {
   font-weight: 800;
@@ -161,17 +231,17 @@ useWeatherStore().load()
   margin: 0;
   font-size: 15px;
   font-weight: 500;
-  color: #8b95a1;
+  color: rgba(214, 226, 244, 0.78);
 }
 /* 과제 식별자는 지우지 않되, 서비스 이름보다 뒤로 물린다 */
 .brand-badge {
   margin-left: auto;
   padding: 4px 10px;
   border-radius: 999px;
-  background: #eef1f4;
+  background: rgba(255, 255, 255, 0.12);
   font-size: 12px;
   font-weight: 600;
-  color: #8b95a1;
+  color: rgba(226, 236, 250, 0.8);
   white-space: nowrap;
 }
 
@@ -200,10 +270,14 @@ useWeatherStore().load()
   /* 11차: 위쪽 padding이 4px뿐이라 탭 글자가 유리 상단에 밀착돼 있었고, 대신 아래로는
      여백이 남아 위아래가 안 맞았다. 상하를 같게 주고(8px) 좌우를 조금 넓혀 균형을 잡는다. */
   padding: 8px 12px;
-  /* 13차-e: 배경이 단색이라 블러할 대상이 없다. 흰 카드 + 헤어라인으로 충분하다. */
-  background: #ffffff;
+  /* 13차-k: 내비 바는 콘텐츠 위에 떠 있는 컨트롤 레이어 — 리퀴드 글래스가 가장 잘 맞는
+     자리다(애플도 이 레이어에 쓰라고 한다). 13차-e에 흰 카드로 눌러놨던 걸 되돌리고
+     공용 유리 규칙(굴절·스페큘러·유동)을 그대로 받게 한다. */
+  background-color: var(--glass-tint, var(--glass-bg));
   border: 1px solid var(--glass-border);
   box-shadow: var(--shadow-glass);
+  -webkit-backdrop-filter: var(--glass-surface);
+  backdrop-filter: var(--glass-surface);
 }
 
 /* el-menu 기본 스타일(하단 보더, 흰 배경 강제)이 유리 내비 필과 부딪혀서 걷어낸다 */
@@ -218,14 +292,38 @@ useWeatherStore().load()
      메뉴 높이를 항목 높이와 같게 맞추면 항목이 바 한가운데에 온다. */
   --el-menu-horizontal-height: 40px;
 }
+/* 13차-k 버그: 탭이 "호버하면 회색, 누르면 회색, 다른 곳을 클릭해야 파란색"이었다.
+   원인은 Element Plus가 자기 hover 배경(--el-menu-hover-bg-color, 회색)을 우리 .is-active
+   위에 덮어쓰고, 클릭 후에도 포커스가 남아 그 회색이 유지된 것이다.
+   EP의 hover 색을 투명으로 꺼버리고, 상태는 우리가 전부 직접 정한다. */
+.nav-menu {
+  --el-menu-hover-bg-color: transparent;
+}
 .nav-menu :deep(.el-menu-item) {
   border-bottom: none;
-  font-weight: bold;
+  font-weight: 700;
   font-size: 16px;
   /* 알약 대신 둥근 사각형 — macOS 사이드바/탭 선택 표시가 실제로 이렇다 */
-  border-radius: 10px;
+  border-radius: var(--control-radius);
   height: 40px;
   line-height: 40px;
+  background-color: transparent !important;
+  transition:
+    background-color 0.2s var(--apple-ease),
+    color 0.2s var(--apple-ease);
+}
+/* 안 눌린 탭의 호버 — 회색이 아니라 유리가 살짝 밝아지는 느낌으로 */
+.nav-menu :deep(.el-menu-item:not(.is-active):hover),
+.nav-menu :deep(.el-menu-item:not(.is-active):focus) {
+  background-color: rgba(28, 32, 56, 0.06) !important;
+  color: #1c1c1e !important;
+}
+/* 선택된 탭은 어떤 상태(호버·포커스·클릭)에서도 강조색을 유지한다 */
+.nav-menu :deep(.el-menu-item.is-active),
+.nav-menu :deep(.el-menu-item.is-active:hover),
+.nav-menu :deep(.el-menu-item.is-active:focus) {
+  background-color: var(--control-bg-on) !important;
+  color: #ffffff !important;
 }
 .nav-menu :deep(.el-menu-item.is-active) {
   /* 13차: '선택됨'을 단위 토글과 같은 방식으로 — 강조색으로 채우고 글자는 흰색.

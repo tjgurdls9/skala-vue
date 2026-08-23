@@ -516,13 +516,9 @@ const goBack = () => {
   box-shadow: none;
   width: 100%;
 }
-/* h2도 h1과 같은 문제 — 카드 밖, 사진 배경에 직접 얹혀 있어서 어두운 배경에서 안 보였다 */
-.practice-section > h2 {
-  color: #f5f5f7;
-  text-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.55),
-    0 2px 14px rgba(0, 0, 0, 0.35);
-}
+/* 13차-f: 사진 배경 시절에 h2를 흰 글자 + 그림자로 만들어 뒀던 규칙을 지웠다.
+   배경이 밝은 회색이 된 뒤로는 흰 배경에 흰 글자였고, 화면에서 이 제목만 혼자
+   그림자를 달고 있었다. practice.css의 기본 다크 텍스트를 그대로 쓴다. */
 :deep(.el-tabs__item) {
   display: inline-flex;
   align-items: center;
@@ -539,7 +535,7 @@ const goBack = () => {
   background: transparent;
 }
 :deep(.el-descriptions__label) {
-  color: #6e6e73;
+  color: #48515f;
   font-weight: 500;
 }
 :deep(.el-descriptions__content) {
@@ -569,7 +565,7 @@ const goBack = () => {
   align-items: center;
   gap: 4px;
   font-size: 12px;
-  color: #6e6e73;
+  color: #48515f;
 }
 .detail-hero-name {
   margin: 0;
@@ -587,7 +583,7 @@ const goBack = () => {
 .detail-hero-unit {
   font-size: 24px;
   font-weight: 500;
-  color: #6e6e73;
+  color: #48515f;
   margin-left: 2px;
 }
 .detail-hero-status {
@@ -623,7 +619,7 @@ const goBack = () => {
 }
 .grade-stat-label {
   font-size: 12px;
-  color: #6e6e73;
+  color: #48515f;
 }
 .grade-stat-value {
   font-size: 18px;
@@ -632,7 +628,7 @@ const goBack = () => {
 }
 .grade-stat-hint {
   font-size: 11px;
-  color: #6e6e73;
+  color: #48515f;
 }
 .section-lead {
   margin: -4px 0 12px;
@@ -676,7 +672,7 @@ const goBack = () => {
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #8a8a90;
+  color: #48515f;
 }
 .mix-label {
   font-size: 14px;
@@ -705,13 +701,13 @@ const goBack = () => {
   border-left-width: 3px;
 }
 .func-row.tone-success {
-  border-left-color: #248a5e;
+  border-left-color: #14563a;
 }
 .func-row.tone-warning {
-  border-left-color: #a85f00;
+  border-left-color: #8a4e00;
 }
 .func-row.tone-danger {
-  border-left-color: #c62d22;
+  border-left-color: #ad251c;
 }
 .func-head {
   display: flex;
@@ -727,7 +723,7 @@ const goBack = () => {
 .func-level {
   font-size: 11px;
   font-weight: 600;
-  color: #6e6e73;
+  color: #48515f;
 }
 .func-notes {
   margin: 0;
@@ -775,16 +771,16 @@ const goBack = () => {
   margin-top: 2px;
 }
 .briefing-list li.tone-success .el-icon {
-  color: #248a5e;
+  color: #14563a;
 }
 .briefing-list li.tone-info .el-icon {
-  color: #0a5fd8;
+  color: #0a53c0;
 }
 .briefing-list li.tone-warning .el-icon {
-  color: #a85f00;
+  color: #8a4e00;
 }
 .briefing-list li.tone-danger .el-icon {
-  color: #c62d22;
+  color: #ad251c;
 }
 
 /* --- 10차: 관측 지표 타일 --- */
@@ -816,7 +812,7 @@ const goBack = () => {
   align-items: center;
   gap: 5px;
   font-size: 12px;
-  color: #6e6e73;
+  color: #48515f;
 }
 .metric-value {
   font-size: 21px;
@@ -827,13 +823,13 @@ const goBack = () => {
 .metric-value small {
   font-size: 12px;
   font-weight: 500;
-  color: #6e6e73;
+  color: #48515f;
   margin-left: 2px;
 }
 .metric-note {
   font-size: 11px;
   line-height: 1.45;
-  color: #6e6e73;
+  color: #48515f;
 }
 
 /* --- 10차: 일조 시간 호 --- */
@@ -884,7 +880,7 @@ const goBack = () => {
 }
 .daylight-key {
   font-size: 11px;
-  color: #6e6e73;
+  color: #48515f;
 }
 .daylight-val {
   font-size: 15px;
@@ -930,17 +926,17 @@ const goBack = () => {
 .forecast-temp-min {
   font-size: 13px;
   font-weight: 500;
-  color: #6e6e73;
+  color: #48515f;
 }
 .forecast-humidity {
   font-size: 11px;
-  color: #6e6e73;
+  color: #48515f;
 }
 .forecast-score {
   margin-top: 4px;
   font-size: 12px;
   font-weight: 700;
-  color: #0a5fd8;
+  color: #0a53c0;
   font-variant-numeric: tabular-nums;
 }
 .forecast-comment {
@@ -956,7 +952,7 @@ const goBack = () => {
 }
 .footnote {
   font-size: 13px;
-  color: #6e6e73;
+  color: #48515f;
   margin-top: 8px;
 }
 .detail-actions {
@@ -964,6 +960,7 @@ const goBack = () => {
   gap: 10px;
   margin-top: 15px;
 }
+
 .risk-alert {
   margin-bottom: 8px;
 }

@@ -172,9 +172,9 @@ const leadAction = computed(
   background-image: var(--glass-inset-sheen);
   border: 1px solid var(--glass-inset-border);
   box-shadow: var(--shadow-glass);
-  transition:
-    background-color 0.25s var(--apple-ease),
-    box-shadow 0.25s var(--apple-ease);
+  /* 13차-l: 여기 있던 transition을 걷어냈다. 바로 아래 주석대로 호버는 base.css가
+     맡는데, 이 선언이 그 전환 목록을 통째로 덮어써서(스코프 스타일이 나중에 주입된다)
+     정작 transform·border-radius에는 전환이 안 걸려 카드가 툭 튀었다. */
 }
 /* 12차: 호버하면 오히려 더 '맑아지는' 쪽이 유리답다 — 공통 규칙(base.css)이
    투명도·떠오름·스페큘러를 모두 맡으므로 여기서는 따로 덮지 않는다. */
@@ -203,19 +203,19 @@ const leadAction = computed(
 .temp-unit {
   font-size: 22px;
   font-weight: 500;
-  color: #6e6e73;
+  color: #48515f;
   margin-left: 2px;
 }
 .temp-range {
   font-size: 13px;
   font-weight: 600;
-  color: #6e6e73;
+  color: #48515f;
   margin-left: 8px;
   vertical-align: middle;
 }
 .sub-line {
   font-size: 13px;
-  color: #6e6e73;
+  color: #48515f;
   margin: 2px 0 0;
 }
 
@@ -238,7 +238,7 @@ const leadAction = computed(
 }
 .index-label {
   font-size: 11px;
-  color: #6e6e73;
+  color: #48515f;
 }
 .index-value {
   font-size: 17px;
@@ -252,16 +252,16 @@ const leadAction = computed(
   margin-left: 2px;
 }
 .index-value.tone-success {
-  color: #248a5e;
+  color: #14563a;
 }
 .index-value.tone-info {
-  color: #0a5fd8;
+  color: #0a53c0;
 }
 .index-value.tone-warning {
-  color: #a85f00;
+  color: #8a4e00;
 }
 .index-value.tone-danger {
-  color: #c62d22;
+  color: #ad251c;
 }
 .index-track {
   display: block;
@@ -274,7 +274,7 @@ const leadAction = computed(
   display: block;
   height: 100%;
   border-radius: 999px;
-  background: linear-gradient(90deg, #2ebe7a 0%, #e6a23c 55%, #c62d22 100%);
+  background: linear-gradient(90deg, #2ebe7a 0%, #e6a23c 55%, #ad251c 100%);
 }
 .index-track i.is-stay {
   background: var(--color-accent);
@@ -319,11 +319,11 @@ const leadAction = computed(
 }
 .ops-badge.tone-success {
   background: rgba(36, 138, 94, 0.14);
-  color: #1c6f49;
+  color: #14563a;
 }
 .ops-badge.tone-info {
   background: rgba(10, 95, 216, 0.14);
-  color: #0a5fd8;
+  color: #0a53c0;
 }
 .ops-badge.tone-warning {
   background: rgba(168, 95, 0, 0.16);
@@ -331,7 +331,7 @@ const leadAction = computed(
 }
 .ops-badge.tone-danger {
   background: rgba(198, 45, 34, 0.14);
-  color: #c62d22;
+  color: #ad251c;
 }
 .ops-alert-count {
   display: inline-flex;
@@ -339,7 +339,7 @@ const leadAction = computed(
   gap: 3px;
   font-size: 12px;
   font-weight: 600;
-  color: #a85f00;
+  color: #8a4e00;
 }
 .ops-summary {
   margin: 8px 0 0;
@@ -365,6 +365,6 @@ const leadAction = computed(
   flex-shrink: 0;
   font-size: 11px;
   font-weight: 700;
-  color: #6e6e73;
+  color: #48515f;
 }
 </style>

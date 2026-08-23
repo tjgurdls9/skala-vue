@@ -13,8 +13,6 @@ import {
   buildRiskAlerts,
   buildDiscomfort,
   buildOpsMode,
-  buildStayMinutes,
-  build7P,
   summarizeOps,
   execGrade,
   OPS_MODES,
@@ -33,9 +31,9 @@ import {
   Aim,
   WarnTriangleFilled,
   CircleCheck,
+  Trophy,
   Odometer,
   InfoFilled,
-  Trophy,
   Opportunity,
 } from '@element-plus/icons-vue'
 
@@ -123,13 +121,6 @@ const spotlightCity = computed(() => {
 const WEATHER_THEME_ICON = { clear: Sunny, clouds: Cloudy, rain: Pouring, snow: SnowflakeIcon }
 const WEATHER_THEME_LABEL = { clear: '맑음', clouds: '흐림', rain: '비', snow: '눈' }
 
-const heroThemeOptions = [
-  { value: 'auto', label: '실시간' },
-  { value: 'clear', label: '맑음' },
-  { value: 'clouds', label: '흐림' },
-  { value: 'rain', label: '비' },
-  { value: 'snow', label: '눈' },
-]
 // 11차 구조 수정: 예전에는 이 화면이 배경 테마를 계산해서 스토어에 밀어넣었다. 그래서 다른
 // 탭으로 가면(이 화면이 언마운트되면) 아무도 테마를 갱신하지 않아 배경이 직전 값에 멈췄다.
 // 이제 스토어가 선택된 지역에서 직접 테마를 파생하므로, 이 화면은 결과만 읽어 쓴다.
@@ -220,6 +211,12 @@ const pagedPlan = computed(() => {
 const podium = computed(() =>
   budgetPlan.value.slice(0, 3).map((item, i) => ({ rank: i + 1, item })),
 )
+// 시상대는 가운데가 1위여야 시상대로 읽힌다 — 2·1·3 순서로 세운다
+const podiumStand = computed(() => {
+  const top = podium.value
+  if (top.length < 3) return top
+  return [top[1], top[0], top[2]]
+})
 
 // --- 13차: 지도 오른쪽 패널 ---
 // 지도를 누르면 상세 페이지로 '떠나던' 것을 바꿨다. 여러 지역을 비교하려면 왕복을 반복해야
@@ -230,11 +227,23 @@ const picked = computed(() =>
     ? (budgetPlan.value.find((item) => item.id === weatherStore.selectedCityId) ?? null)
     : null,
 )
-const pickedGrade = computed(() => (picked.value ? execGrade(picked.value.execScore) : null))
-const pickedOps = computed(() => (picked.value ? buildOpsMode(picked.value) : null))
-const pickedAlerts = computed(() =>
-  picked.value ? buildRiskAlerts(picked.value).filter((a) => a.level !== 'success') : [],
+// 13차-h: 오른쪽 패널은 비워두지 않는다. 고른 지역이 있으면 그것, 없으면 1순위 지역.
+const focus = computed(() => picked.value ?? budgetPlan.value[0] ?? null)
+const focusGrade = computed(() => (focus.value ? execGrade(focus.value.execScore) : null))
+const focusOps = computed(() => (focus.value ? buildOpsMode(focus.value) : null))
+const focusAlerts = computed(() =>
+  focus.value ? buildRiskAlerts(focus.value).filter((a) => a.level !== 'success') : [],
 )
+
+// 반원 게이지. 반지름 50 원호의 길이 = π·r ≈ 157.
+const GAUGE_LEN = 157
+const gaugeOffset = computed(() => {
+  if (!focus.value) return GAUGE_LEN
+  return GAUGE_LEN * (1 - Math.min(focus.value.execScore / EXEC_MAX_SCORE, 1))
+})
+
+// 축 막대 색: 그 축이 만점 대비 얼마나 채웠는지로 정한다(점수 색과 같은 기준).
+const axisColor = (part) => execGrade((part.contribution / part.weight) * 100).color
 
 const avgScore = computed(() => {
   if (!budgetPlan.value.length) return null
@@ -266,18 +275,6 @@ const extremes = computed(() => {
   }
 })
 
-// 선택 지역의 전국 순위 — 점수 하나만으로는 그게 좋은 건지 알 수 없다
-const pickedRank = computed(() => {
-  if (!picked.value) return null
-  const idx = budgetPlan.value.findIndex((item) => item.id === picked.value.id)
-  return idx < 0 ? null : idx + 1
-})
-const pickedDiscomfort = computed(() =>
-  picked.value ? buildDiscomfort(picked.value) : null,
-)
-const pickedStay = computed(() => (picked.value ? buildStayMinutes(picked.value) : null))
-// 7P 중 오늘 가장 크게 움직이는 항목 두 개만. 전부 보여주는 건 상세 페이지의 몫이다.
-const pickedMix = computed(() => (picked.value ? build7P(picked.value).items.slice(0, 2) : []))
 
 // 지도에서 지역을 고르면 스토어에 담는다 — 오른쪽 패널과 앱 배경이 같은 값을 본다
 const pickCity = (item) => {
@@ -316,16 +313,14 @@ const goDetail = (item) => {
            세로를 채우면 좌우에 900px이 남는다 — 그 자리를 전국 요약(왼쪽)과 선택 지역
            요약(오른쪽)이 채운다. 지도가 끝나는 지점부터 아래 카드 목록이 시작된다. -->
       <BaseDashboardCard class="cockpit">
+        <!-- 13차-g: 테마 세그먼트(실시간/맑음/흐림/비/눈)를 걷어냈다.
+             배경이 하늘 사진이던 시절의 컨트롤인데, 단색 블루 톤이 된 지금은 눌러도
+             색조가 미세하게 달라질 뿐이라 자리만 차지했다. 배경은 선택 지역의 실제
+             날씨를 따라가면 그것으로 충분하다. -->
         <div class="cockpit-head">
           <span class="hero-badge">
             <el-icon><component :is="heroThemeIcon" /></el-icon> {{ heroBadgeText }}
           </span>
-          <el-segmented
-            :model-value="weatherThemeStore.override"
-            :options="heroThemeOptions"
-            size="small"
-            @change="weatherThemeStore.setOverride"
-          />
         </div>
 
         <div class="cockpit-body">
@@ -400,82 +395,83 @@ const goDetail = (item) => {
             <el-skeleton v-else :rows="8" animated />
           </div>
 
-          <!-- 오른쪽: 지역을 고르기 전에는 상위 3곳, 고르면 그 지역 요약으로 바뀐다 -->
+          <!-- 오른쪽: 선택 지역을 '읽는' 대신 '보는' 자리.
+               점수는 게이지로, 무엇이 점수를 깎았는지는 축별 막대로 보여준다.
+               13차-h: 지역을 안 골랐을 때도 비워두지 않고 1순위 지역을 띄운다 —
+               빈 패널은 자리만 차지하고 아무것도 알려주지 않는다. -->
           <aside class="cockpit-side">
-            <!-- 13차: 지역을 바꾸면 이 패널이 통째로 툭 바뀌었다. 내용에 key를 걸고
-                 감싸면 나가는 내용과 들어오는 내용이 겹쳐 부드럽게 갈린다. -->
-            <Transition name="panel-swap" mode="out-in">
-            <div :key="picked ? picked.id : 'top3'" class="cockpit-swap">
-            <template v-if="picked">
-              <h3 class="cockpit-title">
-                <el-icon><Aim /></el-icon> {{ picked.name }}
-                <button type="button" class="cockpit-clear" @click="weatherStore.selectCity(picked.id)">
-                  전국 보기
-                </button>
-              </h3>
-              <div class="cockpit-stat">
-                <span class="cockpit-stat-label">기상 영향 점수</span>
-                <span class="cockpit-stat-value" :style="{ color: pickedGrade.color }">
-                  {{ picked.execScore }}<small>{{ pickedGrade.label }}</small>
-                </span>
-              </div>
-              <div class="cockpit-stat">
-                <span class="cockpit-stat-label">기온 · 체감</span>
-                <span class="cockpit-stat-value">{{ picked.temp }}<small>°C · 체감 {{ picked.feelsLike }}°</small></span>
-              </div>
-
-              <!-- 점수 하나만으로는 그게 좋은 건지 알 수 없다 — 전국에서의 위치를 같이 준다 -->
-              <p v-if="pickedRank" class="cockpit-rankline">
-                전국 {{ budgetPlan.length }}곳 중 <b>{{ pickedRank }}위</b>
-              </p>
-
-              <ul class="picked-grid">
-                <li><span>습도</span><b>{{ picked.humidity }}%</b></li>
-                <li><span>바람</span><b>{{ picked.wind }}m/s</b></li>
-                <li><span>미세먼지</span><b>{{ picked.microdust }}</b></li>
-                <li v-if="pickedDiscomfort">
-                  <span>불쾌지수</span><b>{{ pickedDiscomfort.value }}</b>
-                </li>
-                <li v-if="pickedStay">
-                  <span>옥외 체류</span><b>{{ pickedStay.minutes }}분</b>
-                </li>
-                <li><span>가시거리</span><b>{{ picked.visibility }}km</b></li>
-              </ul>
-
-              <p class="cockpit-mode" :style="{ color: pickedOps.color }">{{ pickedOps.label }}</p>
-              <p class="cockpit-summary">{{ pickedOps.summary }}</p>
-
-              <!-- 오늘 가장 크게 움직이는 경영 레버 두 개. 나머지는 상세 페이지가 맡는다 -->
-              <ul class="picked-mix">
-                <li v-for="m in pickedMix" :key="m.p">
-                  <span>{{ m.label }}</span>{{ m.text }}
-                </li>
-              </ul>
-              <p v-if="pickedAlerts.length" class="cockpit-alert">
-                <el-icon><WarnTriangleFilled /></el-icon> {{ pickedAlerts[0].text }}
-                <template v-if="pickedAlerts.length > 1"> 외 {{ pickedAlerts.length - 1 }}건</template>
-              </p>
-              <el-button size="small" type="primary" class="cockpit-go" @click="goDetail(picked)">
-                상세 분석 보기
-              </el-button>
-            </template>
-
-            <template v-else>
-              <h3 class="cockpit-title"><el-icon><Trophy /></el-icon> 기상 영향 상위 3곳</h3>
+            <!-- 13차-i: 시상대는 선택과 무관한 전국 정보라 패널 맨 위에 상시로 둔다.
+                 눌러서 그 지역으로 초점을 옮길 수도 있어 목록이자 컨트롤이다. -->
+            <h3 class="cockpit-title"><el-icon><Trophy /></el-icon> 기상 영향 상위 3곳</h3>
+            <div v-if="podiumStand.length === 3" class="podium">
               <button
-                v-for="slot in podium"
+                v-for="slot in podiumStand"
                 :key="slot.item.id"
                 type="button"
-                class="cockpit-rank"
+                class="podium-slot"
+                :class="[`rank-${slot.rank}`, { 'is-focus': slot.item.id === focus?.id }]"
                 @click="pickCity(slot.item)"
               >
-                <span class="cockpit-rank-no">{{ slot.rank }}</span>
-                <span class="cockpit-rank-name">{{ slot.item.name }}</span>
-                <span class="cockpit-rank-score">{{ slot.item.execScore }}점</span>
+                <span class="podium-rank">{{ slot.rank }}위</span>
+                <span class="podium-name">{{ slot.item.name }}</span>
+                <span class="podium-score">{{ slot.item.execScore }}점</span>
               </button>
-              <p class="cockpit-hint">지도에서 지역을 누르면 이 자리에 요약이 나옵니다.</p>
-            </template>
             </div>
+
+            <Transition name="panel-swap" mode="out-in">
+              <div v-if="focus" :key="focus.id" class="cockpit-swap">
+                <h3 class="cockpit-title">
+                  <el-icon><Aim /></el-icon> {{ focus.name }}
+                </h3>
+
+                <!-- 점수 게이지. 원호의 채움 길이와 색이 같은 값을 두 가지로 말한다 -->
+                <div class="gauge">
+                  <svg viewBox="0 0 120 68" class="gauge-svg" aria-hidden="true">
+                    <path d="M10,62 A50,50 0 0,1 110,62" class="gauge-track" />
+                    <path
+                      d="M10,62 A50,50 0 0,1 110,62"
+                      class="gauge-fill"
+                      :stroke="focusGrade.color"
+                      :style="{ strokeDasharray: GAUGE_LEN, strokeDashoffset: gaugeOffset }"
+                    />
+                  </svg>
+                  <div class="gauge-center">
+                    <strong :style="{ color: focusGrade.color }">{{ focus.execScore }}</strong>
+                    <span>{{ focusGrade.label }}</span>
+                  </div>
+                </div>
+
+                <p class="cockpit-mode" :style="{ color: focusOps.color }">{{ focusOps.label }}</p>
+
+                <!-- 축별 기여도. buildExecScore가 이미 가중치까지 반영한 contribution을
+                     계산해 두므로, '무엇이 점수를 깎았나'를 그리기만 하면 된다. -->
+                <ul class="axis-list">
+                  <li v-for="part in focus.exec.parts" :key="part.key">
+                    <span class="axis-name">{{ part.label }}</span>
+                    <span class="axis-track">
+                      <span
+                        class="axis-fill"
+                        :style="{
+                          width: `${(part.contribution / part.weight) * 100}%`,
+                          background: axisColor(part),
+                        }"
+                      />
+                    </span>
+                    <span class="axis-val">{{ part.contribution }}<i>/{{ part.weight }}</i></span>
+                  </li>
+                </ul>
+
+                <p v-if="focusAlerts.length" class="cockpit-alert">
+                  <el-icon><WarnTriangleFilled /></el-icon> {{ focusAlerts[0].text }}
+                  <template v-if="focusAlerts.length > 1">
+                    외 {{ focusAlerts.length - 1 }}건
+                  </template>
+                </p>
+
+                <el-button size="small" type="primary" class="cockpit-go" @click="goDetail(focus)">
+                  상세 분석 보기
+                </el-button>
+              </div>
             </Transition>
           </aside>
         </div>
@@ -585,6 +581,169 @@ const goDetail = (item) => {
 
 <style scoped>
 
+/* --- 13차-h: 게이지 + 축별 막대 (오른쪽 패널 시각자료) --- */
+.gauge {
+  position: relative;
+  align-self: center;
+  width: 200px;
+  max-width: 100%;
+}
+.gauge-svg {
+  width: 100%;
+  display: block;
+  overflow: visible;
+}
+.gauge-track,
+.gauge-fill {
+  fill: none;
+  stroke-width: 10;
+  stroke-linecap: round;
+}
+.gauge-track {
+  stroke: rgba(28, 32, 56, 0.1);
+}
+.gauge-fill {
+  transition:
+    stroke-dashoffset 0.5s var(--apple-ease),
+    stroke 0.3s var(--apple-ease);
+}
+/* 숫자는 원호 안쪽에 앉힌다 — 게이지와 값을 눈이 한 번에 잡는다 */
+.gauge-center {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 2px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+}
+.gauge-center strong {
+  font-size: 40px;
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.gauge-center span {
+  font-size: 13px;
+  font-weight: 700;
+  color: #48515f;
+}
+
+/* 축별 기여도 — '무엇이 점수를 깎았나'를 막대 길이로 읽는다 */
+.axis-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.axis-list li {
+  display: grid;
+  grid-template-columns: 62px 1fr 44px;
+  align-items: center;
+  gap: 8px;
+}
+.axis-name {
+  font-size: 13px;
+  color: #48515f;
+}
+.axis-track {
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(28, 32, 56, 0.1);
+  overflow: hidden;
+}
+.axis-fill {
+  display: block;
+  height: 100%;
+  border-radius: 4px;
+  transition:
+    width 0.45s var(--apple-ease),
+    background-color 0.3s var(--apple-ease);
+}
+.axis-val {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1c1c1e;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.axis-val i {
+  font-style: normal;
+  font-weight: 600;
+  color: #5c6675;
+}
+
+/* 지금 초점이 가 있는 칸을 링으로 표시한다 — 지도·게이지와 같은 지역임을 잇는다 */
+.podium-slot.is-focus {
+  box-shadow: 0 0 0 2px var(--color-accent);
+}
+
+/* --- 13차-g: 시상대 (콕핏 오른쪽 패널용 축소판) ---
+   1위를 가운데 높게 두는 형태 자체가 순위 정보다. 숫자를 읽기 전에 높이로 먼저 읽힌다. */
+.podium {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  align-items: end;
+}
+.podium-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 12px 6px;
+  border: none;
+  border-radius: var(--control-radius);
+  background: var(--control-bg);
+  box-shadow: none;
+  cursor: pointer;
+  text-align: center;
+  transition:
+    background-color 0.2s var(--apple-ease),
+    transform 0.2s var(--apple-ease);
+}
+.podium-slot:hover {
+  background: var(--control-bg-hover);
+  transform: var(--control-lift);
+}
+/* 1위만 더 높고 강조색으로 — 높이 차이가 시상대를 시상대로 만든다 */
+.podium-slot.rank-1 {
+  padding: 22px 6px;
+  background: var(--control-bg-on);
+}
+.podium-rank {
+  font-size: 11px;
+  font-weight: 700;
+  color: #48515f;
+}
+.podium-slot.rank-1 .podium-rank,
+.podium-slot.rank-1 .podium-name,
+.podium-slot.rank-1 .podium-score,
+.podium-slot.rank-1 .podium-meta {
+  color: var(--control-fg-on-solid);
+}
+.podium-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1c1c1e;
+}
+.podium-slot.rank-1 .podium-name {
+  font-size: 19px;
+}
+.podium-score {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--control-fg-on);
+  font-variant-numeric: tabular-nums;
+}
+.podium-meta {
+  font-size: 11px;
+  color: #48515f;
+}
+
 /* --- 13차: 콕핏 소제목 위계 + 패널 전환 ---
    라벨이 본문과 같은 크기·색이라 어디서 묶음이 끊기는지 안 보였다.
    크기를 줄이는 대신 자간을 넓히고 굵게 해서 '값'이 아니라 '이름표'로 읽히게 한다. */
@@ -592,7 +751,7 @@ const goDetail = (item) => {
   font-size: 12px !important;
   font-weight: 700;
   letter-spacing: 0.06em;
-  color: #8a8a90 !important;
+  color: #48515f !important;
   text-transform: none;
 }
 /* 묶음(운영 모드 분포 / 오늘의 양 끝 …)은 위에 얇은 선을 둬서 구획을 만든다 */
@@ -702,7 +861,7 @@ const goDetail = (item) => {
 .row-rank {
   font-size: 13px;
   font-weight: 700;
-  color: #8a8a90;
+  color: #48515f;
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
@@ -820,7 +979,7 @@ const goDetail = (item) => {
   gap: 10px;
 }
 .edge-list span {
-  color: #6e6e73;
+  color: #48515f;
 }
 .edge-list b {
   font-weight: 700;
@@ -831,7 +990,7 @@ const goDetail = (item) => {
 .cockpit-rankline {
   margin: -4px 0 0;
   font-size: 14px;
-  color: #6e6e73;
+  color: #48515f;
 }
 .cockpit-rankline b {
   font-weight: 700;
@@ -854,7 +1013,7 @@ const goDetail = (item) => {
 }
 .picked-grid span {
   font-size: 12px;
-  color: #8a8a90;
+  color: #48515f;
 }
 .picked-grid b {
   font-size: 17px;
@@ -940,7 +1099,7 @@ const goDetail = (item) => {
   align-items: center;
   gap: 4px;
   font-size: 14px;
-  color: #6e6e73;
+  color: #48515f;
 }
 .cockpit-stat-value {
   font-size: 38px;
@@ -952,11 +1111,11 @@ const goDetail = (item) => {
 .cockpit-stat-value small {
   font-size: 15px;
   font-weight: 600;
-  color: #8a8a90;
+  color: #48515f;
   margin-left: 4px;
 }
 .cockpit-stat.is-alert .cockpit-stat-value {
-  color: #c62d22;
+  color: #ad251c;
 }
 
 /* 선택한 지역 요약 */
@@ -978,7 +1137,7 @@ const goDetail = (item) => {
   margin: 0;
   font-size: 14px;
   line-height: 1.5;
-  color: #a85f00;
+  color: #8a4e00;
 }
 .cockpit-go {
   align-self: flex-start;
@@ -1005,7 +1164,7 @@ const goDetail = (item) => {
 .cockpit-rank-no {
   font-size: 14px;
   font-weight: 700;
-  color: #8a8a90;
+  color: #48515f;
   width: 12px;
 }
 .cockpit-rank-name {
@@ -1024,7 +1183,7 @@ const goDetail = (item) => {
   margin: 6px 0 0;
   font-size: 13px;
   line-height: 1.5;
-  color: #8a8a90;
+  color: #48515f;
 }
 
 /* 좁은 화면: 좌우 분할이 불가능하므로 지도 → 전국 요약 → 선택 요약 순으로 쌓는다 */
@@ -1057,13 +1216,9 @@ const goDetail = (item) => {
      항상 app-container 전체 폭을 그대로 쓰도록 명시한다. */
   width: 100%;
 }
-/* h2도 h1과 같은 문제 — 카드 밖, 사진 배경에 직접 얹혀 있어서 어두운 배경에서 안 보였다 */
-.practice-section > h2 {
-  color: #f5f5f7;
-  text-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.55),
-    0 2px 14px rgba(0, 0, 0, 0.35);
-}
+/* 13차-f: 사진 배경 시절에 h2를 흰 글자 + 그림자로 만들어 뒀던 규칙을 지웠다.
+   배경이 밝은 회색이 된 뒤로는 흰 배경에 흰 글자였고, 화면에서 이 제목만 혼자
+   그림자를 달고 있었다. practice.css의 기본 다크 텍스트를 그대로 쓴다. */
 .dashboard-wrapper {
   width: 100%;
   margin: 0;
@@ -1127,7 +1282,7 @@ const goDetail = (item) => {
   margin-bottom: 6px;
   font-size: 12px;
   font-weight: 500;
-  color: #6e6e73;
+  color: #48515f;
 }
 .budget-input {
   width: 100%;
@@ -1179,10 +1334,7 @@ const goDetail = (item) => {
 .podium-rank {
   font-size: 11px;
   font-weight: 700;
-  color: #6e6e73;
-}
-.podium-slot.rank-1 .podium-rank {
-  color: #0a5fd8;
+  color: #48515f;
 }
 .podium-name {
   font-size: 17px;
@@ -1195,12 +1347,12 @@ const goDetail = (item) => {
 .podium-score {
   font-size: 13px;
   font-weight: 700;
-  color: #0a5fd8;
+  color: #0a53c0;
   font-variant-numeric: tabular-nums;
 }
 .podium-meta {
   font-size: 11px;
-  color: #6e6e73;
+  color: #48515f;
 }
 
 /* --- 10차: 목록 필터 / 정렬 / 인사이트 --- */
@@ -1403,17 +1555,17 @@ const goDetail = (item) => {
   align-items: center;
   gap: 4px;
   font-size: 12px;
-  color: #6e6e73;
+  color: #48515f;
 }
 .hero-stat-value {
   font-size: 19px;
   font-weight: 700;
 }
 .hero-stat-alert .hero-stat-value {
-  color: #c62d22;
+  color: #ad251c;
 }
 .hero-stat-alert.is-safe .hero-stat-value {
-  color: #248a5e;
+  color: #14563a;
 }
 .hero-chart-label {
   display: flex;
@@ -1421,7 +1573,7 @@ const goDetail = (item) => {
   flex-wrap: wrap;
   gap: 4px;
   font-size: 12px;
-  color: #6e6e73;
+  color: #48515f;
   margin-bottom: 8px;
 }
 .hero-chart-bars {
@@ -1462,13 +1614,13 @@ const goDetail = (item) => {
 }
 /* 히어로가 지금 순환해서 비추고 있는 지역의 막대만 살짝 떠오르고 진해진다 */
 .hero-bar.is-spotlight {
-  background: linear-gradient(180deg, #0a5fd8 0%, rgba(0, 122, 255, 0.4) 100%);
+  background: linear-gradient(180deg, #0a53c0 0%, rgba(0, 122, 255, 0.4) 100%);
   transform: translateY(-3px);
   box-shadow: 0 4px 10px rgba(0, 98, 204, 0.35);
 }
 .hero-chart-hint {
   font-size: 11px;
-  color: #8a8a90;
+  color: #48515f;
   margin-left: 2px;
 }
 .hero-bar-label {
@@ -1476,7 +1628,7 @@ const goDetail = (item) => {
   bottom: -20px;
   left: 50%;
   transform: translateX(-50%);
-  /* 9차 가독성: 10px + #8e8e93은 유리 위에서 거의 안 읽혔다. 앱에서 가장 흐린 글자였다 */
+  /* 9차 가독성: 10px + #48515f은 유리 위에서 거의 안 읽혔다. 앱에서 가장 흐린 글자였다 */
   font-size: 11px;
   font-weight: 500;
   color: #48484f;

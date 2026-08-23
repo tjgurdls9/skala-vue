@@ -63,10 +63,10 @@ defineProps({
   color: #1c1c1e;
 }
 .search-field :deep(.el-input__inner::placeholder) {
-  color: #8e8e93;
+  color: #48515f;
 }
 .search-field :deep(.el-input__prefix) {
-  color: #6e6e73;
+  color: #48515f;
 }
 
 .search-state {
