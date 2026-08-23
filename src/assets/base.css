@@ -1076,3 +1076,24 @@ html[data-theme='dark'] :is(
 html[data-theme='dark'] .trouble-index-item:hover {
   background: var(--control-bg-hover) !important;
 }
+
+/* 테마 전환에서 화면마다 남아 있던 고정 글자색을 마지막 안전망으로 묶는다.
+   실습·날씨·소개 화면은 서로 다른 시점에 만들어져 #1c1c1e와 밝은 회색을 직접 쓴 곳이 많았다.
+   페이지 컨테이너 안의 읽는 텍스트는 반드시 현재 테마의 전경색을 상속하도록 해,
+   라이트에서 흰 글자·다크에서 검은 글자가 남지 않게 한다. */
+html[data-theme] :is(.practice-section, .about-page, .notfound-page, .trouble-page, .lab-page) {
+  color: var(--text-primary);
+}
+html[data-theme] :is(.practice-section, .about-page, .notfound-page, .trouble-page, .lab-page)
+  :is(h1, h2, h3, h4, h5, h6, p, li, dt, dd, label, span, a, th, td):not(.el-button):not(.el-button *):not(.el-tag):not(.el-tag *):not(.el-alert):not(.el-alert *) {
+  color: var(--text-primary) !important;
+}
+/* 버튼·태그·알림은 상태색과 대비가 역할 자체이므로, 본문 안전망의 대상에서 제외한다. */
+html[data-theme] :is(.practice-section, .about-page, .notfound-page, .trouble-page, .lab-page)
+  :is(.guide, .footnote, .metric-note, .metric-label, .detail-hero-region, .detail-hero-status,
+    .grade-stat-hint, .forecast-humidity, .forecast-comment, .mix-text, .overview-key,
+    .about-lead, .about-fact span, .about-list-item, .about-source p, .notfound-text,
+    .lab-index-desc, .lab-sub, .lab-eyebrow, .lab-section-desc, .lab-toc-link,
+    .trouble-sub, .trouble-eyebrow, .trouble-index-area, .trouble-detail dt) {
+  color: var(--text-secondary) !important;
+}
