@@ -151,7 +151,7 @@ npm run format
 
 ## 배포
 
-Vercel: https://ios-redesign-navy.vercel.app
+Vercel: https://skala-vue-weather-desk.vercel.app
 
 ## 개발 환경
 
