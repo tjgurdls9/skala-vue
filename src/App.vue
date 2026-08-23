@@ -198,11 +198,11 @@ onBeforeUnmount(() => {
         :ellipsis="false"
         class="nav-menu"
       >
-        <el-menu-item index="/"
-          ><el-icon><DataAnalysis /></el-icon> 지표 요약</el-menu-item
-        >
         <el-menu-item index="/dashboard"
           ><el-icon><House /></el-icon> 날씨 대시보드</el-menu-item
+        >
+        <el-menu-item index="/"
+          ><el-icon><DataAnalysis /></el-icon> 지표 요약</el-menu-item
         >
         <el-menu-item index="/practice"
           ><el-icon><MagicStick /></el-icon> 실습 아카이브</el-menu-item
