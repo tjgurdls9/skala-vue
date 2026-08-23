@@ -2,6 +2,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import BaseDashboardCard from '../components/weather/BaseDashboardCard.vue'
+import WeatherDeskIcon from '../components/WeatherDeskIcon.vue'
 import { useConfigStore } from '../stores/configStore.js'
 import { useWeatherStore } from '../stores/weatherStore.js'
 import {
@@ -279,7 +280,8 @@ const goBack = () => {
             }}
           </el-tag>
           <el-tag :type="city.microdust >= 50 ? 'danger' : 'success'">
-            <el-icon><component :is="city.microdust >= 50 ? WarnTriangleFilled : CircleCheck" /></el-icon>
+            <WeatherDeskIcon v-if="city.microdust >= 50" name="risk" class="weather-tag-art" />
+            <el-icon v-else><CircleCheck /></el-icon>
             미세먼지 {{ city.microdust }}
           </el-tag>
         </div>
@@ -479,17 +481,16 @@ const goBack = () => {
 
       <BaseDashboardCard>
         <h3 class="section-title">
-          <el-icon><WarnTriangleFilled /></el-icon> 기상 리스크 경보
+          <WeatherDeskIcon name="risk" class="risk-heading-art" /> 기상 리스크 경보
         </h3>
         <el-alert
           v-for="(alert, index) in riskAlerts"
           :key="index"
           :type="alert.type ?? alert.level"
           :closable="false"
-          show-icon
           class="risk-alert"
         >
-          {{ alert.text }}
+          <span class="risk-alert-content"><WeatherDeskIcon name="risk" />{{ alert.text }}</span>
         </el-alert>
         <el-empty v-if="!riskAlerts.length" :image-size="48" description="현재 감지된 기상 리스크가 없습니다." />
       </BaseDashboardCard>
@@ -1022,6 +1023,23 @@ const goBack = () => {
 
 .risk-alert {
   margin-bottom: 8px;
+}
+.risk-heading-art {
+  width: 30px;
+  height: 30px;
+}
+.weather-tag-art {
+  width: 18px;
+  height: 18px;
+}
+.risk-alert-content {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.risk-alert-content .weather-desk-icon {
+  width: 24px;
+  height: 24px;
 }
 .risk-alert:last-child {
   margin-bottom: 0;

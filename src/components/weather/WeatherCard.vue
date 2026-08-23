@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useConfigStore } from '../../stores/configStore.js'
+import WeatherDeskIcon from '../WeatherDeskIcon.vue'
 import {
   buildRiskAlerts,
   buildDiscomfort,
@@ -13,7 +14,6 @@ import {
   Drizzling,
   WindPower,
   CircleCheck,
-  WarnTriangleFilled,
 } from '@element-plus/icons-vue'
 
 // 1. 상위로부터 단방향 주입받을 객체 데이터 규격 검수 (매크로)
@@ -147,7 +147,7 @@ onBeforeUnmount(() => {
       </el-tag>
 
       <el-tag v-if="cityItem.microdust >= 50" type="danger">
-        <el-icon><WarnTriangleFilled /></el-icon> 나쁨 (50 이상)
+        <WeatherDeskIcon name="risk" class="weather-tag-art" /> 나쁨 (50 이상)
       </el-tag>
       <el-tag v-else type="success">
         <el-icon><CircleCheck /></el-icon> 좋음 (50 미만)
@@ -162,7 +162,7 @@ onBeforeUnmount(() => {
     <div class="ops-head">
       <span class="ops-badge" :class="`tone-${ops.mode.tone}`">{{ ops.mode.label }}</span>
       <span v-if="alertCount" class="ops-alert-count">
-        <el-icon><WarnTriangleFilled /></el-icon> 경보 {{ alertCount }}건
+        <WeatherDeskIcon name="risk" class="weather-tag-art" /> 경보 {{ alertCount }}건
       </span>
     </div>
     <p class="ops-summary">{{ ops.mode.summary }}</p>
@@ -383,6 +383,10 @@ onBeforeUnmount(() => {
   font-size: 12px;
   font-weight: 600;
   color: #8a4e00;
+}
+.weather-tag-art {
+  width: 18px;
+  height: 18px;
 }
 .ops-summary {
   margin: 8px 0 0;

@@ -31,7 +31,6 @@ import {
   RefreshRight,
   House,
   Aim,
-  WarnTriangleFilled,
   CircleCheck,
   Trophy,
   Odometer,
@@ -163,7 +162,6 @@ const riskCityCount = computed(
       buildRiskAlerts(item).some((alert) => alert.level === 'error'),
     ).length,
 )
-const riskIcon = computed(() => (riskCityCount.value === 0 ? CircleCheck : WarnTriangleFilled))
 
 // --- 10차: 목록 필터 / 정렬 / 시상대 / 한 줄 인사이트 ---
 const weatherFilters = [
@@ -348,7 +346,8 @@ const goDetail = (item) => {
             </div>
             <div class="cockpit-stat" :class="{ 'is-alert': riskCityCount > 0 }">
               <span class="cockpit-stat-label">
-                <el-icon><component :is="riskIcon" /></el-icon> 기상 경보 지역
+                <WeatherDeskIcon v-if="riskCityCount" name="risk" class="alert-inline-art" />
+                <el-icon v-else><CircleCheck /></el-icon> 기상 경보 지역
               </span>
               <span class="cockpit-stat-value">{{ riskCityCount }}<small>곳</small></span>
             </div>
@@ -388,7 +387,7 @@ const goDetail = (item) => {
               </div>
               <!-- 점수 축이라 기온의 두 끝과 같은 줄에 설 수 없다. 아래로 내려 성격을 가른다. -->
               <p class="span-note">
-                <el-icon><WarnTriangleFilled /></el-icon>
+                <WeatherDeskIcon name="risk" class="alert-inline-art" />
                 기상 대응 최저 <b>{{ extremes.worst.name }}</b> {{ extremes.worst.execScore }}점
               </p>
             </div>
@@ -484,7 +483,7 @@ const goDetail = (item) => {
 
                 <ul v-if="focusAlerts.length" class="cockpit-alerts" aria-label="감지된 기상 리스크">
                   <li v-for="alert in focusAlerts" :key="alert.text" class="cockpit-alert">
-                    <el-icon><WarnTriangleFilled /></el-icon> {{ alert.text }}
+                    <WeatherDeskIcon name="risk" class="alert-inline-art" /> {{ alert.text }}
                   </li>
                 </ul>
 
@@ -1251,6 +1250,10 @@ const goDetail = (item) => {
   font-size: 14px;
   line-height: 1.5;
   color: #8a4e00;
+}
+.alert-inline-art {
+  width: 20px;
+  height: 20px;
 }
 .cockpit-go {
   align-self: flex-start;
