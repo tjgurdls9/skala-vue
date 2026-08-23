@@ -1191,3 +1191,43 @@ html[data-theme='dark'] .map-frame {
   border-color: rgba(172, 204, 250, 0.16) !important;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
 }
+/* 다크 프레임만 고치면, 22%로 옅게 칠한 행정구역 자체가 다시 검은 베일처럼 남는다.
+   실제 점수 색은 유지하고 면·경계의 대비만 올려 지도가 또렷하게 읽히게 한다. */
+html[data-theme='dark'] .map-area {
+  fill-opacity: 0.64 !important;
+  stroke: rgba(214, 229, 250, 0.34) !important;
+}
+html[data-theme='dark'] .map-area.is-empty {
+  fill-opacity: 0.16 !important;
+}
+
+/* 단위는 정보를 읽는 컨트롤이므로, 유리보다 먼저 대비가 확보돼야 한다. */
+.unit-toggler .unit-label {
+  color: #364152 !important;
+}
+.unit-toggler .el-switch__core {
+  border: 1px solid rgba(26, 48, 82, 0.22) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.56) !important;
+}
+html[data-theme='light'] .unit-toggler .el-switch:not(.is-checked) .el-switch__core {
+  background: #dceaff !important;
+}
+html[data-theme='light'] .unit-toggler .el-switch:not(.is-checked) .el-switch__inner,
+html[data-theme='light'] .unit-toggler .el-switch:not(.is-checked) .el-switch__inner * {
+  color: #1d2a3b !important;
+}
+html[data-theme='dark'] .unit-toggler .unit-label {
+  color: #d8e4f5 !important;
+}
+html[data-theme='dark'] .unit-toggler .el-switch:not(.is-checked) .el-switch__core {
+  border-color: rgba(208, 225, 250, 0.28) !important;
+  background: #53647a !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14) !important;
+}
+html[data-theme='dark'] .unit-toggler .el-switch:not(.is-checked) .el-switch__inner,
+html[data-theme='dark'] .unit-toggler .el-switch:not(.is-checked) .el-switch__inner * {
+  color: #f5f7fb !important;
+}
+.unit-toggler .el-switch.is-checked .el-switch__core {
+  border-color: rgba(255, 255, 255, 0.52) !important;
+}
