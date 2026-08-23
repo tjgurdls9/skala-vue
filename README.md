@@ -140,6 +140,10 @@ npm run format
 
 `npm run lint`와 `npm run build`가 모두 통과하는 상태를 기준으로 유지한다.
 
+## 배포
+
+Vercel: https://ios-redesign-navy.vercel.app
+
 ## 개발 환경
 
 VS Code + Vue (Official) 확장, Vue.js devtools
