@@ -29,7 +29,21 @@ export const useWeatherStore = defineStore('weather', () => {
     isLoading.value = true
     errorMessage.value = ''
     try {
-      list.value = await axios.all(cityRegistry.map(fetchCityWeather))
+      // 12차: 관측 지점을 17곳 → 45곳으로 늘렸다. 한 곳당 API 2회(현재날씨 + 대기질)라
+      // 한 번에 쏘면 90회가 되는데 OpenWeatherMap 무료 티어는 분당 60회다 — 그대로 두면
+      // 뒤쪽 요청이 429로 떨어져 일부 지역만 빈다.
+      // 그래서 25곳(=50회)씩 끊어 보내고 사이를 조금 띄운다. 총 지연은 1초 남짓이고,
+      // 앞 묶음이 도착하는 대로 화면에 채워지므로 체감 대기는 오히려 짧다.
+      const CHUNK = 25
+      const GAP_MS = 1100
+      const collected = []
+      for (let i = 0; i < cityRegistry.length; i += CHUNK) {
+        if (i > 0) await new Promise((resolve) => setTimeout(resolve, GAP_MS))
+        const part = await axios.all(cityRegistry.slice(i, i + CHUNK).map(fetchCityWeather))
+        collected.push(...part)
+        // 부분 결과를 바로 반영한다 — 다 모일 때까지 빈 화면을 보여줄 이유가 없다
+        list.value = [...collected]
+      }
       loadedAt.value = Date.now()
     } catch (error) {
       console.error('통신 중 에러가 발생했습니다:', error)

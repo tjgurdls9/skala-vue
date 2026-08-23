@@ -261,31 +261,20 @@ const pad = (index) => String(index + 1).padStart(2, '0')
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.14em;
-  color: #f5f5f7;
-  opacity: 0.85;
-  text-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.62),
-    0 2px 10px rgba(0, 0, 0, 0.4);
+  color: #191f28;
 }
 .lab-title {
   margin: 4px 0 0;
   font-size: 30px;
   font-weight: 800;
-  color: #f5f5f7;
+  color: #191f28;
   border-bottom: none;
   padding-bottom: 0;
-  text-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.55),
-    0 2px 14px rgba(0, 0, 0, 0.35);
 }
 .lab-sub {
   margin: 6px 0 0;
   font-size: 14px;
-  color: #f5f5f7;
-  opacity: 0.88;
-  text-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.62),
-    0 2px 10px rgba(0, 0, 0, 0.4);
+  color: #191f28;
 }
 
 /* --- 목차 그리드 --- */
@@ -298,8 +287,8 @@ const pad = (index) => String(index + 1).padStart(2, '0')
   border-radius: var(--radius-card);
   background-color: var(--glass-bg);
   background-image: var(--glass-sheen);
-  -webkit-backdrop-filter: url(#glass-refraction) var(--glass-refract-blur);
-  backdrop-filter: url(#glass-refraction) var(--glass-refract-blur);
+  -webkit-backdrop-filter: var(--glass-surface);
+  backdrop-filter: var(--glass-surface);
   border: 1px solid var(--glass-border);
   box-shadow: var(--shadow-glass);
 }
@@ -353,24 +342,25 @@ const pad = (index) => String(index + 1).padStart(2, '0')
   /* 앵커로 점프했을 때 제목이 상단에 딱 붙지 않도록 */
   scroll-margin-top: 20px;
 }
+/* 13차-e: 사진 배경 시절에는 이 헤더를 어두운 바 위에 올려야 흰 글자가 읽혔다.
+   배경이 밝은 회색이 된 지금은 바가 필요 없다 — 선 하나로 단원을 가른다. */
 .lab-section-head {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 12px;
   padding-bottom: 10px;
   margin-bottom: 14px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.45);
+  border-bottom: 1px solid rgba(28, 32, 56, 0.1);
 }
+/* 12차: 사진 위 흰 글자에 opacity를 곱해 위계를 만들고 있었는데, 밝은 구름 구간에서는
+   그 자체로 대비가 빠듯해서 글자가 배경에 녹아버렸다(실제로 '02 렌더링'이 안 읽혔다).
+   위계는 크기·굵기로 충분하므로 흰 글자에서 opacity는 걷어낸다. */
 .lab-section-num {
   font-size: 26px;
   font-weight: 800;
   line-height: 1;
-  color: #f5f5f7;
-  opacity: 0.75;
+  color: #191f28;
   font-variant-numeric: tabular-nums;
-  text-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.62),
-    0 2px 10px rgba(0, 0, 0, 0.4);
 }
 .lab-section-titles {
   flex: 1;
@@ -383,19 +373,12 @@ const pad = (index) => String(index + 1).padStart(2, '0')
   margin: 0;
   font-size: 20px;
   font-weight: 700;
-  color: #f5f5f7;
-  text-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.5),
-    0 2px 12px rgba(0, 0, 0, 0.3);
+  color: #191f28;
 }
 .lab-section-desc {
   margin: 2px 0 0;
   font-size: 13px;
-  color: #f5f5f7;
-  opacity: 0.88;
-  text-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.62),
-    0 2px 10px rgba(0, 0, 0, 0.4);
+  color: #191f28;
 }
 .lab-toc-link {
   display: inline-flex;
@@ -404,15 +387,11 @@ const pad = (index) => String(index + 1).padStart(2, '0')
   flex-shrink: 0;
   font-size: 12px;
   font-weight: 600;
-  color: #f5f5f7;
-  opacity: 0.88;
+  color: #191f28;
   text-decoration: none;
-  text-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.62),
-    0 2px 10px rgba(0, 0, 0, 0.4);
 }
 .lab-toc-link:hover {
-  opacity: 1;
+  color: #cfe6ff;
 }
 
 .lab-section-body {
@@ -432,16 +411,14 @@ const pad = (index) => String(index + 1).padStart(2, '0')
 }
 
 .lab-col-label {
+  display: inline-block;
   margin: 0 0 8px;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.08em;
-  color: #f5f5f7;
-  opacity: 0.85;
-  text-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.62),
-    0 2px 10px rgba(0, 0, 0, 0.4);
+  color: #8b95a1;
 }
+
 .lab-note-list {
   margin: 0;
   padding: 14px 16px;
@@ -449,8 +426,8 @@ const pad = (index) => String(index + 1).padStart(2, '0')
   border-radius: var(--radius-card);
   background-color: var(--glass-bg);
   background-image: var(--glass-sheen);
-  -webkit-backdrop-filter: url(#glass-refraction) var(--glass-refract-blur);
-  backdrop-filter: url(#glass-refraction) var(--glass-refract-blur);
+  -webkit-backdrop-filter: var(--glass-surface);
+  backdrop-filter: var(--glass-surface);
   border: 1px solid var(--glass-border);
   box-shadow: var(--shadow-glass);
 }

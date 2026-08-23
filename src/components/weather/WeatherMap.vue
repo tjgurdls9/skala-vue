@@ -1,6 +1,6 @@
 <script setup>
 import { computed, ref } from 'vue'
-import { EXEC_MAX_SCORE, execGrade } from '../../data/weatherMock.js'
+import { execGrade } from '../../data/weatherMock.js'
 import koreaMap from '../../data/koreaMap.json'
 
 // 10차: 손으로 찍은 간이 실루엣을 실제 행정구역 경계로 교체했다.
@@ -20,109 +20,137 @@ const props = defineProps({
 
 const emit = defineEmits(['select-city'])
 
-// koreaMap.json을 만들 때 쓴 것과 똑같은 투영 파라미터. 하나라도 어긋나면 도시 점이
-// 실제 위치에서 밀린다 — 그래서 값을 파일에 같이 저장해두고 여기서 그대로 읽는다.
-// w는 bounds 전체 폭이라 실제로는 쓰지 않는다(아래 VIEW_BOX에서 육지 범위만 잘라 쓴다)
-const { h: VIEW_H, bounds: B } = koreaMap
-const LAT_MID = (B.minLat + B.maxLat) / 2
-const LON_SCALE = Math.cos((LAT_MID * Math.PI) / 180)
-const LAT_SPAN = B.maxLat - B.minLat
-
-const project = (lat, lon) => ({
-  x: ((lon - B.minLon) * LON_SCALE * VIEW_H) / LAT_SPAN,
-  y: ((B.maxLat - lat) * VIEW_H) / LAT_SPAN,
-})
-
-// 실제 육지가 차지하는 범위만 잘라 쓴다. bounds는 울릉도까지 담으려고 넉넉히 잡아둬서
-// 그대로 쓰면 오른쪽에 빈 바다가 크게 남는다.
+// 13차: 도시 좌표를 화면 좌표로 바꾸던 project()는 더 이상 없다.
+// 지도 위에 도시 점·막대를 찍던 시절의 유물인데, 이제는 시군구 도형 자체가 대상이라
+// 좌표 변환이 필요 없다(도형 경로는 생성기가 이미 화면 좌표로 만들어 둔다).
+// 12차: viewBox를 손으로 잡던 걸(육지만 x 0~290으로 크롭) 생성기가 계산한 실제 경계로 바꿨다.
+// 서해 먼 섬(백령·대청·흑산·홍도)을 걷어내 왼쪽이 83단위 당겨졌고, 동해 쪽은 두 섬을
+// 85단위 당겨 붙여서, 육지를 작게 만들지 않고도 울릉도·독도를 담는다.
+const V = koreaMap.view
 const VIEW_BOX = computed(() => {
-  const pad = 10
-  return `${-pad} ${-pad} ${290 + pad * 2} ${VIEW_H + pad * 2}`
+  const pad = 8
+  return `${V.x - pad} ${V.y - pad} ${V.w + pad * 2} ${V.h + pad * 2}`
 })
 
 const regions = koreaMap.regions
+// 12차: 도형은 251개(자치구까지)지만 데이터·클릭 단위는 '시·군' 162개다.
+// 구는 행정 단위일 뿐 기상 관측 단위가 아니라, 서울 25개 구가 각각 다른 지역인 것처럼
+// 보이면 오히려 헷갈린다. 그래서 각 도형은 소속 시·군(group)만 들고 있고,
+// 관측 지점은 시·군 하나당 하나로 정해져 있다(생성기가 미리 배정).
+const munis = koreaMap.munis ?? []
+const groupCity = koreaMap.groups ?? {}
+
+// 울릉도는 시군구 데이터에 들어 있어 munis에 그대로 그려진다.
+// 독도는 원본 행정구역 데이터에 아예 없어서 좌표(동도·서도)로 직접 찍는다.
+const dokdo = koreaMap.dokdo ?? []
 
 // 11차: 색 기준을 execGrade 한 곳으로 모았다(지도·카드·표가 같은 색을 쓴다)
 const scoreColor = (score) => execGrade(score).color
 
-const points = computed(() =>
-  props.cities
-    .filter((city) => typeof city.lat === 'number' && typeof city.lon === 'number')
-    .map((city) => {
-      const { x, y } = project(city.lat, city.lon)
-      const ratio = Math.max(city.execScore / EXEC_MAX_SCORE, 0.06)
-      return {
-        id: city.id,
-        name: city.name,
-        city,
-        x,
-        y,
-        // 막대 높이로 점수를 읽는다. 최소 높이를 둬서 0점이어도 위치는 보인다.
-        barHeight: ratio * 74,
-        color: scoreColor(city.execScore),
-      }
-    }),
+// 12차: 지도 상호작용을 갈아엎었다.
+// 이전에는 도시마다 위로 솟은 막대를 세우고 그 막대에만 호버가 걸렸다. 관측 지점이 45곳이
+// 되면서 막대가 서로 겹쳐 어느 게 어느 지역인지 알기 어려웠고, 무엇보다 "지도인데 지역을
+// 누르는 게 아니라 막대를 눌러야 하는" 어색함이 있었다.
+// 이제 시군구 도형 자체가 대상이다 — 올리면 파란 테두리로 그 지역이 도드라지고, 누르면
+// 해당 지역의 기준 관측 지점 상세로 간다.
+const cityById = computed(() => new Map(props.cities.map((c) => [c.id, c])))
+
+const shapes = computed(() =>
+  munis.map((muni, i) => {
+    const city = cityById.value.get(groupCity[muni.group]) ?? null
+    return {
+      key: `m${i}`,
+      d: muni.d,
+      group: muni.group,
+      city,
+      // 아직 데이터가 안 온 지역은 색 없이 둔다(없는 값을 회색으로 칠하면 '나쁨'으로 오해된다)
+      fill: city ? scoreColor(city.execScore) : null,
+    }
+  }),
 )
 
-const hoveredId = ref('')
-const activeId = computed(() => hoveredId.value || props.spotlightId)
-const activePoint = computed(() => points.value.find((p) => p.id === activeId.value) ?? null)
+// 호버는 도형이 아니라 시·군 단위로 잡는다 — 수원시 장안구에 올리면 수원시 전체가 밝아진다.
+// 도형 단위로 잡으면 같은 시 안에서 구 경계마다 하이라이트가 끊겨 한 지역으로 안 읽힌다.
+const hoveredGroup = ref('')
+const hoveredCity = computed(() =>
+  hoveredGroup.value ? (cityById.value.get(groupCity[hoveredGroup.value]) ?? null) : null,
+)
+
+// 판독부: 마우스를 올린 시·군이 우선, 없으면 대시보드가 고른 지역을 보여준다.
+const activePoint = computed(() => {
+  if (hoveredCity.value) return { name: hoveredGroup.value, city: hoveredCity.value }
+  const spot = props.cities.find((c) => c.id === props.spotlightId)
+  return spot ? { name: spot.name, city: spot } : null
+})
+
+// svg 하나에서 위임 처리. 이벤트가 어느 도형에서 났는지는 data-group으로 읽는다.
+const groupOf = (event) => event.target?.dataset?.group ?? ''
+
+const onAreaOver = (event) => {
+  hoveredGroup.value = groupOf(event)
+}
+
+const onAreaClick = (event) => {
+  const city = cityById.value.get(groupCity[groupOf(event)])
+  if (city) emit('select-city', city)
+}
 </script>
 
 <template>
   <div class="map-wrap">
-    <svg class="map-svg" :viewBox="VIEW_BOX" role="img" aria-label="전국 지역별 기상 영향 점수 지도">
-      <!-- 시도 경계. 유리 카드 위라 면은 옅게, 경계선으로 형태를 읽게 한다 -->
+    <!-- 12차: 호버·클릭을 도형 251개에 각각 걸지 않고 svg 하나에서 위임 처리한다.
+         리스너가 251개에서 3개로 줄고, mouseenter처럼 버블링하지 않는 이벤트에 기대지 않아
+         입력 경로(실제 마우스·터치·자동화 도구)에 상관없이 같은 결과가 나온다. -->
+    <svg
+      class="map-svg"
+      :viewBox="VIEW_BOX"
+      role="img"
+      aria-label="전국 지역별 기상 영향 점수 지도"
+      @mouseover="onAreaOver"
+      @mouseleave="hoveredGroup = ''"
+      @click="onAreaClick"
+    >
+      <!-- 도형은 251개지만 호버·클릭은 시·군(group) 단위로 묶여 동작한다.
+           가장 가까운 관측 지점의 점수 색으로 옅게 칠하고, 올리면 파란 테두리로 도드라진다. -->
+      <path
+        v-for="shape in shapes"
+        :key="shape.key"
+        :d="shape.d"
+        class="map-area"
+        :class="{ 'is-hover': shape.group === hoveredGroup, 'is-empty': !shape.city }"
+        :style="shape.fill ? { fill: shape.fill } : null"
+        :data-group="shape.group"
+      />
+      <!-- 시도 경계는 클릭 대상이 아니라 형태를 읽기 위한 선이다 -->
       <path v-for="region in regions" :key="region.name" :d="region.d" class="map-region" />
 
-      <g
-        v-for="point in points"
-        :key="point.id"
-        class="map-point"
-        :class="{ 'is-active': point.id === activeId }"
-        @mouseenter="hoveredId = point.id"
-        @mouseleave="hoveredId = ''"
-        @click="emit('select-city', point.city)"
-      >
-        <!-- 점수만큼 솟은 막대 + 뿌리의 점. 막대 길이와 색 두 가지로 같은 값을 알려준다 -->
-        <line
-          :x1="point.x"
-          :y1="point.y"
-          :x2="point.x"
-          :y2="point.y - point.barHeight"
-          :stroke="point.color"
-          class="map-bar"
-        />
-        <circle :cx="point.x" :cy="point.y" r="2.4" :fill="point.color" class="map-dot" />
-        <circle
-          :cx="point.x"
-          :cy="point.y - point.barHeight"
-          r="3.2"
-          :fill="point.color"
-          class="map-cap"
-        />
-        <!-- 클릭/호버 판정을 넉넉하게 잡아주는 투명 영역 -->
-        <rect
-          :x="point.x - 9"
-          :y="point.y - point.barHeight - 9"
-          width="18"
-          :height="point.barHeight + 18"
-          fill="transparent"
-        />
-      </g>
+      <!-- 울릉도·독도. 13차: 이름표를 뺐다 — 지도에서 이름이 붙은 곳이 이 둘뿐이라
+           오히려 그 둘만 특별해 보였다. 형태만 두고 이름은 판독부가 맡는다. -->
+      <circle
+        v-for="(is, i) in dokdo"
+        :key="`d${i}`"
+        :cx="is.x"
+        :cy="is.y"
+        r="1.8"
+        class="map-islet"
+      />
+
     </svg>
 
     <!-- 호버한 지역 정보. 지도 위에 툴팁을 띄우면 좁은 화면에서 잘리므로 아래 고정 영역에 쓴다 -->
     <div class="map-readout">
       <template v-if="activePoint">
         <span class="map-readout-name">{{ activePoint.name }}</span>
-        <span class="map-readout-score" :style="{ color: activePoint.color }">
+        <span class="map-readout-score" :style="{ color: scoreColor(activePoint.city.execScore) }">
           {{ activePoint.city.execScore }}점
         </span>
         <span class="map-readout-meta">
-          {{ activePoint.city.temp }}°C · {{ activePoint.city.budget }}만원 ({{
-            activePoint.city.share
-          }}%)
+          {{ activePoint.city.temp }}°C · 체감
+          {{ activePoint.city.feelsLike ?? activePoint.city.temp }}°
+          <!-- 시군구는 관측 지점이 아니다. 어느 지점 값을 빌려 쓰는지 밝혀둔다 -->
+          <template v-if="activePoint.name !== activePoint.city.name">
+            · {{ activePoint.city.name }} 관측
+          </template>
         </span>
       </template>
       <span v-else class="map-readout-hint">지도의 지역에 마우스를 올려 보세요</span>
@@ -147,14 +175,61 @@ const activePoint = computed(() => points.value.find((p) => p.id === activeId.va
   width: 100%;
   height: auto;
   overflow: visible;
+  /* 12차: 지도를 고정 높이로 자르면 큰 화면에서는 작고 작은 화면에서는 사이드바가 넘친다.
+     우리나라는 세로로 긴 형태라 폭을 늘려도 높이만 커질 뿐이라, 결국 세로 여유가 상한이다.
+     그래서 화면 높이에서 사이드바의 나머지 요소(검색 카드·제목·판독부·범례·여백 ≈ 480px)를
+     뺀 만큼을 지도에 준다 — 화면이 크면 지도도 같이 커지고, 작아도 사이드바가 안 넘친다.
+     max()의 300px는 아주 짧은 화면용 바닥값이다(그 구간은 sticky도 자동으로 꺼진다). */
+  /* 13차: 지도가 사이드바를 벗어나 화면 가운데로 왔다. 이제는 사이드바 높이가 아니라
+     '한 화면에 지도가 다 들어오는가'가 기준이다 — 헤더·내비·카드 머리를 뺀 만큼을 준다. */
+  max-height: max(360px, calc(100vh - 260px));
 }
 
+/* 시군구 251개 = 지도의 클릭 단위.
+   면은 아주 옅게만 칠한다(0.22) — 관측 지점이 45곳이라 시군구 색은 '가장 가까운 지점의
+   값을 빌려 온 것'이지 그 시군구의 관측값이 아니다. 진하게 칠하면 251개 실측치가 있는
+   것처럼 보인다. 색은 경향만 주고, 정확한 값은 판독부(아래 map-readout)가 말한다. */
+.map-area {
+  fill: rgba(28, 32, 56, 0.14);
+  fill-opacity: 0.22;
+  stroke: rgba(28, 32, 56, 0.18);
+  stroke-width: 0.4;
+  vector-effect: non-scaling-stroke;
+  cursor: pointer;
+  transition:
+    fill-opacity 0.18s var(--apple-ease),
+    stroke 0.18s var(--apple-ease);
+}
+/* 호버: 파란 테두리로 그 지역만 도드라진다. paint-order로 선이 이웃 도형에 안 먹힌다. */
+.map-area.is-hover {
+  fill-opacity: 0.55;
+  stroke: var(--color-accent);
+  stroke-width: 1.6;
+  paint-order: stroke;
+}
+/* 아직 데이터가 안 온 지역. 색 없이 두고 클릭도 받지 않는다 */
+.map-area.is-empty {
+  fill: rgba(28, 32, 56, 0.08);
+  cursor: default;
+}
+
+/* --- 울릉도·독도 --- */
+/* 섬 표시와 이름표도 지도 위에 얹히는 장식이라 포인터를 가로채면 안 된다 */
+.map-islet {
+  fill: rgba(28, 32, 56, 0.6);
+  pointer-events: none;
+}
+
+/* 12차 버그: 시·도 경계가 흰 면(fill 0.55)으로 칠해진 채 시군구 위에 그려져 있었다.
+   SVG는 칠해진 도형이 포인터를 받으므로, 이 판이 지도 전체를 덮어 아래 시군구의 호버·클릭이
+   하나도 닿지 않았다(JS로 직접 이벤트를 쏘면 동작해서 더 늦게 알았다).
+   시·도는 이제 '경계선'만 담당한다 — 면을 없애고 포인터도 통과시킨다. */
 .map-region {
-  fill: rgba(255, 255, 255, 0.55);
-  stroke: rgba(28, 32, 56, 0.42);
-  stroke-width: 0.7;
+  fill: none;
+  pointer-events: none;
+  stroke: rgba(28, 32, 56, 0.5);
+  stroke-width: 0.9;
   stroke-linejoin: round;
-  transition: fill 0.2s var(--apple-ease);
 }
 
 .map-point {
@@ -188,8 +263,9 @@ const activePoint = computed(() => points.value.find((p) => p.id === activeId.va
   width: 100%;
   min-height: 38px;
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.5);
-  border: 1px solid var(--glass-border);
+  background-color: var(--glass-inset-bg);
+  border: 1px solid var(--glass-inset-border);
+  box-shadow: var(--glass-inset-shadow);
 }
 .map-readout-name {
   font-size: 14px;

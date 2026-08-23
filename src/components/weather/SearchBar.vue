@@ -50,14 +50,13 @@ defineProps({
 
 /* 8차: 기본 el-input이 옅은 회색 바로만 보여서 "비활성처럼 덜렁 놓인" 느낌이었다 —
    iOS 검색 필드처럼 높이/여백을 키우고 배경 대비를 올려서 입력 가능한 곳으로 읽히게 한다. */
+/* 12차: 인풋 면도 다른 안쪽 판과 같은 토큰을 쓴다. 0.72는 투명해진 유리 카드 안에서
+   혼자 흰 종이처럼 떠 보였다. 배경/테두리는 base.css의 .el-input__wrapper 규칙이 잡고,
+   여기서는 이 검색창만의 치수(패딩·높이)만 남긴다. */
 .search-field :deep(.el-input__wrapper) {
-  background-color: rgba(255, 255, 255, 0.72) !important;
-  border-radius: 10px;
+  border-radius: var(--control-radius);
   padding: 2px 12px;
   min-height: 36px;
-}
-.search-field :deep(.el-input__wrapper.is-focus) {
-  background-color: rgba(255, 255, 255, 0.92) !important;
 }
 .search-field :deep(.el-input__inner) {
   font-size: 14px;
@@ -86,8 +85,9 @@ defineProps({
     background-color 0.2s var(--apple-ease),
     color 0.2s var(--apple-ease);
 }
+/* 12차: '선택됨' 파랑은 화면 전체가 같은 토큰을 쓴다 */
 .search-state-chip.is-filtered {
-  background: rgba(0, 122, 255, 0.16);
-  color: #0a5fd8;
+  background: var(--control-bg-on);
+  color: var(--control-fg-on);
 }
 </style>

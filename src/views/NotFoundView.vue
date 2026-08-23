@@ -40,8 +40,8 @@ const goHome = () => {
   border-radius: var(--radius-card);
   background-color: var(--glass-bg-strong);
   background-image: var(--glass-sheen);
-  -webkit-backdrop-filter: url(#glass-refraction) var(--glass-refract-blur);
-  backdrop-filter: url(#glass-refraction) var(--glass-refract-blur);
+  -webkit-backdrop-filter: var(--glass-surface);
+  backdrop-filter: var(--glass-surface);
   border: 1px solid var(--glass-border);
   box-shadow: var(--shadow-glass-raised);
 }

@@ -163,21 +163,21 @@ const leadAction = computed(
   cursor: pointer;
   position: relative;
   isolation: isolate;
-  background-color: var(--glass-bg);
-  background-image: var(--glass-sheen);
-  /* 빛이 훑는 애니메이션 대신 실제 굴절. blur를 약하게 써야 굴절이 안 뭉개진다 */
-  -webkit-backdrop-filter: url(#glass-refraction) var(--glass-refract-blur);
-  backdrop-filter: url(#glass-refraction) var(--glass-refract-blur);
-  border: 1px solid var(--glass-border);
+  /* 12차: 이 카드는 항상 대시보드 카드(BaseDashboardCard) '안'에 놓인다.
+     바깥과 같은 --glass-bg(32%)를 쓰면 32%가 두 번 겹쳐 실효 54%가 되고, 여기에
+     backdrop-filter까지 두 번 걸려 뒤가 한 번 더 뿌예진다 — 주변 유리보다 혼자
+     하얗게 보이던 원인이다. 안쪽에 놓이는 판이므로 안쪽 면 토큰을 쓰고,
+     블러는 바깥 카드가 이미 걸어둔 것으로 충분해 다시 걸지 않는다. */
+  background-color: var(--glass-inset-bg);
+  background-image: var(--glass-inset-sheen);
+  border: 1px solid var(--glass-inset-border);
   box-shadow: var(--shadow-glass);
   transition:
     background-color 0.25s var(--apple-ease),
     box-shadow 0.25s var(--apple-ease);
 }
-.weather-card:hover {
-  background-color: var(--glass-bg-strong);
-  box-shadow: var(--shadow-glass-raised);
-}
+/* 12차: 호버하면 오히려 더 '맑아지는' 쪽이 유리답다 — 공통 규칙(base.css)이
+   투명도·떠오름·스페큘러를 모두 맡으므로 여기서는 따로 덮지 않는다. */
 /* el-card 내부 padding을 우리 카드 리듬(18px 20px)에 맞추고, 자체 배경/그림자는 지운다
    (배경·그림자는 위 .weather-card가 이미 담당한다 — 두 겹으로 깔리면 탁해진다) */
 .weather-card :deep(.el-card__body) {
@@ -232,8 +232,9 @@ const leadAction = computed(
   gap: 3px;
   padding: 8px 10px;
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.42);
-  border: 1px solid var(--glass-border);
+  background: var(--glass-inset-bg);
+  border: 1px solid var(--glass-inset-border);
+  box-shadow: var(--glass-inset-shadow);
 }
 .index-label {
   font-size: 11px;
@@ -353,8 +354,9 @@ const leadAction = computed(
   margin: 8px 0 12px;
   padding: 9px 12px;
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.42);
-  border: 1px solid var(--glass-border);
+  background: var(--glass-inset-bg);
+  border: 1px solid var(--glass-inset-border);
+  box-shadow: var(--glass-inset-shadow);
   font-size: 13px;
   line-height: 1.5;
   color: #48484f;

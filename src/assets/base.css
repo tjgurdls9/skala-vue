@@ -41,6 +41,29 @@
   --radius-card: 20px;
   --radius-control: 12px;
   --radius-pill: 999px;
+
+  /* 12차: 누를 수 있는 모든 것(버튼·칩·타일·막대)이 공유하는 한 벌.
+     el-button/el-segmented 같은 Element Plus 컨트롤도 같은 값을 쓴다. */
+  --control-radius: 10px;
+  /* 13차: 단위 토글(el-switch)의 결에 맞춰 눌리는 요소의 면을 되살렸다.
+     12차에 회색 박스를 걷어내면서 버튼까지 투명해져 "눌리는 것"과 "그냥 글자"가
+     구분되지 않았다. 토글처럼 또렷한 면 + 켜지면 강조색 채움으로 통일한다. */
+  /* 버튼도 같은 회색 계단을 쓴다. '켜짐'만 강조색으로 채워 한눈에 갈린다. */
+  --control-bg: #f2f4f6;
+  --control-bg-hover: #e8ebed;
+  /* '켜짐'은 토글과 같은 방식 — 강조색으로 채우고 글자를 흰색으로 */
+  --control-bg-on: var(--color-accent);
+  --control-fg-on-solid: #ffffff;
+  /* 12차: 0.72는 투명해진 유리 위에서 또렷한 흰 선이 됐다. 눌린다는 신호는
+     테두리가 아니라 배경 밝기와 호버 반응이 맡는다. */
+  --control-border: transparent;
+  --control-border-on: rgba(0, 122, 255, 0.34);
+  --control-fg: #4e5968;
+  --control-fg-on: #0a5fd8;
+  --control-shadow: none;
+  --control-shadow-hover: 0 2px 8px rgba(20, 24, 60, 0.14);
+  /* 호버 시 떠오르는 높이. 요소마다 1px/2px로 제각각이던 걸 하나로 묶었다 */
+  --control-lift: translateY(-1px);
   --shadow-card: 0 8px 30px rgba(0, 0, 0, 0.08);
   /* 6차: apple-design 스킬 표준 이징 커브. 일반 ease보다 시작은 느긋하고 끝은 단호하게 붙어서
      "애플스러운" 모션感을 준다 — hover/포커스 등 짧은 상호작용 전환에 두루 쓴다. */
@@ -58,25 +81,56 @@
     rgba(255, 255, 255, 0) 62%
   );
 
-  --glass-bg: rgba(255, 255, 255, 0.4);
-  --glass-bg-strong: rgba(255, 255, 255, 0.48);
-  --glass-bg-thin: rgba(255, 255, 255, 0.28);
+  /* 12차: 배경 사진에 균일한 흰 베일을 깔아 밝기 바닥을 올려둔 덕에(.weather-scene::after)
+     유리를 더 비워도 본문이 읽힌다. 40% -> 32%로 내려 실제로 "너머가 보이는" 판이 됐다. */
+  /* 13차-e: 유리(반투명·블러)를 걷어내고 조용한 흰 카드로 간다.
+     반투명은 뒤에 볼 것이 있을 때만 의미가 있는데, 배경이 단색 회색이 된 이상
+     비칠 것이 없다 — 남는 건 글자 대비를 갉아먹는 뿌연 막뿐이다. */
+  --glass-bg: #ffffff;
+  --glass-bg-strong: #ffffff;
+  --glass-bg-thin: #fbfcfd;
+  /* 12차: 분광(프리즘)과 커서 스페큘러는 둘 다 걷어냈다. 유리 위에 색이든 빛이든
+     '얹는' 방식은 얹은 티가 났다 — 유리다움은 투명도·블러·모서리 하이라이트로 낸다.
+     호버 반응은 이 파일 아래쪽 '유리 표면의 호버 반응' 절 참고. */
   /* saturate가 없으면 blur만 먹어서 뿌옇게 죽는다. 채도를 올려야 유리 너머 색이 산다. */
-  --glass-blur: saturate(200%) blur(30px);
-  --glass-blur-strong: saturate(220%) blur(34px);
-  /* 6차: 실제 굴절(SVG feDisplacementMap, App.vue의 #glass-refraction)을 쓰는 표면 전용 블러.
-     blur를 세게 걸면 굴절로 만든 미세한 물결이 다 뭉개져서 안 보인다 — 그래서 훨씬 약하게 쓴다.
-     url(#glass-refraction)과 항상 세트로 쓸 것. */
-  --glass-refract-blur: saturate(200%) blur(6px);
-  --glass-border: rgba(255, 255, 255, 0.78);
+  --glass-blur: none;
+  --glass-blur-strong: none;
+
+  /* 12차: 유리 표면의 기본값. 6차의 SVG 노이즈 굴절을 대체한다.
+     노이즈 변위는 배경에 '결'을 만들어 대리석처럼 보였다. 리퀴드 글라스는 결이 아니라
+     균질한 흐림이다 — 뒤가 매끈하게 뭉개지고 채도만 살아난다. */
+  /* 배경이 단색이라 블러할 대상이 없다. 값은 남겨두되 실제로는 끈다
+     (여러 파일이 이 토큰을 참조하고 있어서, 여기 한 곳만 바꾸면 전부 꺼진다). */
+  --glass-surface: none;
+  /* 카드의 끝은 선 하나로 충분하다. 그림자는 아주 얕게만 — 떠 있는 느낌이 강하면
+     화면이 부산해진다. */
+  --glass-border: rgba(28, 32, 56, 0.07);
+  /* 12차: 유리 카드 '안'에 놓이는 면 전용. 바깥 카드와 같은 테두리(0.78)를 쓰면
+     투명해진 카드 위에서 흰 선으로 도드라져 '박스 안의 박스'가 된다.
+     안쪽 면은 선이 아니라 밝기 차와 얇은 상단 하이라이트로 구분한다. */
+  /* 흰 카드 위의 단은 선이 아니라 아주 옅은 회색 면으로 만든다 */
+  --glass-inset-bg: #f4f6f8;
+  --glass-inset-border: transparent;
+  --glass-inset-shadow: none;
+  /* 사진 위에 유리 없이 얹히는 흰 글자 전용. 드롭섀도만으로는 밝은 구름 위에서
+     글자가 녹는다 — 글자에 밀착한 halo(0 0 6px)가 주변을 눌러줘야 읽힌다. */
+  /* 13차-e: 배경이 단색 밝은 회색이 되면서 글자 그림자는 전부 불필요해졌다.
+     (사진 시절의 흔적이라 이름은 남기고 값만 비운다 — 참조하는 곳이 여러 파일에 있다.) */
+  --text-on-photo: none;
+  /* 안쪽 판에 얹는 빛. 바깥 카드의 --glass-sheen보다 훨씬 짧고 옅다 —
+     같은 세기로 주면 판이 두 겹으로 번쩍여서 오히려 플라스틱처럼 보인다. */
+  --glass-inset-sheen: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.28) 0%,
+    rgba(255, 255, 255, 0.06) 42%,
+    rgba(255, 255, 255, 0) 100%
+  );
   /* 위아래 1px 스페큘러 하이라이트 + 바깥 그림자. 유리 판의 두께감은 여기서 나온다.
      아래쪽 하이라이트가 있어야 판이 "떠 있는 두께"로 보이고 종이처럼 안 보인다. */
-  --shadow-glass:
-    inset 0 1px 0 rgba(255, 255, 255, 0.95), inset 0 -1px 0 rgba(255, 255, 255, 0.4),
-    0 1px 2px rgba(20, 24, 60, 0.08), 0 14px 40px rgba(20, 24, 60, 0.16);
-  --shadow-glass-raised:
-    inset 0 1px 0 rgba(255, 255, 255, 1), inset 0 -1px 0 rgba(255, 255, 255, 0.5),
-    0 2px 6px rgba(20, 24, 60, 0.1), 0 24px 60px rgba(20, 24, 60, 0.22);
+  /* 12차: 위/아래 스페큘러를 한 겹씩 더 얹었다. 굴절 노이즈를 걷어낸 만큼
+     '유리다움'을 이 모서리 빛으로 벌어야 한다. */
+  --shadow-glass: 0 1px 2px rgba(28, 32, 56, 0.04), 0 6px 20px rgba(28, 32, 56, 0.06);
+  --shadow-glass-raised: 0 2px 6px rgba(28, 32, 56, 0.06), 0 14px 36px rgba(28, 32, 56, 0.1);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -138,57 +192,24 @@
 .weather-scene {
   position: absolute;
   inset: 0;
-  background-size: cover;
-  background-position: center;
-  transition: background-image 1s ease;
-  /* 12차 가독성 수정: 원본 사진은 밝은 구름과 먹구름의 명암 차가 너무 컸다. 유리 카드는
-     반투명(--glass-bg: 흰색 40%)이라 배경이 어두운 자리에 놓이면 카드째로 어두워져
-     본문 글자(#303133)가 안 읽혔다 — /summary에서 실제로 확인한 버그다.
-     대비를 낮추고 밝기를 올려 사진의 "검은 바닥"을 없앤다. 분위기는 남기고 극단만 깎는다. */
-  filter: saturate(88%) contrast(78%) brightness(1.16);
-}
-/* 그 위에 균일한 흰 베일을 한 겹 더 깐다. 사진 어디에 카드가 놓이든 유리 뒤의 밝기가
-   비슷해지므로, 화면을 스크롤해도 카드 가독성이 들쭉날쭉하지 않다. */
-/* 12차: 각 라우트의 페이지 제목 h2는 유리 카드 밖, 사진 배경에 직접 얹혀 있다.
-   practice.css가 h2를 다크 텍스트(#1c1c1e)로 고정해놔서 먹구름 배경에서는 거의 안 보였다
-   — App.vue가 h1에 대해 이미 고쳤던 것과 같은 버그가 h2에 그대로 남아 있었다. */
-.practice-section > h2 {
-  color: #f5f5f7;
-  text-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.62),
-    0 2px 12px rgba(0, 0, 0, 0.4);
-  border-bottom-color: rgba(255, 255, 255, 0.38);
+  /* 13차-e: 배경의 목적은 '눈에 띄지 않는 것'이다. 사진도 그라디언트 필드도 아닌
+     아주 옅은 중성 회색 한 장 — 데이터와 카드가 유일한 대비 요소가 된다. */
+  background-color: #f2f4f6;
 }
 
-.weather-scene::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: rgba(255, 255, 255, 0.22);
-}
+/* 날씨에 따라 배경이 바뀌는 컨셉은 남기되, 차이를 아주 얕게 둔다.
+   화면을 보다가 '어, 색이 달라졌네' 정도면 충분하고, 그 이상은 방해가 된다. */
 .weather-scene.weather-clear {
-  background-image:
-    linear-gradient(180deg, rgba(20, 60, 110, 0.18) 0%, rgba(20, 60, 110, 0.08) 100%),
-    url('/weather/clear.jpg');
+  background-color: #eef3f8;
 }
 .weather-scene.weather-clouds {
-  background-image:
-    linear-gradient(180deg, rgba(20, 60, 110, 0.2) 0%, rgba(20, 60, 110, 0.12) 100%),
-    url('/weather/clouds.jpg');
+  background-color: #f1f3f5;
 }
 .weather-scene.weather-rain {
-  background-image:
-    linear-gradient(180deg, rgba(10, 30, 60, 0.3) 0%, rgba(10, 30, 60, 0.18) 100%),
-    url('/weather/rain.jpg');
+  background-color: #eef1f6;
 }
 .weather-scene.weather-snow {
-  background-image:
-    /* 11차: 눈 테마만 오버레이를 차갑게(청록 쪽) 밀어서 흰 구름 하늘을 설운(雪雲) 하늘로 읽히게
-       한다. 맑음/흐림/비와 같은 사진 언어(지평선 없는 전면 하늘)를 유지하면서 구분만 준다. */
-    linear-gradient(180deg, rgba(24, 74, 128, 0.34) 0%, rgba(38, 92, 140, 0.18) 100%),
-    url('/weather/snow.jpg');
-  /* 원본이 밝은 낮 하늘이라 brightness 보정은 필요 없다. 채도를 더 빼서 한기를 준다 */
-  filter: saturate(62%) contrast(104%);
+  background-color: #f0f3f5;
 }
 
 /* 9차: 실습 아카이브의 목차 앵커(#단원)로 점프할 때 뚝 끊기지 않고 부드럽게 이동한다.
@@ -270,16 +291,45 @@ body {
 /* type 없는 기본(회색) 버튼만 유리로. --primary/--success 등 색 버튼은 :not()으로 빼서
    그 자체 색(파랑/초록 등)을 그대로 유지하고 블러만 살짝 얹는다 — 처음엔 이 구분이 없어서
    "메인 대시보드로 돌아가기" 같은 primary 버튼까지 흰 유리로 덮여버리는 걸 실제로 확인했다. */
-.el-button:not([class*='el-button--']) {
-  background-color: rgba(255, 255, 255, 0.5) !important;
-  border-color: var(--glass-border) !important;
+/* 12차: [class*='el-button--']는 크기 지정(--small/--large)에도 걸려서
+   작은 기본 버튼이 유리 처리에서 빠져 있었다. 타입 클래스만 골라 제외한다. */
+.el-button:not(.el-button--primary):not(.el-button--success):not(.el-button--warning):not(.el-button--danger):not(.el-button--info) {
+  /* 12차: 버튼도 카드 안에 놓이는 면이다 — 다른 눌리는 요소와 같은 토큰을 쓴다.
+     (0.5 흰색 + 0.78 테두리는 투명해진 유리 위에서 혼자 진한 판이 됐다.) */
+  background-color: var(--control-bg) !important;
+  border-color: var(--control-border) !important;
   -webkit-backdrop-filter: saturate(160%) blur(8px);
   backdrop-filter: saturate(160%) blur(8px);
-  /* 알약(pill) 대신 애플다운 둥근 사각형. 8px 미만은 스킬 기준 안티패턴이라 10px로 */
-  border-radius: 10px !important;
+  /* 알약(pill) 대신 애플다운 둥근 사각형. 8px 미만은 스킬 기준 안티패턴이다 */
+  border-radius: var(--control-radius) !important;
+  box-shadow: var(--control-shadow) !important;
+  transition:
+    background-color 0.2s var(--apple-ease),
+    box-shadow 0.2s var(--apple-ease),
+    transform 0.2s var(--apple-ease) !important;
 }
+/* 12차: el-tag는 Element Plus 파스텔 배경(rgb(240,249,235) 등)이 그대로라
+   유리 카드 안에서 혼자 불투명 스티커처럼 보였다. 배경만 비우고 의미 색은
+   글자와 테두리에 남긴다 — 색으로 읽히는 정보는 그대로 유지된다. */
 .el-tag {
   border-radius: 8px !important;
+  background-color: rgba(255, 255, 255, 0.24) !important;
+  /* currentColor로 두면 의미 색(초록/빨강)이 100% 불투명한 1px 링이 되어
+     유리 위에서 딱딱한 테두리로 읽혔다. 테두리는 다른 안쪽 면과 같은 헤어라인으로 두고,
+     의미 색은 글자가 맡는다 — el-alert에서 이미 같은 결론을 냈다. */
+  border-color: var(--glass-inset-border) !important;
+  font-weight: 600;
+}
+
+/* 단위 토글 스위치도 같은 이유(기본 회색 불투명 트랙) */
+.el-switch__core {
+  background-color: rgba(255, 255, 255, 0.28) !important;
+  border-color: var(--glass-inset-border) !important;
+  box-shadow: var(--glass-inset-shadow);
+}
+.el-switch.is-checked .el-switch__core {
+  background-color: var(--control-bg-on) !important;
+  border-color: var(--control-border-on) !important;
 }
 /* 8차: 위 전역 radius가 el-button-group까지 먹어서 붙어 있어야 할 3개 버튼(500/1000/2000)이
    각각 둥근 사각형으로 떨어져 보였다 — 그룹은 바깥 모서리만 둥글게 되돌린다. */
@@ -287,14 +337,16 @@ body {
   border-radius: 0 !important;
 }
 .el-button-group > .el-button:first-child:not(:last-child) {
-  border-radius: 10px 0 0 10px !important;
+  border-radius: var(--control-radius) 0 0 var(--control-radius) !important;
 }
 .el-button-group > .el-button:last-child:not(:first-child) {
-  border-radius: 0 10px 10px 0 !important;
+  border-radius: 0 var(--control-radius) var(--control-radius) 0 !important;
 }
-.el-button:not([class*='el-button--']):not(.is-link):hover {
-  background-color: rgba(255, 255, 255, 0.82) !important;
-  border-color: var(--glass-border) !important;
+.el-button:not(.el-button--primary):not(.el-button--success):not(.el-button--warning):not(.el-button--danger):not(.el-button--info):not(.is-link):hover {
+  background-color: var(--control-bg-hover) !important;
+  border-color: var(--control-border) !important;
+  box-shadow: var(--control-shadow-hover) !important;
+  transform: var(--control-lift);
 }
 /* primary/success/danger 등 색이 있는 버튼은 그 색을 살리되 유리 블러만 얹는다 */
 .el-button--primary,
@@ -311,11 +363,11 @@ body {
     transform 0.2s var(--apple-ease),
     background-color 0.2s var(--apple-ease);
   /* 실제 iOS/macOS 세그먼트 컨트롤도 알약이 아니라 둥근 사각형이다 */
-  border-radius: 8px;
+  border-radius: var(--control-radius);
 }
 .el-segmented__item:not(.is-selected):hover {
-  transform: translateY(-1px);
-  background-color: rgba(255, 255, 255, 0.55);
+  transform: var(--control-lift);
+  background-color: var(--control-bg-hover);
 }
 
 /* 7차: "기존 거는 싹 다 리퀴드 글라스로 덮어라" — el-alert/el-table가 유리 카드 안에서 자기만
@@ -324,12 +376,13 @@ body {
    계열이라 파란 알림이 배경에 묻혀 텍스트 대비가 깨졌다 — "톤앤매너는 하나로 족해" 피드백과도
    맞물려서, 배경은 다른 카드와 같은 흰 유리 한 가지로 통일하고 의미 색은 아이콘에만 남긴다. */
 .el-alert {
-  background-color: var(--glass-bg-strong) !important;
-  background-image: var(--glass-sheen);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-control);
-  -webkit-backdrop-filter: url(#glass-refraction) var(--glass-refract-blur);
-  backdrop-filter: url(#glass-refraction) var(--glass-refract-blur);
+  /* 12차: el-alert는 거의 항상 카드 '안'에 있다. 바깥 카드와 같은 강도를 쓰면
+     유리 안에서 혼자 진한 판이 된다 — 안쪽 면 토큰으로 내린다. */
+  background-color: var(--glass-inset-bg) !important;
+  background-image: var(--glass-inset-sheen);
+  border: 1px solid var(--glass-inset-border);
+  border-radius: var(--control-radius);
+  box-shadow: var(--glass-inset-shadow);
 }
 .el-alert .el-alert__title {
   color: #1c1c1e;
@@ -373,4 +426,128 @@ body {
 }
 .el-table__inner-wrapper::before {
   display: none;
+}
+
+
+/* --- 12차: 유리 표면의 호버 반응 ----------------------------------------
+   이 자리에서 세 가지를 시도했다가 전부 걷어냈다.
+   (1) '가장자리 렌즈 띠' — 테두리 14px 안쪽만 블러를 다르게 걸어 굴절을 표현하려 했으나,
+       판 가운데와 밝기가 달라 경계가 사각형 선으로 그려졌다(유리가 두 장으로 쪼개져 보임).
+   (2) '분광(프리즘)' — 가장자리 무지개든 커서를 따라다니는 무지개든, 색이 얹히는 순간
+       유리가 아니라 색깔 필터로 읽혔다.
+   (3) '커서 스페큘러' — 커서를 따라다니는 흰 원인데, 유리에 빛이 맺힌 게 아니라
+       원형 그라디언트를 덧댄 티가 났다.
+   공통점은 셋 다 유리 '위에 뭔가를 얹는' 방식이었다는 것이다. 얹은 건 결국 얹은 티가 난다.
+   그래서 호버에서는 유리 자체의 성질만 바꾼다 — 더 투명해지고, 채도가 오르고, 떠오른다. */
+.base-dashboard-card,
+.weather-card,
+.navigation-bar {
+  position: relative;
+  isolation: isolate;
+  transition:
+    transform 0.45s var(--apple-ease),
+    box-shadow 0.45s var(--apple-ease),
+    background-color 0.45s var(--apple-ease),
+    -webkit-backdrop-filter 0.45s var(--apple-ease),
+    backdrop-filter 0.45s var(--apple-ease);
+}
+
+/* 호버: 판이 떠오르고, 동시에 더 맑아진다(뒤가 더 비치고 채도가 오른다).
+   유리를 들어 올려 빛에 비춰 보는 동작에 해당한다. */
+.base-dashboard-card:hover,
+.weather-card:hover,
+.navigation-bar:hover {
+  transform: translateY(-4px);
+  background-color: rgba(255, 255, 255, 0.88);
+  -webkit-backdrop-filter: saturate(240%) blur(14px);
+  backdrop-filter: saturate(240%) blur(14px);
+  box-shadow: var(--shadow-glass-raised);
+}
+
+/* 동작 최소화를 켠 사용자에게는 떠오름을 빼고 밝기 변화만 남긴다 */
+@media (prefers-reduced-motion: reduce) {
+  .base-dashboard-card,
+  .weather-card,
+  .navigation-bar {
+    transition: background-color 0.2s linear;
+  }
+  .base-dashboard-card:hover,
+  .weather-card:hover,
+  .navigation-bar:hover {
+    transform: none;
+  }
+}
+/* 본문은 스페큘러 레이어보다 위 */
+.base-dashboard-card > *,
+.weather-card > *,
+.navigation-bar > * {
+  position: relative;
+  z-index: 1;
+}
+
+
+/* 12차: 인풋/셀렉트 면. Element Plus 기본값은 불투명 흰 박스 + 회색 1px 보더라
+   투명해진 유리 카드 안에서 혼자 종이처럼 떠 보였다 — 안쪽 면 토큰으로 맞춘다. */
+.el-input__wrapper,
+.el-select__wrapper {
+  background-color: var(--glass-inset-bg) !important;
+  border-radius: var(--control-radius) !important;
+  box-shadow:
+    var(--glass-inset-shadow),
+    0 0 0 1px var(--glass-inset-border) inset !important;
+}
+.el-input__wrapper:hover,
+.el-select__wrapper:hover {
+  background-color: rgba(255, 255, 255, 0.36) !important;
+}
+.el-input__wrapper.is-focus,
+.el-select__wrapper.is-focused {
+  box-shadow:
+    var(--glass-inset-shadow),
+    0 0 0 1px var(--control-border-on) inset !important;
+}
+
+/* 12차: 카드 안에 놓이는 모든 판에 같은 sheen을 얹는다.
+   컴포넌트 쪽 scoped 스타일은 자기 컴포넌트 안에서만 유효할 뿐,
+   여기 전역 셀렉터가 같은 요소에 닿는 것을 막지는 않는다. */
+.hero-stat,
+.hero-badge,
+.insight-line,
+.podium-slot,
+.filter-chip,
+.overview-stat,
+.ops-chip,
+.metric-tile,
+.mix-tile,
+.func-row,
+.grade-stat,
+.forecast-day,
+.index-cell,
+.ops-lead,
+.map-readout,
+.briefing-list li {
+  /* !important가 필요한 이유: 컴포넌트 쪽 scoped 규칙이 `background:` 단축 속성으로
+     색을 지정하는데, 단축 속성은 background-image를 none으로 리셋한다. 게다가 scoped는
+     [data-v-*]가 붙어 우선순위도 한 단계 높다 — 이 두 가지가 겹쳐 sheen이 통째로 지워졌다.
+     (computed style로 background-image: none을 직접 확인하고 나서야 알았다.) */
+  background-image: var(--glass-inset-sheen) !important;
+}
+
+/* 13차: 눌리는 요소의 '켜짐' 표현을 단위 토글과 맞춘다 — 강조색으로 채우고 글자는 흰색.
+   면만 옅게 깔고 글자도 파랑이던 방식은 배경과 글자가 같은 계열이라 대비가 약했다. */
+.filter-chip.is-on,
+.el-menu-item.is-active,
+.el-segmented__item.is-selected {
+  color: var(--control-fg-on-solid) !important;
+}
+.filter-chip.is-on {
+  background: var(--control-bg-on);
+}
+
+/* 전역 타이포 확대. 유리 위 텍스트는 대비가 빠듯해서 작으면 더 안 읽힌다. */
+.section-title {
+  font-size: 17px !important;
+}
+.el-button {
+  font-size: 14px !important;
 }

@@ -83,6 +83,476 @@ export const weatherList = [
     lat: 33.4996,
     lon: 126.5312,
   },
+
+  // 12차: 지도에 시군구 251개를 그리고 나니 관측점 17개는 눈에 띄게 성겼다.
+  // 시·도 대표 17곳에 주요 도시를 더해 45곳으로 늘렸다. 한 도시당 API 2회(현재날씨+대기질)라
+  // 45곳이면 90회인데, OpenWeatherMap 무료 티어는 분당 60회다 — 그래서 weatherStore가
+  // 25곳씩 끊어서 부른다(자세한 건 weatherStore.js의 load 주석 참고).
+  {
+    id: 'city_18',
+    name: '성남',
+    region: '대한민국 경기도 성남시',
+    lat: 37.42,
+    lon: 127.1267,
+  },
+  {
+    id: 'city_19',
+    name: '고양',
+    region: '대한민국 경기도 고양시',
+    lat: 37.6584,
+    lon: 126.832,
+  },
+  {
+    id: 'city_20',
+    name: '용인',
+    region: '대한민국 경기도 용인시',
+    lat: 37.2411,
+    lon: 127.1776,
+  },
+  {
+    id: 'city_21',
+    name: '파주',
+    region: '대한민국 경기도 파주시',
+    lat: 37.7599,
+    lon: 126.78,
+  },
+  {
+    id: 'city_22',
+    name: '평택',
+    region: '대한민국 경기도 평택시',
+    lat: 36.9921,
+    lon: 127.1129,
+  },
+  {
+    id: 'city_23',
+    name: '강릉',
+    region: '대한민국 강원특별자치도 강릉시',
+    lat: 37.7519,
+    lon: 128.8761,
+  },
+  {
+    id: 'city_24',
+    name: '원주',
+    region: '대한민국 강원특별자치도 원주시',
+    lat: 37.3422,
+    lon: 127.9202,
+  },
+  {
+    id: 'city_25',
+    name: '속초',
+    region: '대한민국 강원특별자치도 속초시',
+    lat: 38.207,
+    lon: 128.5918,
+  },
+  {
+    id: 'city_26',
+    name: '충주',
+    region: '대한민국 충청북도 충주시',
+    lat: 36.991,
+    lon: 127.926,
+  },
+  {
+    id: 'city_27',
+    name: '제천',
+    region: '대한민국 충청북도 제천시',
+    lat: 37.1326,
+    lon: 128.191,
+  },
+  {
+    id: 'city_28',
+    name: '천안',
+    region: '대한민국 충청남도 천안시',
+    lat: 36.8151,
+    lon: 127.1139,
+  },
+  {
+    id: 'city_29',
+    name: '서산',
+    region: '대한민국 충청남도 서산시',
+    lat: 36.7848,
+    lon: 126.4503,
+  },
+  {
+    id: 'city_30',
+    name: '군산',
+    region: '대한민국 전북특별자치도 군산시',
+    lat: 35.9676,
+    lon: 126.7369,
+  },
+  {
+    id: 'city_31',
+    name: '남원',
+    region: '대한민국 전북특별자치도 남원시',
+    lat: 35.4164,
+    lon: 127.3905,
+  },
+  {
+    id: 'city_32',
+    name: '목포',
+    region: '대한민국 전라남도 목포시',
+    lat: 34.8118,
+    lon: 126.3922,
+  },
+  {
+    id: 'city_33',
+    name: '여수',
+    region: '대한민국 전라남도 여수시',
+    lat: 34.7604,
+    lon: 127.6622,
+  },
+  {
+    id: 'city_34',
+    name: '순천',
+    region: '대한민국 전라남도 순천시',
+    lat: 34.9506,
+    lon: 127.4872,
+  },
+  {
+    id: 'city_35',
+    name: '나주',
+    region: '대한민국 전라남도 나주시',
+    lat: 35.016,
+    lon: 126.7108,
+  },
+  {
+    id: 'city_36',
+    name: '포항',
+    region: '대한민국 경상북도 포항시',
+    lat: 36.019,
+    lon: 129.3435,
+  },
+  {
+    id: 'city_37',
+    name: '구미',
+    region: '대한민국 경상북도 구미시',
+    lat: 36.1195,
+    lon: 128.3446,
+  },
+  {
+    id: 'city_38',
+    name: '경주',
+    region: '대한민국 경상북도 경주시',
+    lat: 35.8562,
+    lon: 129.2247,
+  },
+  {
+    id: 'city_39',
+    name: '김천',
+    region: '대한민국 경상북도 김천시',
+    lat: 36.1398,
+    lon: 128.1136,
+  },
+  {
+    id: 'city_40',
+    name: '울릉',
+    region: '대한민국 경상북도 울릉군',
+    lat: 37.4845,
+    lon: 130.9057,
+  },
+  {
+    id: 'city_41',
+    name: '진주',
+    region: '대한민국 경상남도 진주시',
+    lat: 35.18,
+    lon: 128.1076,
+  },
+  {
+    id: 'city_42',
+    name: '통영',
+    region: '대한민국 경상남도 통영시',
+    lat: 34.8544,
+    lon: 128.4331,
+  },
+  {
+    id: 'city_43',
+    name: '거제',
+    region: '대한민국 경상남도 거제시',
+    lat: 34.8806,
+    lon: 128.6211,
+  },
+  {
+    id: 'city_44',
+    name: '김해',
+    region: '대한민국 경상남도 김해시',
+    lat: 35.2285,
+    lon: 128.8894,
+  },
+  {
+    id: 'city_45',
+    name: '서귀포',
+    region: '대한민국 제주특별자치도 서귀포시',
+    lat: 33.2541,
+    lon: 126.56,
+  },
+  // 13차: 지도를 화면 가운데로 키우자 관측 지점이 수도권·주요 도시에 몰려 있는 게
+  // 그대로 드러났다(강원 산간·경북 내륙·전남 서부는 가까운 지점이 없어 색이 흐렸다).
+  // 도 단위로 고르게 퍼지도록 내륙·산간·도서 지점을 채웠다.
+  {
+    id: 'city_46',
+    name: '의정부',
+    region: '대한민국 경기도 의정부시',
+    lat: 37.7381,
+    lon: 127.0337,
+  },
+  {
+    id: 'city_47',
+    name: '남양주',
+    region: '대한민국 경기도 남양주시',
+    lat: 37.636,
+    lon: 127.2165,
+  },
+  {
+    id: 'city_48',
+    name: '안산',
+    region: '대한민국 경기도 안산시',
+    lat: 37.3219,
+    lon: 126.8309,
+  },
+  {
+    id: 'city_49',
+    name: '화성',
+    region: '대한민국 경기도 화성시',
+    lat: 37.1996,
+    lon: 126.831,
+  },
+  {
+    id: 'city_50',
+    name: '이천',
+    region: '대한민국 경기도 이천시',
+    lat: 37.2723,
+    lon: 127.435,
+  },
+  {
+    id: 'city_51',
+    name: '포천',
+    region: '대한민국 경기도 포천시',
+    lat: 37.8949,
+    lon: 127.2003,
+  },
+  {
+    id: 'city_52',
+    name: '동해',
+    region: '대한민국 강원특별자치도 동해시',
+    lat: 37.5247,
+    lon: 129.1143,
+  },
+  {
+    id: 'city_53',
+    name: '태백',
+    region: '대한민국 강원특별자치도 태백시',
+    lat: 37.1641,
+    lon: 128.9856,
+  },
+  {
+    id: 'city_54',
+    name: '홍천',
+    region: '대한민국 강원특별자치도 홍천군',
+    lat: 37.6971,
+    lon: 127.8888,
+  },
+  {
+    id: 'city_55',
+    name: '영월',
+    region: '대한민국 강원특별자치도 영월군',
+    lat: 37.1836,
+    lon: 128.4617,
+  },
+  {
+    id: 'city_56',
+    name: '철원',
+    region: '대한민국 강원특별자치도 철원군',
+    lat: 38.1466,
+    lon: 127.3132,
+  },
+  {
+    id: 'city_57',
+    name: '음성',
+    region: '대한민국 충청북도 음성군',
+    lat: 36.9403,
+    lon: 127.6906,
+  },
+  {
+    id: 'city_58',
+    name: '영동',
+    region: '대한민국 충청북도 영동군',
+    lat: 36.175,
+    lon: 127.7765,
+  },
+  {
+    id: 'city_59',
+    name: '보령',
+    region: '대한민국 충청남도 보령시',
+    lat: 36.3333,
+    lon: 126.6127,
+  },
+  {
+    id: 'city_60',
+    name: '공주',
+    region: '대한민국 충청남도 공주시',
+    lat: 36.4465,
+    lon: 127.119,
+  },
+  {
+    id: 'city_61',
+    name: '논산',
+    region: '대한민국 충청남도 논산시',
+    lat: 36.1872,
+    lon: 127.0987,
+  },
+  {
+    id: 'city_62',
+    name: '익산',
+    region: '대한민국 전북특별자치도 익산시',
+    lat: 35.9483,
+    lon: 126.9576,
+  },
+  {
+    id: 'city_63',
+    name: '정읍',
+    region: '대한민국 전북특별자치도 정읍시',
+    lat: 35.5699,
+    lon: 126.856,
+  },
+  {
+    id: 'city_64',
+    name: '무주',
+    region: '대한민국 전북특별자치도 무주군',
+    lat: 36.0068,
+    lon: 127.6608,
+  },
+  {
+    id: 'city_65',
+    name: '해남',
+    region: '대한민국 전라남도 해남군',
+    lat: 34.5735,
+    lon: 126.599,
+  },
+  {
+    id: 'city_66',
+    name: '장흥',
+    region: '대한민국 전라남도 장흥군',
+    lat: 34.6816,
+    lon: 126.907,
+  },
+  {
+    id: 'city_67',
+    name: '광양',
+    region: '대한민국 전라남도 광양시',
+    lat: 34.9407,
+    lon: 127.6959,
+  },
+  {
+    id: 'city_68',
+    name: '영광',
+    region: '대한민국 전라남도 영광군',
+    lat: 35.2772,
+    lon: 126.512,
+  },
+  {
+    id: 'city_69',
+    name: '영주',
+    region: '대한민국 경상북도 영주시',
+    lat: 36.8057,
+    lon: 128.624,
+  },
+  {
+    id: 'city_70',
+    name: '상주',
+    region: '대한민국 경상북도 상주시',
+    lat: 36.4109,
+    lon: 128.159,
+  },
+  {
+    id: 'city_71',
+    name: '울진',
+    region: '대한민국 경상북도 울진군',
+    lat: 36.993,
+    lon: 129.4004,
+  },
+  {
+    id: 'city_72',
+    name: '영덕',
+    region: '대한민국 경상북도 영덕군',
+    lat: 36.4152,
+    lon: 129.3656,
+  },
+  {
+    id: 'city_73',
+    name: '문경',
+    region: '대한민국 경상북도 문경시',
+    lat: 36.5865,
+    lon: 128.1868,
+  },
+  {
+    id: 'city_74',
+    name: '경산',
+    region: '대한민국 경상북도 경산시',
+    lat: 35.8251,
+    lon: 128.7414,
+  },
+  {
+    id: 'city_75',
+    name: '밀양',
+    region: '대한민국 경상남도 밀양시',
+    lat: 35.5038,
+    lon: 128.7466,
+  },
+  {
+    id: 'city_76',
+    name: '양산',
+    region: '대한민국 경상남도 양산시',
+    lat: 35.335,
+    lon: 129.0374,
+  },
+  {
+    id: 'city_77',
+    name: '사천',
+    region: '대한민국 경상남도 사천시',
+    lat: 35.0035,
+    lon: 128.0642,
+  },
+  {
+    id: 'city_78',
+    name: '거창',
+    region: '대한민국 경상남도 거창군',
+    lat: 35.6866,
+    lon: 127.9095,
+  },
+  {
+    id: 'city_79',
+    name: '남해',
+    region: '대한민국 경상남도 남해군',
+    lat: 34.8376,
+    lon: 127.8925,
+  },
+  {
+    id: 'city_80',
+    name: '합천',
+    region: '대한민국 경상남도 합천군',
+    lat: 35.5666,
+    lon: 128.1658,
+  },
+  {
+    id: 'city_81',
+    name: '강화',
+    region: '대한민국 인천광역시 강화군',
+    lat: 37.7473,
+    lon: 126.4878,
+  },
+  {
+    id: 'city_82',
+    name: '진도',
+    region: '대한민국 전라남도 진도군',
+    lat: 34.4867,
+    lon: 126.2634,
+  },
+  {
+    id: 'city_83',
+    name: '완도',
+    region: '대한민국 전라남도 완도군',
+    lat: 34.311,
+    lon: 126.755,
+  },
 ]
 
 // 동적 경로 파라미터(:cityId)로 도시 등록 정보 하나를 꺼낸다. 없으면 null.
@@ -114,18 +584,18 @@ const getSegment = (grade) => {
     return {
       key: 'outdoor',
       label: '옥외 활동 적합',
-      plan: '세 지표 모두 좋습니다. 옥외 행사를 진행해도 괜찮습니다.',
+      plan: '기온·습도·대기질 세 지표가 모두 양호합니다. 옥외 행사 진행에 제약이 없습니다.',
     }
   if (grade.humidity === 1)
     return {
       key: 'humidity',
       label: '습도 관리형',
-      plan: '습도가 높음으로 인한 불쾌감으로 체류 시간이 짧습니다. 쾌적한 행사장을 마련하거나 임팩트를 짧고 강하게 설정하는 것을 제안합니다.',
+      plan: '높은 습도로 불쾌지수가 올라 체류 시간이 짧아집니다. 냉방·환기가 확보된 공간을 쓰거나, 접점을 짧고 강하게 설계할 것을 제안합니다.',
     }
   return {
     key: 'neutral',
     label: '무난형',
-    plan: '특별한 제약이 없습니다. 기존 판촉을 유지하여 전환비용을 절약하는 것을 제안합니다.',
+    plan: '특별한 제약이 없습니다. 기존 운영안을 유지해 전환 비용을 아끼는 편을 제안합니다.',
   }
 }
 
@@ -211,7 +681,7 @@ export const buildStaffingAdvice = (item) => {
     return {
       key: 'dust',
       label: '실내 동선 안내',
-      text: '미세먼지가 나쁩니다. 옥외 대기 동선 대신 실내 동선으로 안내하는 것을 권장합니다.',
+      text: '대기질이 나쁨 구간입니다. 옥외 대기 동선을 실내로 우회할 것을 권장합니다.',
     }
   }
   if (item.temp >= HEATWAVE_TEMP) {
@@ -322,7 +792,7 @@ export const buildRiskAlerts = (item) => {
     })
 
   if (!alerts.length)
-    alerts.push({ level: 'success', text: '현재 특별한 기상 리스크가 감지되지 않았습니다.' })
+    alerts.push({ level: 'success', text: '현재 확인된 기상 리스크가 없습니다.' })
   return alerts
 }
 
@@ -435,13 +905,13 @@ export const buildDiscomfort = (item) => {
     text = '체류 시간이 급격히 짧아집니다. 실내·그늘 동선과 냉방 좌석을 먼저 확보하세요.'
   } else if (value >= 75) {
     ;[level, label, tone] = [3, '높음', 'warning']
-    text = '옥외 대기가 이탈로 이어지기 쉽습니다. 대기 공간에 그늘과 식수를 마련하세요.'
+    text = '옥외 대기가 길어지면 이탈률이 오릅니다. 대기 구역에 그늘과 식수를 확보하세요.'
   } else if (value >= 68) {
     ;[level, label, tone] = [2, '보통', 'info']
     text = '대부분 쾌적하게 느낍니다. 평소대로 운영해도 무리가 없습니다.'
   } else {
     ;[level, label, tone] = [1, '낮음', 'success']
-    text = '체감이 쾌적해 옥외 체류 시간이 깁니다. 옥외 행사에 유리합니다.'
+    text = '체감 조건이 쾌적해 옥외 체류 시간이 깁니다. 옥외 일정에 유리한 구간입니다.'
   }
   return { value, level, label, tone, text }
 }
@@ -491,14 +961,19 @@ export const buildDaylight = (item) => {
 
   const dayLengthMin = Math.round((sunset - sunrise) / 60)
   const isDay = observedAt >= sunrise && observedAt < sunset
-  // 낮이면 해가 얼마나 지났는지(0~1), 밤이면 진행률은 의미가 없으니 null
   const progress = isDay ? (observedAt - sunrise) / (sunset - sunrise) : null
+
+  // 12차: 밤이면 progress가 null이라 화면의 호 위에 해가 아예 안 그려졌다 —
+  // "해가 없는 일조 그래프"가 됐다. 해가 지평선 어느 쪽에 있는지(일출 전 / 일몰 후)를
+  // 같이 내려보내서, 밤에도 지평선 아래 해당 지점에 표식을 놓는다.
+  const phase = isDay ? 'day' : observedAt < sunrise ? 'before-sunrise' : 'after-sunset'
 
   return {
     sunrise: toLocalHM(sunrise),
     sunset: toLocalHM(sunset),
     observed: toLocalHM(observedAt),
     isDay,
+    phase,
     progress,
     dayLengthLabel: `${Math.floor(dayLengthMin / 60)}시간 ${dayLengthMin % 60}분`,
   }
@@ -727,6 +1202,10 @@ export const buildOpsMode = (item) => {
     return OPS_MODES.halt
   if (RAINY.includes(item.weatherMain)) return OPS_MODES.indoor
   if (feels >= 31 || feels <= 0 || item.microdust >= 36) return OPS_MODES.reduced
+  // 12차: execScore가 없는 원본 항목이 들어오면 undefined 비교가 전부 false가 되면서
+  // 조용히 '실내 전환'으로 떨어졌다(요약 화면에서 실제로 그렇게 어긋났다).
+  // 점수가 없으면 점수 기반 판정을 건너뛰고 '정상'으로 둔다 — 안전 조건은 위에서 이미 걸렀다.
+  if (typeof item.execScore !== 'number') return OPS_MODES.normal
   if (item.execScore >= 55) return OPS_MODES.normal
   if (item.execScore >= 35) return OPS_MODES.reduced
   return OPS_MODES.indoor

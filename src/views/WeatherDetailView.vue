@@ -73,8 +73,8 @@ const forecastIcon = (main) => FORECAST_ICON[main] ?? PartlyCloudy
 // 않도록 화면에도 "/9"를 같이 적는다.
 const forecastComment = (score) => {
   if (score >= 9) return '옥외 활동 적기'
-  if (score >= 6) return '무난'
-  if (score >= 3) return '실내 위주'
+  if (score >= 6) return '제약 없음'
+  if (score >= 3) return '실내 병행 권장'
   return '옥외 활동 보류 검토'
 }
 
@@ -156,6 +156,20 @@ const TONE_ICON = {
 const briefing = computed(() => (city.value ? buildBriefing(city.value) : { headline: '', lines: [] }))
 const daylight = computed(() => (city.value ? buildDaylight(city.value) : null))
 
+// 호 위 해의 좌표. 낮이면 진행률만큼 호를 따라 오르고, 밤이면 지평선(y=86) 바로 아래에
+// 일출/일몰 쪽 끝으로 내려앉는다.
+const sunPos = computed(() => {
+  const d = daylight.value
+  if (!d) return { x: 14, y: 86 }
+  if (d.progress !== null) {
+    return {
+      x: 14 + 272 * d.progress,
+      y: 86 - Math.sin(Math.PI * d.progress) * 63,
+    }
+  }
+  return { x: d.phase === 'before-sunrise' ? 14 : 286, y: 97 }
+})
+
 const metrics = computed(() => {
   const c = city.value
   if (!c) return []
@@ -168,59 +182,59 @@ const metrics = computed(() => {
       unit: '°C',
       note:
         c.feelsLike > c.temp
-          ? '습도·바람 탓에 실제보다 덥게 느껴집니다.'
+          ? '습도와 바람의 영향으로 실제 기온보다 높게 체감됩니다.'
           : c.feelsLike < c.temp
-            ? '바람 탓에 실제보다 춥게 느껴집니다.'
-            : '실제 기온과 같게 느껴집니다.',
+            ? '바람의 영향으로 실제 기온보다 낮게 체감됩니다.'
+            : '체감 온도와 실제 기온이 일치합니다.',
     },
     {
       label: '불쾌지수',
       icon: Odometer,
       value: discomfort.value,
       unit: '',
-      note: `${discomfort.label} — ${discomfort.value >= 75 ? '체류 시간이 짧아집니다.' : '체류에 무리가 없습니다.'}`,
+      note: `${discomfort.label} — ${discomfort.value >= 75 ? '옥외 체류 시간이 짧아집니다.' : '옥외 체류에 제약이 없습니다.'}`,
     },
     {
       label: '습도',
       icon: Drizzling,
       value: c.humidity,
       unit: '%',
-      note: c.humidity >= 60 ? '높아 끈적하게 느껴집니다.' : '쾌적한 범위입니다.',
+      note: c.humidity >= 60 ? '쾌적 구간(40–60%)을 상회합니다.' : '쾌적 구간에 있습니다.',
     },
     {
       label: '바람',
       icon: WindPower,
       value: c.wind,
       unit: 'm/s',
-      note: `${windLabel(c.windDeg)}풍 ${c.windDeg}° 방향입니다.`,
+      note: `${windLabel(c.windDeg)}풍, 풍향 ${c.windDeg}°.`,
     },
     {
       label: '통합 대기질',
       icon: CircleCheck,
       value: aqiLabel(c.airQualityIndex),
       unit: '',
-      note: `PM2.5 ${c.microdust} · PM10 ${c.pm10} µg/m³`,
+      note: `초미세먼지 ${c.microdust} · 미세먼지 ${c.pm10} µg/m³`,
     },
     {
       label: '구름량',
       icon: PartlyCloudy,
       value: c.clouds,
       unit: '%',
-      note: '하늘 전체에서 구름이 덮은 비율입니다.',
+      note: '전운량 — 하늘 전체 대비 구름이 덮은 비율입니다.',
     },
     {
       label: '가시거리',
       icon: Aim,
       value: c.visibility,
       unit: 'km',
-      note: c.visibility >= 10 ? '시야가 트여 있습니다.' : '안개·비로 시야가 제한됩니다.',
+      note: c.visibility >= 10 ? '시정 제약이 없습니다.' : '안개·강수로 시정이 제한됩니다.',
     },
     {
       label: '기압',
       icon: Odometer,
       value: c.pressure,
       unit: 'hPa',
-      note: '해수면 평균 기압 기준입니다.',
+      note: '해면기압(MSLP) 기준값입니다.',
     },
   ]
 })
@@ -318,18 +332,21 @@ const goBack = () => {
           </h3>
           <div class="daylight">
             <!-- 해가 뜨고 지는 호. 지금이 낮이면 해 위치가 호 위에 놓인다 -->
-            <svg class="daylight-arc" viewBox="0 0 300 96" aria-hidden="true">
-              <!-- 반지름 136짜리 원호는 viewBox(높이 96) 밖으로 솟아 위가 잘렸다.
+            <svg class="daylight-arc" viewBox="0 0 300 106" aria-hidden="true">
+              <!-- 반지름 136짜리 원호는 viewBox 밖으로 솟아 위가 잘렸다.
                    높이를 직접 정할 수 있는 2차 베지에로 바꿔서 얕은 돔을 그린다. -->
               <path d="M14,86 Q150,-40 286,86" class="daylight-path" />
+              <line x1="8" y1="86" x2="292" y2="86" class="daylight-ground" />
+              <!-- 12차: 밤에는 해가 아예 안 그려져서 "해 없는 일조 그래프"가 됐었다.
+                   낮이면 호 위 진행 위치에, 밤이면 지평선 아래(일출 전은 왼쪽 끝, 일몰 후는
+                   오른쪽 끝)에 놓아 해가 어디 있는지가 항상 보이게 한다. -->
               <circle
-                v-if="daylight.progress !== null"
-                :cx="14 + 272 * daylight.progress"
-                :cy="86 - Math.sin(Math.PI * daylight.progress) * 63"
+                :cx="sunPos.x"
+                :cy="sunPos.y"
                 r="8"
                 class="daylight-sun"
+                :class="{ 'is-night': !daylight.isDay }"
               />
-              <line x1="8" y1="86" x2="292" y2="86" class="daylight-ground" />
             </svg>
             <div class="daylight-row">
               <span class="daylight-cell">
@@ -362,22 +379,22 @@ const goBack = () => {
             <span class="grade-stat-label">기온</span>
             <span class="grade-stat-value">{{ city.grade.temp }}등급</span>
             <span class="grade-stat-hint"
-              >{{ GRADE_STANDARD.temp.bestMin }}~{{ GRADE_STANDARD.temp.bestMax }}도면 3등급</span
+              >쾌적 구간 {{ GRADE_STANDARD.temp.bestMin }}–{{ GRADE_STANDARD.temp.bestMax }}°C</span
             >
           </div>
           <div class="grade-stat">
             <span class="grade-stat-label">습도</span>
             <span class="grade-stat-value">{{ city.grade.humidity }}등급</span>
             <span class="grade-stat-hint"
-              >{{ GRADE_STANDARD.humidity.bestMin }}~{{
+              >쾌적 구간 {{ GRADE_STANDARD.humidity.bestMin }}–{{
                 GRADE_STANDARD.humidity.bestMax
-              }}%면 3등급</span
+              }}%</span
             >
           </div>
           <div class="grade-stat">
             <span class="grade-stat-label">미세먼지</span>
             <span class="grade-stat-value">{{ city.grade.dust }}등급</span>
-            <span class="grade-stat-hint">{{ GRADE_STANDARD.dust.best }} 미만이면 3등급</span>
+            <span class="grade-stat-hint">‘좋음’ 기준 {{ GRADE_STANDARD.dust.best }}µg/m³ 미만</span>
           </div>
         </div>
 
@@ -401,7 +418,7 @@ const goBack = () => {
             </div>
           </div>
           <p class="footnote">
-            예보에는 미세먼지 값이 없어 기온·습도 두 축으로만 계산한 점수입니다.
+            예보 응답에는 대기질 항목이 없어 기온·습도 2개 축으로만 산출한 점수입니다.
           </p>
         </template>
 
@@ -536,8 +553,8 @@ const goBack = () => {
   padding: 24px 26px;
   background-color: var(--glass-bg-strong);
   background-image: var(--glass-sheen);
-  -webkit-backdrop-filter: url(#glass-refraction) var(--glass-refract-blur);
-  backdrop-filter: url(#glass-refraction) var(--glass-refract-blur);
+  -webkit-backdrop-filter: var(--glass-surface);
+  backdrop-filter: var(--glass-surface);
   border: 1px solid var(--glass-border);
   box-shadow: var(--shadow-glass);
 }
@@ -595,8 +612,9 @@ const goBack = () => {
   margin-bottom: 16px;
 }
 .grade-stat {
-  background: rgba(255, 255, 255, 0.4);
-  border: 1px solid var(--glass-border);
+  background: var(--glass-inset-bg);
+  border: 1px solid var(--glass-inset-border);
+  box-shadow: var(--glass-inset-shadow);
   border-radius: var(--radius-control);
   padding: 10px 14px;
   display: flex;
@@ -621,10 +639,27 @@ const goBack = () => {
 }
 
 /* --- 11차: 마케팅 7P --- */
+/* 12차: 7개는 어떤 균등 분할로도 안 떨어져서 마지막 줄이 늘 어정쩡했다.
+   12열 위에 얹어 첫 줄 3개(각 4칸) + 둘째 줄 4개(각 3칸)로 나눈다. */
 .mix-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  grid-template-columns: repeat(12, minmax(0, 1fr));
   gap: 10px;
+}
+.mix-tile:nth-child(-n + 3) {
+  grid-column: span 4;
+}
+.mix-tile:nth-child(n + 4) {
+  grid-column: span 3;
+}
+@media (max-width: 900px) {
+  .mix-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .mix-tile:nth-child(-n + 3),
+  .mix-tile:nth-child(n + 4) {
+    grid-column: span 1;
+  }
 }
 .mix-tile {
   display: flex;
@@ -632,8 +667,9 @@ const goBack = () => {
   gap: 3px;
   padding: 12px 14px;
   border-radius: var(--radius-control);
-  background: rgba(255, 255, 255, 0.42);
-  border: 1px solid var(--glass-border);
+  background: var(--glass-inset-bg);
+  border: 1px solid var(--glass-inset-border);
+  box-shadow: var(--glass-inset-shadow);
 }
 .mix-p {
   font-size: 10px;
@@ -662,8 +698,9 @@ const goBack = () => {
 .func-row {
   padding: 12px 14px;
   border-radius: var(--radius-control);
-  background: rgba(255, 255, 255, 0.42);
-  border: 1px solid var(--glass-border);
+  background: var(--glass-inset-bg);
+  border: 1px solid var(--glass-inset-border);
+  box-shadow: var(--glass-inset-shadow);
   /* 심각도는 왼쪽 색 띠로. 배경을 물들이면 유리 톤이 무너진다 */
   border-left-width: 3px;
 }
@@ -726,8 +763,9 @@ const goBack = () => {
   gap: 8px;
   padding: 9px 12px;
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.42);
-  border: 1px solid var(--glass-border);
+  background: var(--glass-inset-bg);
+  border: 1px solid var(--glass-inset-border);
+  box-shadow: var(--glass-inset-shadow);
   font-size: 13px;
   line-height: 1.55;
   color: #48484f;
@@ -750,11 +788,18 @@ const goBack = () => {
 }
 
 /* --- 10차: 관측 지표 타일 --- */
+/* 12차: auto-fit이라 폭에 따라 7개가 한 줄에 들어가고 마지막 1개만 다음 줄로 떨어졌다.
+   지표가 정확히 8개니 4열로 고정하면 4+4로 딱 떨어진다. */
 .metric-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(168px, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 10px;
   margin-bottom: 16px;
+}
+@media (max-width: 900px) {
+  .metric-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 .metric-tile {
   display: flex;
@@ -762,8 +807,9 @@ const goBack = () => {
   gap: 2px;
   padding: 12px 14px;
   border-radius: var(--radius-control);
-  background: rgba(255, 255, 255, 0.42);
-  border: 1px solid var(--glass-border);
+  background: var(--glass-inset-bg);
+  border: 1px solid var(--glass-inset-border);
+  box-shadow: var(--glass-inset-shadow);
 }
 .metric-label {
   display: flex;
@@ -813,6 +859,12 @@ const goBack = () => {
   fill: #f5a623;
   stroke: rgba(255, 255, 255, 0.85);
   stroke-width: 2;
+  transition: all 0.4s var(--apple-ease);
+}
+/* 밤에는 지평선 아래로 내려가 있으므로 색도 같이 가라앉힌다 */
+.daylight-sun.is-night {
+  fill: #8a94a6;
+  stroke: rgba(255, 255, 255, 0.6);
 }
 .daylight-row {
   display: flex;
@@ -855,8 +907,9 @@ const goBack = () => {
   gap: 2px;
   padding: 12px 14px;
   border-radius: var(--radius-control);
-  background: rgba(255, 255, 255, 0.4);
-  border: 1px solid var(--glass-border);
+  background: var(--glass-inset-bg);
+  border: 1px solid var(--glass-inset-border);
+  box-shadow: var(--glass-inset-shadow);
 }
 .forecast-date {
   font-size: 12px;

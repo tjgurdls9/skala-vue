@@ -28,8 +28,9 @@ const FEATURES = [
 
     <section class="about-card">
       <p class="about-lead">
-        Vue 3와 Vue Router 5 기반으로 제작한 실습용 가상 기상 대시보드입니다. 전국 지역의 실시간
-        날씨를 마케팅·재고·인력·리스크 4개 축의 경영 판단으로 바꿔 보여줍니다.
+        Vue 3와 Vue Router 5로 만든 기상 기반 경영 의사결정 참고 대시보드입니다. 전국 17개
+        시·도의 실시간 날씨를 마케팅 믹스 7P와 인사·재무·회계·물류·안전 5개 경영 기능의 영향으로
+        번역해, 업종과 무관하게 전사 전략의 근거로 쓸 수 있게 정리합니다.
       </p>
 
       <ul class="about-list">
@@ -67,8 +68,8 @@ const FEATURES = [
   border-radius: var(--radius-card);
   background-color: var(--glass-bg);
   background-image: var(--glass-sheen);
-  -webkit-backdrop-filter: url(#glass-refraction) var(--glass-refract-blur);
-  backdrop-filter: url(#glass-refraction) var(--glass-refract-blur);
+  -webkit-backdrop-filter: var(--glass-surface);
+  backdrop-filter: var(--glass-surface);
   border: 1px solid var(--glass-border);
   box-shadow: var(--shadow-glass);
 }

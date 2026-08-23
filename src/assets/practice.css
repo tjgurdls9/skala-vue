@@ -18,8 +18,8 @@ div.practice-section {
   /* 8차: 여기만 --glass-blur(blur 30px)를 써서 뒤 하늘이 균일한 파란 덩어리로 뭉개졌다 —
      앱의 다른 카드는 전부 굴절 + 약한 블러라 실습 화면만 톤이 달라 보였다("톤앤매너는 하나로
      족해"). 같은 처리로 통일한다. */
-  -webkit-backdrop-filter: url(#glass-refraction) var(--glass-refract-blur);
-  backdrop-filter: url(#glass-refraction) var(--glass-refract-blur);
+  -webkit-backdrop-filter: var(--glass-surface);
+  backdrop-filter: var(--glass-surface);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-card);
   box-shadow: var(--shadow-glass);
@@ -59,31 +59,37 @@ hr {
 }
 
 /* 버튼 태그 기본 스타일 (회색 계통) */
+/* 12차: 값을 직접 쓰지 않고 base.css의 --control-* 토큰을 읽는다.
+   눌리는 것들의 반지름·배경·그림자가 화면마다 조금씩 달랐던 원인이 여기 있었다. */
 button {
   padding: 8px 16px;
   font-size: 14px;
   font-weight: 500;
-  color: #1c1c1e; /* 진한 회색 텍스트 */
-  background-color: rgba(255, 255, 255, 0.55); /* 유리 컨트롤 */
+  color: #1c1c1e;
+  background-color: var(--control-bg);
   -webkit-backdrop-filter: var(--glass-blur);
   backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-control);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.8),
-    0 1px 2px rgba(28, 32, 56, 0.08);
+  border: 1px solid var(--control-border);
+  border-radius: var(--control-radius);
+  box-shadow: var(--control-shadow);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition:
+    background-color 0.2s var(--apple-ease),
+    box-shadow 0.2s var(--apple-ease),
+    transform 0.2s var(--apple-ease);
 }
 /* 마우스 호버(Hover) 효과 - 비활성화가 아닐 때만 작동 */
 button:not(:disabled):hover {
-  background-color: rgba(255, 255, 255, 0.78); /* 유리가 밝아지며 떠오른다 */
+  background-color: var(--control-bg-hover);
+  box-shadow: var(--control-shadow-hover);
+  transform: var(--control-lift);
   color: #1c1c1e;
 }
 /* 클릭(Active) 시 효과 - 비활성화가 아닐 때만 작동 */
 button:not(:disabled):active {
-  background-color: rgba(240, 240, 245, 0.85); /* 눌리면 가라앉는다 */
+  background-color: rgba(240, 240, 245, 0.85);
   box-shadow: inset 0 1px 3px rgba(28, 32, 56, 0.14);
+  transform: none;
 }
 /* 비활성화(Disabled) 상태 제어 - 마우스 반응 및 눌림 방지 */
 button:disabled {
@@ -96,22 +102,30 @@ button:disabled {
   box-shadow: none;
 }
 /* 인풋 태그 기본 스타일 (참고용) */
-input {
+/* 12차: textarea와 select에는 스타일이 아예 없어서 브라우저 기본(불투명 흰 박스 +
+   회색 보더)이 그대로 남아 있었다 — 유리 카드 안에서 이것들이 제일 튀었다.
+   input과 같은 안쪽 면 토큰으로 셋을 함께 묶는다. */
+input,
+textarea,
+select {
   padding: 8px 12px;
   font-size: 14px;
+  font-family: inherit;
   color: #1c1c1e;
-  background-color: rgba(255, 255, 255, 0.5); /* 유리 필드 */
-  -webkit-backdrop-filter: var(--glass-blur);
-  backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-control);
+  background-color: var(--glass-inset-bg);
+  background-image: var(--glass-inset-sheen);
+  border: 1px solid var(--glass-inset-border);
+  border-radius: var(--control-radius);
+  box-shadow: var(--glass-inset-shadow);
   outline: none;
   transition:
     border-color 0.15s ease,
     box-shadow 0.15s ease;
 }
-/* 인풋 포커스(클릭) 효과 - 시스템 블루 포커스 링 */
-input:focus {
+/* 포커스(클릭) 효과 - 시스템 블루 포커스 링 */
+input:focus,
+textarea:focus,
+select:focus {
   border-color: var(--color-accent);
   box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.15);
 }
