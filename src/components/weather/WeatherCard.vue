@@ -7,14 +7,8 @@ import {
   buildDiscomfort,
   buildStayMinutes,
   build7P,
+  GRADE_STANDARD,
 } from '../../data/weatherMock.js'
-import {
-  Sunny,
-  PartlyCloudy,
-  Drizzling,
-  WindPower,
-  CircleCheck,
-} from '@element-plus/icons-vue'
 
 // 1. 상위로부터 단방향 주입받을 객체 데이터 규격 검수 (매크로)
 const props = defineProps({
@@ -46,6 +40,38 @@ const ops = computed(() => build7P(props.cityItem))
 const alertCount = computed(
   () => buildRiskAlerts(props.cityItem).filter((alert) => alert.level !== 'success').length,
 )
+
+// 카드의 상태 태그는 예전의 별도 임계값(25도·60%·50) 대신, 지역 점수를 만들 때 쓰는
+// GRADE_STANDARD와 같은 기준을 쓴다. 새로 받아오는 풍속·하늘·시정까지 더해 3×2 칸을 채운다.
+const weatherTags = computed(() => {
+  const city = props.cityItem
+  const visibility = Number.isFinite(city.visibility) ? city.visibility : 10
+  const rainy = ['Rain', 'Drizzle', 'Thunderstorm', 'Snow'].includes(city.weatherMain)
+  const temp = city.temp >= GRADE_STANDARD.temp.bestMin && city.temp <= GRADE_STANDARD.temp.bestMax
+    ? { value: '적정', tone: 'success' }
+    : city.temp >= GRADE_STANDARD.temp.okMin && city.temp <= GRADE_STANDARD.temp.okMax
+      ? { value: city.temp > GRADE_STANDARD.temp.bestMax ? '따뜻함' : '선선함', tone: 'info' }
+      : { value: city.temp > GRADE_STANDARD.temp.okMax ? '고온' : '저온', tone: 'danger' }
+  const humidity = city.humidity >= GRADE_STANDARD.humidity.bestMin && city.humidity <= GRADE_STANDARD.humidity.bestMax
+    ? { value: '적정', tone: 'success' }
+    : city.humidity >= GRADE_STANDARD.humidity.okMin && city.humidity <= GRADE_STANDARD.humidity.okMax
+      ? { value: city.humidity > GRADE_STANDARD.humidity.bestMax ? '다습' : '건조', tone: 'info' }
+      : city.humidity > GRADE_STANDARD.humidity.okMax
+        ? { value: '고습', tone: 'danger' }
+        : { value: '건조', tone: 'warning' }
+  const air = city.microdust < GRADE_STANDARD.dust.best
+    ? { value: '좋음', tone: 'success' }
+    : city.microdust < GRADE_STANDARD.dust.ok ? { value: '보통', tone: 'info' } : { value: '나쁨', tone: 'danger' }
+
+  return [
+    { key: '기온', icon: 'sun', ...temp },
+    { key: '습도', icon: 'observation', ...humidity },
+    { key: '대기', icon: 'risk', ...air },
+    { key: '바람', icon: city.wind >= 9 ? 'risk' : 'observation', value: city.wind >= 9 ? '강풍' : city.wind >= 6 ? '주의' : '안정', tone: city.wind >= 9 ? 'danger' : city.wind >= 6 ? 'warning' : 'success' },
+    { key: '하늘', icon: rainy ? 'risk' : 'sun', value: rainy ? '강수' : city.weatherMain === 'Clouds' ? '흐림' : '맑음', tone: rainy ? 'warning' : city.weatherMain === 'Clouds' ? 'info' : 'success' },
+    { key: '시정', icon: 'location', value: visibility < 5 ? '저시정' : visibility < 8 ? '보통' : '양호', tone: visibility < 5 ? 'warning' : visibility < 8 ? 'info' : 'success' },
+  ]
+})
 
 // 13차-p: 지금까지 이 자리에 판촉(Promotion) 한 줄만 고정으로 띄웠다. 7P를 다 계산해
 // 놓고 하나만 보여준 셈이라, 카드만 보면 '이 서비스는 커뮤니케이션 얘기만 한다'로 읽혔다.
@@ -127,30 +153,11 @@ onBeforeUnmount(() => {
       </div>
     </div>
 
-    <!-- 이모지 대신 Element Plus 아이콘. 색(el-tag type)으로 상태를, 아이콘으로 종류를 구분한다 -->
+    <!-- 점수 산출 기준과 맞춘 6개 파라미터 태그. 3×2 격자로 카드 폭을 빈틈 없이 쓴다. -->
     <div class="badge-row">
-      <el-tag v-if="cityItem.temp >= 25" type="danger">
-        <el-icon><Sunny /></el-icon> 더움 (25도 이상)
-      </el-tag>
-      <el-tag v-else type="info">
-        <el-icon><PartlyCloudy /></el-icon> 선선함 (25도 미만)
-      </el-tag>
-
-      <el-tag v-if="cityItem.humidity >= 60" type="info">
-        <el-icon><Drizzling /></el-icon> 습함 (60% 이상)
-      </el-tag>
-      <el-tag v-else-if="cityItem.humidity >= 40" type="success">
-        <el-icon><CircleCheck /></el-icon> 상쾌함 (40~59%)
-      </el-tag>
-      <el-tag v-else type="warning">
-        <el-icon><WindPower /></el-icon> 건조함 (40% 미만)
-      </el-tag>
-
-      <el-tag v-if="cityItem.microdust >= 50" type="danger">
-        <WeatherDeskIcon name="risk" class="weather-tag-art" /> 나쁨 (50 이상)
-      </el-tag>
-      <el-tag v-else type="success">
-        <el-icon><CircleCheck /></el-icon> 좋음 (50 미만)
+      <el-tag v-for="tag in weatherTags" :key="tag.key" :type="tag.tone" class="weather-condition-tag">
+        <WeatherDeskIcon :name="tag.icon" class="weather-tag-art" />
+        <span>{{ tag.key }}</span><b>{{ tag.value }}</b>
       </el-tag>
     </div>
 
@@ -324,8 +331,8 @@ onBeforeUnmount(() => {
 }
 .badge-row {
   margin-top: 10px;
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 6px;
 }
 .badge-row .el-tag,
@@ -333,6 +340,23 @@ onBeforeUnmount(() => {
   display: inline-flex;
   align-items: center;
   gap: 4px;
+}
+.badge-row .weather-condition-tag {
+  width: 100%;
+  min-width: 0;
+  height: 31px;
+  justify-content: center;
+  overflow: hidden;
+  font-size: 11px;
+  white-space: nowrap;
+}
+.weather-condition-tag span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.weather-condition-tag b {
+  flex: 0 0 auto;
+  font-weight: 750;
 }
 .btn-detail {
   position: absolute;

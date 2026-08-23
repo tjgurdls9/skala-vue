@@ -134,8 +134,8 @@
      '얹는' 방식은 얹은 티가 났다 — 유리다움은 투명도·블러·모서리 하이라이트로 낸다.
      호버 반응은 이 파일 아래쪽 '유리 표면의 호버 반응' 절 참고. */
   /* saturate가 없으면 blur만 먹어서 뿌옇게 죽는다. 채도를 올려야 유리 너머 색이 산다. */
-  --glass-blur: saturate(180%) blur(22px);
-  --glass-blur-strong: saturate(200%) blur(28px);
+  --glass-blur: saturate(205%) blur(26px);
+  --glass-blur-strong: saturate(225%) blur(34px);
 
   /* 12차: 유리 표면의 기본값. 6차의 SVG 노이즈 굴절을 대체한다.
      노이즈 변위는 배경에 '결'을 만들어 대리석처럼 보였다. 리퀴드 글라스는 결이 아니라
@@ -147,10 +147,10 @@
      블러는 굴절을 뭉개지 않을 만큼만(14px). */
   /* 13차-p: 기본 표면은 GPU 경로(saturate + blur)다. SVG 참조 필터는 느린 경로라
      큰 판에 걸면 호버 한 번에 프레임이 무너진다. */
-  --glass-surface: saturate(180%) blur(18px);
+  --glass-surface: saturate(205%) blur(24px);
   /* 굴절 렌즈. 작고 떠 있는 컨트롤에만 쓴다 — 거기서는 가장자리 띠가 면적의 큰 몫이라
      굴절이 실제로 보이고, 면적이 작아 비용도 감당된다(상단바는 카드의 1/24 넓이다). */
-  --glass-surface-lens: url(#lg-refract) saturate(200%) blur(12px);
+  --glass-surface-lens: url(#lg-refract) saturate(225%) blur(16px);
   /* 카드의 끝은 선 하나로 충분하다. 그림자는 아주 얕게만 — 떠 있는 느낌이 강하면
      화면이 부산해진다. */
   /* 유리 판의 위쪽 모서리에 빛이 걸리도록 흰 헤어라인으로 되돌린다 */
@@ -311,6 +311,35 @@ html[data-theme='light'] .weather-scene::after {
   aspect-ratio: 1;
   opacity: 0.26;
 }
+.orb-four {
+  top: 6%;
+  right: 19%;
+  width: clamp(54px, 7vw, 104px);
+  aspect-ratio: 1;
+  opacity: 0.3;
+}
+.orb-five {
+  top: 68%;
+  left: 17%;
+  width: clamp(72px, 10vw, 150px);
+  aspect-ratio: 1.4;
+  border-radius: 44% 56% 42% 58% / 58% 43% 57% 42%;
+  opacity: 0.22;
+}
+.orb-six {
+  top: 31%;
+  right: -3%;
+  width: clamp(78px, 10vw, 156px);
+  aspect-ratio: 1;
+  opacity: 0.24;
+}
+.orb-seven {
+  bottom: 22%;
+  left: -2%;
+  width: clamp(42px, 5vw, 82px);
+  aspect-ratio: 1;
+  opacity: 0.28;
+}
 html[data-theme='light'] .weather-scene-orb {
   background: linear-gradient(145deg, rgba(117, 186, 255, 0.76), rgba(0, 100, 255, 0.34));
   box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.72), 0 18px 50px rgba(0, 100, 255, 0.16);
@@ -319,6 +348,10 @@ html[data-theme='light'] .weather-scene-orb {
   .orb-one { animation: weather-orb-drift-one 22s ease-in-out infinite alternate; }
   .orb-two { animation: weather-orb-drift-two 28s ease-in-out infinite alternate; }
   .orb-three { animation: weather-orb-drift-three 18s ease-in-out infinite alternate; }
+  .orb-four { animation: weather-orb-drift-four 15s ease-in-out infinite alternate; }
+  .orb-five { animation: weather-orb-drift-five 24s ease-in-out infinite alternate; }
+  .orb-six { animation: weather-orb-drift-six 20s ease-in-out infinite alternate; }
+  .orb-seven { animation: weather-orb-drift-seven 17s ease-in-out infinite alternate; }
 }
 @keyframes weather-orb-drift-one {
   to { transform: translate(18vw, 8vh) rotate(16deg); }
@@ -328,6 +361,18 @@ html[data-theme='light'] .weather-scene-orb {
 }
 @keyframes weather-orb-drift-three {
   to { transform: translate(-8vw, -14vh) scale(1.18); }
+}
+@keyframes weather-orb-drift-four {
+  to { transform: translate(-7vw, 12vh) scale(1.12); }
+}
+@keyframes weather-orb-drift-five {
+  to { transform: translate(18vw, -7vh) rotate(20deg); }
+}
+@keyframes weather-orb-drift-six {
+  to { transform: translate(-16vw, 10vh) rotate(-15deg); }
+}
+@keyframes weather-orb-drift-seven {
+  to { transform: translate(10vw, -13vh) scale(1.2); }
 }
 
 /* 13차-n: 날씨별 색조(#14213f/#1b2233/…)를 걷어냈다. 차이가 미묘해서 무엇이 왜
@@ -1229,4 +1274,45 @@ html[data-theme='dark'] .unit-toggler .el-switch:not(.is-checked) .el-switch__in
 }
 .unit-toggler .el-switch.is-checked .el-switch__core {
   border-color: rgba(255, 255, 255, 0.52) !important;
+}
+
+/* 다크 유리 카드의 입력창·상태 태그는 의미색을 남기되, 텍스트 대비는 독립적으로 확보한다. */
+html[data-theme='dark'] .search-field .el-input__wrapper {
+  background: rgba(10, 18, 35, 0.68) !important;
+  box-shadow: 0 0 0 1px rgba(190, 215, 250, 0.28) inset !important;
+}
+html[data-theme='dark'] .search-field .el-input__inner {
+  color: #f5f7fb !important;
+}
+html[data-theme='dark'] .search-field .el-input__inner::placeholder,
+html[data-theme='dark'] .search-field .el-input__prefix,
+html[data-theme='dark'] .search-state-chip {
+  color: #c7d5e9 !important;
+}
+html[data-theme='dark'] .weather-card .weather-condition-tag.el-tag--success {
+  background: rgba(36, 138, 94, 0.22) !important;
+  color: #8be5b3 !important;
+}
+html[data-theme='dark'] .weather-card .weather-condition-tag.el-tag--info {
+  background: rgba(0, 100, 255, 0.22) !important;
+  color: #a7c9ff !important;
+}
+html[data-theme='dark'] .weather-card .weather-condition-tag.el-tag--warning {
+  background: rgba(232, 158, 56, 0.22) !important;
+  color: #ffd18a !important;
+}
+html[data-theme='dark'] .weather-card .weather-condition-tag.el-tag--danger {
+  background: rgba(220, 73, 63, 0.22) !important;
+  color: #ffaaa1 !important;
+}
+html[data-theme='dark'] .weather-card .weather-condition-tag {
+  border-color: rgba(221, 235, 255, 0.16) !important;
+}
+@media (max-width: 480px) {
+  .badge-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .badge-row .weather-condition-tag:last-child {
+    grid-column: 1 / -1;
+  }
 }

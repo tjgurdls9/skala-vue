@@ -190,7 +190,7 @@ onBeforeUnmount(() => {
       <feDisplacementMap
         in="SourceGraphic"
         in2="map"
-        scale="44"
+        scale="54"
         xChannelSelector="R"
         yChannelSelector="G"
         result="dispWarm"
@@ -198,7 +198,7 @@ onBeforeUnmount(() => {
       <feDisplacementMap
         in="SourceGraphic"
         in2="map"
-        scale="24"
+        scale="34"
         xChannelSelector="R"
         yChannelSelector="G"
         result="dispCool"
@@ -226,12 +226,16 @@ onBeforeUnmount(() => {
     <i class="weather-scene-orb orb-one"></i>
     <i class="weather-scene-orb orb-two"></i>
     <i class="weather-scene-orb orb-three"></i>
+    <i class="weather-scene-orb orb-four"></i>
+    <i class="weather-scene-orb orb-five"></i>
+    <i class="weather-scene-orb orb-six"></i>
+    <i class="weather-scene-orb orb-seven"></i>
   </div>
 
   <div class="app-container">
     <header class="brand">
       <h1 class="wordmark">
-        <img class="brand-mark" src="/brand/weather-desk-mark.png" alt="" />
+        <img class="brand-mark" src="/brand/weather-desk-mark-v2.png" alt="" />
         <span class="wordmark-thin">WEATHER</span><span class="wordmark-bold">DESK</span
         ><span class="wordmark-dot" aria-hidden="true">.</span>
       </h1>
