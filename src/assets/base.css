@@ -1289,23 +1289,23 @@ html[data-theme='dark'] .search-field .el-input__prefix,
 html[data-theme='dark'] .search-state-chip {
   color: #c7d5e9 !important;
 }
-html[data-theme='dark'] .weather-card .weather-condition-tag.el-tag--success {
+html[data-theme='dark'] .weather-condition-tag.el-tag--success {
   background: rgba(36, 138, 94, 0.22) !important;
   color: #8be5b3 !important;
 }
-html[data-theme='dark'] .weather-card .weather-condition-tag.el-tag--info {
+html[data-theme='dark'] .weather-condition-tag.el-tag--info {
   background: rgba(0, 100, 255, 0.22) !important;
   color: #a7c9ff !important;
 }
-html[data-theme='dark'] .weather-card .weather-condition-tag.el-tag--warning {
+html[data-theme='dark'] .weather-condition-tag.el-tag--warning {
   background: rgba(232, 158, 56, 0.22) !important;
   color: #ffd18a !important;
 }
-html[data-theme='dark'] .weather-card .weather-condition-tag.el-tag--danger {
+html[data-theme='dark'] .weather-condition-tag.el-tag--danger {
   background: rgba(220, 73, 63, 0.22) !important;
   color: #ffaaa1 !important;
 }
-html[data-theme='dark'] .weather-card .weather-condition-tag {
+html[data-theme='dark'] .weather-condition-tag {
   border-color: rgba(221, 235, 255, 0.16) !important;
 }
 @media (max-width: 480px) {

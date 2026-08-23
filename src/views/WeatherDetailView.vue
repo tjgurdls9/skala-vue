@@ -9,6 +9,7 @@ import {
   findCity,
   gradeCity,
   GRADE_STANDARD,
+  buildWeatherTags,
   buildRiskAlerts,
   build7P,
   buildExecScore,
@@ -115,6 +116,7 @@ const displayTemp = computed(() => {
 const riskAlerts = computed(() =>
   city.value ? buildRiskAlerts(city.value).filter((alert) => alert.level !== 'success') : [],
 )
+const weatherTags = computed(() => (city.value ? buildWeatherTags(city.value) : []))
 
 // 11차: 마케팅 7P + 경영 기능 5축(인사/재무/회계/생산물류/안전)
 const ops = computed(() => (city.value ? build7P(city.value) : { mode: null, items: [] }))
@@ -184,7 +186,11 @@ const metrics = computed(() => {
       icon: Drizzling,
       value: c.humidity,
       unit: '%',
-      note: c.humidity >= 60 ? '쾌적 구간(40–60%)을 상회합니다.' : '쾌적 구간에 있습니다.',
+      note: c.humidity > GRADE_STANDARD.humidity.bestMax
+        ? '쾌적 구간(40–60%)을 상회합니다.'
+        : c.humidity < GRADE_STANDARD.humidity.bestMin
+          ? '쾌적 구간(40–60%)보다 낮습니다.'
+          : '쾌적 구간에 있습니다.',
     },
     {
       label: '바람',
@@ -261,23 +267,9 @@ const goBack = () => {
           ↓{{ configStore.convertTemperature(city.tempMin) }}°
         </p>
         <div class="badge-row">
-          <el-tag :type="city.temp >= 25 ? 'danger' : 'info'">
-            <el-icon><component :is="city.temp >= 25 ? Sunny : PartlyCloudy" /></el-icon>
-            {{ city.temp >= 25 ? '더움 (25도 이상)' : '선선함 (25도 미만)' }}
-          </el-tag>
-          <el-tag :type="city.humidity >= 60 ? 'info' : city.humidity >= 40 ? 'success' : 'warning'">
-            <el-icon
-              ><component
-                :is="city.humidity >= 60 ? Drizzling : city.humidity >= 40 ? CircleCheck : WindPower"
-            /></el-icon>
-            {{
-              city.humidity >= 60 ? '습함 (60% 이상)' : city.humidity >= 40 ? '상쾌함' : '건조함'
-            }}
-          </el-tag>
-          <el-tag :type="city.microdust >= 50 ? 'danger' : 'success'">
-            <WeatherDeskIcon v-if="city.microdust >= 50" name="risk" class="weather-tag-art" />
-            <el-icon v-else><CircleCheck /></el-icon>
-            미세먼지 {{ city.microdust }}
+          <el-tag v-for="tag in weatherTags" :key="tag.key" :type="tag.tone" class="weather-condition-tag">
+            <WeatherDeskIcon :name="tag.icon" class="weather-tag-art" />
+            <span>{{ tag.key }}</span><b>{{ tag.value }}</b>
           </el-tag>
         </div>
       </section>
@@ -387,6 +379,9 @@ const goBack = () => {
             <span class="grade-stat-hint">‘좋음’ 기준 {{ GRADE_STANDARD.dust.best }}µg/m³ 미만</span>
           </div>
         </div>
+        <p class="grade-explainer">
+          기초 등급은 기온·습도·미세먼지 3개 기준으로 판정합니다. 상단 상태 태그와 기상 대응 지수에는 바람·하늘·시정도 함께 반영합니다.
+        </p>
 
         <!-- 예보도 현재 지수와 같은 100점 체계로 읽되, 없는 대기질 축은 분모에서 제외한다. -->
         <template v-if="forecast.length">
@@ -594,14 +589,25 @@ const goBack = () => {
   color: #48484f;
 }
 .badge-row {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 6px;
 }
-.badge-row .el-tag {
-  display: inline-flex;
+.badge-row .weather-condition-tag {
+  width: 100%;
+  min-width: 0;
+  height: 31px;
   align-items: center;
   gap: 4px;
+}
+.badge-row .weather-condition-tag span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.badge-row .weather-condition-tag b {
+  margin-left: auto;
+  font-weight: 700;
 }
 .grade-row {
   display: grid;
@@ -631,6 +637,12 @@ const goBack = () => {
 .grade-stat-hint {
   font-size: 11px;
   color: #48515f;
+}
+.grade-explainer {
+  margin: -6px 0 16px;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--text-secondary);
 }
 .section-lead {
   margin: -4px 0 12px;

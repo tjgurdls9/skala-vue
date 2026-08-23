@@ -7,7 +7,7 @@ import {
   buildDiscomfort,
   buildStayMinutes,
   build7P,
-  GRADE_STANDARD,
+  buildWeatherTags,
 } from '../../data/weatherMock.js'
 
 // 1. 상위로부터 단방향 주입받을 객체 데이터 규격 검수 (매크로)
@@ -41,37 +41,7 @@ const alertCount = computed(
   () => buildRiskAlerts(props.cityItem).filter((alert) => alert.level !== 'success').length,
 )
 
-// 카드의 상태 태그는 예전의 별도 임계값(25도·60%·50) 대신, 지역 점수를 만들 때 쓰는
-// GRADE_STANDARD와 같은 기준을 쓴다. 새로 받아오는 풍속·하늘·시정까지 더해 3×2 칸을 채운다.
-const weatherTags = computed(() => {
-  const city = props.cityItem
-  const visibility = Number.isFinite(city.visibility) ? city.visibility : 10
-  const rainy = ['Rain', 'Drizzle', 'Thunderstorm', 'Snow'].includes(city.weatherMain)
-  const temp = city.temp >= GRADE_STANDARD.temp.bestMin && city.temp <= GRADE_STANDARD.temp.bestMax
-    ? { value: '적정', tone: 'success' }
-    : city.temp >= GRADE_STANDARD.temp.okMin && city.temp <= GRADE_STANDARD.temp.okMax
-      ? { value: city.temp > GRADE_STANDARD.temp.bestMax ? '따뜻함' : '선선함', tone: 'info' }
-      : { value: city.temp > GRADE_STANDARD.temp.okMax ? '고온' : '저온', tone: 'danger' }
-  const humidity = city.humidity >= GRADE_STANDARD.humidity.bestMin && city.humidity <= GRADE_STANDARD.humidity.bestMax
-    ? { value: '적정', tone: 'success' }
-    : city.humidity >= GRADE_STANDARD.humidity.okMin && city.humidity <= GRADE_STANDARD.humidity.okMax
-      ? { value: city.humidity > GRADE_STANDARD.humidity.bestMax ? '다습' : '건조', tone: 'info' }
-      : city.humidity > GRADE_STANDARD.humidity.okMax
-        ? { value: '고습', tone: 'danger' }
-        : { value: '건조', tone: 'warning' }
-  const air = city.microdust < GRADE_STANDARD.dust.best
-    ? { value: '좋음', tone: 'success' }
-    : city.microdust < GRADE_STANDARD.dust.ok ? { value: '보통', tone: 'info' } : { value: '나쁨', tone: 'danger' }
-
-  return [
-    { key: '기온', icon: 'sun', ...temp },
-    { key: '습도', icon: 'observation', ...humidity },
-    { key: '대기', icon: 'risk', ...air },
-    { key: '바람', icon: city.wind >= 9 ? 'risk' : 'observation', value: city.wind >= 9 ? '강풍' : city.wind >= 6 ? '주의' : '안정', tone: city.wind >= 9 ? 'danger' : city.wind >= 6 ? 'warning' : 'success' },
-    { key: '하늘', icon: rainy ? 'risk' : 'sun', value: rainy ? '강수' : city.weatherMain === 'Clouds' ? '흐림' : '맑음', tone: rainy ? 'warning' : city.weatherMain === 'Clouds' ? 'info' : 'success' },
-    { key: '시정', icon: 'location', value: visibility < 5 ? '저시정' : visibility < 8 ? '보통' : '양호', tone: visibility < 5 ? 'warning' : visibility < 8 ? 'info' : 'success' },
-  ]
-})
+const weatherTags = computed(() => buildWeatherTags(props.cityItem))
 
 // 13차-p: 지금까지 이 자리에 판촉(Promotion) 한 줄만 고정으로 띄웠다. 7P를 다 계산해
 // 놓고 하나만 보여준 셈이라, 카드만 보면 '이 서비스는 커뮤니케이션 얘기만 한다'로 읽혔다.

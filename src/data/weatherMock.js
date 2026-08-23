@@ -629,6 +629,37 @@ export const gradeCity = (item) => {
   return { ...item, grade, code: `${temp}-${humidity}-${dust}`, segment: getSegment(grade) }
 }
 
+// 목록 카드와 상세 화면에서 같은 현재 상태를 읽도록 태그를 한 곳에서 만든다.
+// 기초 등급(기온·습도·미세먼지) 기준은 그대로 쓰되, 실시간으로 받는 바람·하늘·시정도 함께 보여 준다.
+export const buildWeatherTags = (item) => {
+  const visibility = Number.isFinite(item.visibility) ? item.visibility : 10
+  const rainy = ['Rain', 'Drizzle', 'Thunderstorm', 'Snow'].includes(item.weatherMain)
+  const temp = item.temp >= GRADE_STANDARD.temp.bestMin && item.temp <= GRADE_STANDARD.temp.bestMax
+    ? { value: '적정', tone: 'success' }
+    : item.temp >= GRADE_STANDARD.temp.okMin && item.temp <= GRADE_STANDARD.temp.okMax
+      ? { value: item.temp > GRADE_STANDARD.temp.bestMax ? '따뜻함' : '선선함', tone: 'info' }
+      : { value: item.temp > GRADE_STANDARD.temp.okMax ? '고온' : '저온', tone: 'danger' }
+  const humidity = item.humidity >= GRADE_STANDARD.humidity.bestMin && item.humidity <= GRADE_STANDARD.humidity.bestMax
+    ? { value: '적정', tone: 'success' }
+    : item.humidity >= GRADE_STANDARD.humidity.okMin && item.humidity <= GRADE_STANDARD.humidity.okMax
+      ? { value: item.humidity > GRADE_STANDARD.humidity.bestMax ? '다습' : '건조', tone: 'info' }
+      : item.humidity > GRADE_STANDARD.humidity.okMax
+        ? { value: '고습', tone: 'danger' }
+        : { value: '건조', tone: 'warning' }
+  const air = item.microdust < GRADE_STANDARD.dust.best
+    ? { value: '좋음', tone: 'success' }
+    : item.microdust < GRADE_STANDARD.dust.ok ? { value: '보통', tone: 'info' } : { value: '나쁨', tone: 'danger' }
+
+  return [
+    { key: '기온', icon: 'sun', ...temp },
+    { key: '습도', icon: 'observation', ...humidity },
+    { key: '대기', icon: 'risk', ...air },
+    { key: '바람', icon: item.wind >= 9 ? 'risk' : 'observation', value: item.wind >= 9 ? '강풍' : item.wind >= 6 ? '주의' : '안정', tone: item.wind >= 9 ? 'danger' : item.wind >= 6 ? 'warning' : 'success' },
+    { key: '하늘', icon: rainy ? 'risk' : 'sun', value: rainy ? '강수' : item.weatherMain === 'Clouds' ? '흐림' : '맑음', tone: rainy ? 'warning' : item.weatherMain === 'Clouds' ? 'info' : 'success' },
+    { key: '시정', icon: 'location', value: visibility < 5 ? '저시정' : visibility < 8 ? '보통' : '양호', tone: visibility < 5 ? 'warning' : visibility < 8 ? 'info' : 'success' },
+  ]
+}
+
 // --- 경영 의사결정 확장: 재고 / 인력 / 리스크경보 (마케팅 축과 별개로 원본 수치를 직접 본다) ---
 
 const INVENTORY_HOT_TEMP = 28 // 이 온도 이상이면 냉장류 수요가 뛴다고 본다
