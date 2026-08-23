@@ -1,6 +1,6 @@
 <script setup>
 import { onMounted, onBeforeUnmount, ref } from 'vue'
-import { RouterView, useRoute } from 'vue-router'
+import { RouterView, useRoute, useRouter } from 'vue-router'
 import UnitToggler from './components/weather/UnitToggler.vue'
 import OnboardingDialog from './components/OnboardingDialog.vue'
 import WeatherDataStatus from './components/weather/WeatherDataStatus.vue'
@@ -9,6 +9,7 @@ import { useWeatherStore } from './stores/weatherStore.js'
 
 // el-menu의 default-active를 현재 경로와 맞춰야 새로고침해도 활성 탭이 맞게 표시된다
 const route = useRoute()
+const router = useRouter()
 
 const ONBOARDING_KEY = 'weather-desk:onboarding:v1'
 const THEME_KEY = 'weather-desk:theme'
@@ -48,6 +49,7 @@ const completeOnboarding = () => {
     // 저장이 제한된 브라우저에서도 안내를 닫고 서비스는 계속 사용할 수 있어야 한다.
   }
   showOnboarding.value = false
+  router.replace('/dashboard')
 }
 
 // 13차-n: 배경이 날씨를 따라가지 않게 되면서 App은 테마 스토어를 더 쓰지 않는다.
