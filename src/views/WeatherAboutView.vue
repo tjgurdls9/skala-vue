@@ -11,18 +11,18 @@ const goHome = () => {
 // 8차: <ul><li> 맨몸 목록이라 유리 카드 안에서 브라우저 기본 불릿만 덩그러니 떠 있었다 —
 // 항목을 데이터로 빼고 체크 아이콘 + 정돈된 행으로 그린다.
 const FEATURES = [
-  'components/weather/ 폴더의 독립 부품 연동 (props / emits / slot)',
-  '클라이언트 사이드 라우팅으로 새로고침 없는 화면 전환',
-  'URL 쿼리 스트링과 실시간 검색 상태 동기화',
-  '동적 경로 매칭(/weather/:cityId)으로 도시별 상세 페이지 제공',
-  'Catch-all Route로 정의되지 않은 주소 처리',
-  'Navigation Guard(afterEach)로 화면별 문서 제목 설정',
+  '전국 지도를 훑어 기상 대응이 필요한 지역을 먼저 찾습니다.',
+  '기상 대응 지수와 경보로 일정·채널·인력·안전의 우선순위를 정합니다.',
+  '지역 상세에서 지수의 감점 원인과 5일 전망을 함께 확인합니다.',
+  '마케팅 7P와 경영 기능별 영향은 조직 상황에 맞게 참고합니다.',
+  '검색과 지역 선택을 이용해 관심 지역을 빠르게 비교합니다.',
+  '분석값은 실제 조직 데이터와 함께 검토한 뒤 의사결정에 사용합니다.',
 ]
 
 const FACTS = [
   { value: '83', label: '전국 관측 지점', icon: Location },
-  { value: '7P', label: '마케팅 영향 분석', icon: DataAnalysis },
-  { value: '5', label: '경영 기능 분석', icon: Connection },
+  { value: '6', label: '기상 판단 축', icon: DataAnalysis },
+  { value: '7', label: '경영 분석 관점', icon: Connection },
 ]
 </script>
 
@@ -37,8 +37,8 @@ const FACTS = [
         <p class="about-eyebrow">WEATHER INTELLIGENCE</p>
         <h3>날씨를 숫자에서 실행 기준으로 바꿉니다.</h3>
         <p class="about-lead">
-          전국 83개 관측 지점의 실시간 날씨를 운영 여건 점수로 환산하고, 마케팅 믹스 7P와
-          인사·재무·회계·물류·안전 관점의 영향까지 한 화면에서 연결합니다.
+          전국 83개 관측 지점의 실시간 날씨를 기상 대응 지수로 환산하고, 인사·재무·회계·생산·
+          물류·마케팅·안전 등 전사 관점의 영향까지 한 화면에서 연결합니다.
         </p>
       </div>
 
@@ -52,7 +52,7 @@ const FACTS = [
 
       <div class="about-body">
         <div>
-          <p class="about-section-label">구현 범위</p>
+          <p class="about-section-label">활용 방법</p>
           <ul class="about-list">
             <li v-for="feature in FEATURES" :key="feature" class="about-list-item">
               <el-icon class="about-check"><Check /></el-icon>

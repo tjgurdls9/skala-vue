@@ -136,7 +136,7 @@ const heroBadgeText = computed(() => {
   // 13차-q: pinned일 때 태그를 통째로 지웠더니 '왜 이 지역이 여기 있는지' 근거가
   // 사라졌다. 항상 둘 중 하나를 붙인다 — 직접 골랐거나, 기본값(1위)이거나.
   const pinned = weatherStore.selectedCityId === spotlightCity.value.id
-  return `${spotlightCity.value.name} 기준 실시간 날씨 (${pinned ? '직접 선택' : '운영 여건 1위'})`
+  return `${spotlightCity.value.name} 기준 실시간 날씨 (${pinned ? '직접 선택' : '기상 대응 우수'})`
 })
 
 // 11차: 예산을 걷어낸 자리에 도메인과 무관하게 통하는 지표를 둔다.
@@ -253,7 +253,7 @@ const avgScore = computed(() => {
   return Math.round(sum / budgetPlan.value.length)
 })
 
-// 전국 운영 모드 분포. "지금 전국이 어떤 상태인가"를 숫자 하나가 아니라 구성으로 보여준다.
+// 전국 권장 대응 전략 분포. "지금 전국이 어떤 상태인가"를 숫자 하나가 아니라 구성으로 보여준다.
 const opsSpread = computed(() => {
   const counts = summarizeOps(budgetPlan.value)
   return Object.values(OPS_MODES).map((mode) => ({
@@ -331,7 +331,7 @@ const goDetail = (item) => {
           <aside class="cockpit-side">
             <h3 class="cockpit-title"><el-icon><Odometer /></el-icon> 전국 요약</h3>
             <div class="cockpit-stat">
-              <span class="cockpit-stat-label">평균 운영 여건 점수</span>
+              <span class="cockpit-stat-label">평균 기상 대응 지수</span>
               <span class="cockpit-stat-value">{{ avgScore ?? '—' }}<small>/{{ EXEC_MAX_SCORE }}</small></span>
             </div>
             <div class="cockpit-stat">
@@ -351,7 +351,7 @@ const goDetail = (item) => {
 
             <!-- 평균만 보면 '전국이 고만고만하다'로 읽힌다. 구성과 양 끝을 같이 둔다. -->
             <div class="cockpit-block">
-              <span class="cockpit-stat-label">운영 모드 분포</span>
+              <span class="cockpit-stat-label">권장 대응 전략</span>
               <div class="mode-bar">
                 <i
                   v-for="mode in opsSpread"
@@ -385,7 +385,7 @@ const goDetail = (item) => {
               <!-- 점수 축이라 기온의 두 끝과 같은 줄에 설 수 없다. 아래로 내려 성격을 가른다. -->
               <p class="span-note">
                 <el-icon><WarnTriangleFilled /></el-icon>
-                운영 여건 최하위 <b>{{ extremes.worst.name }}</b> {{ extremes.worst.execScore }}점
+                기상 대응 최저 <b>{{ extremes.worst.name }}</b> {{ extremes.worst.execScore }}점
               </p>
             </div>
           </aside>
@@ -408,7 +408,7 @@ const goDetail = (item) => {
           <aside class="cockpit-side">
             <!-- 13차-i: 시상대는 선택과 무관한 전국 정보라 패널 맨 위에 상시로 둔다.
                  눌러서 그 지역으로 초점을 옮길 수도 있어 목록이자 컨트롤이다. -->
-            <h3 class="cockpit-title"><el-icon><Trophy /></el-icon> 운영 여건 상위 3곳</h3>
+            <h3 class="cockpit-title"><el-icon><Trophy /></el-icon> 기상 대응 상위 3곳</h3>
             <div v-if="podiumStand.length === 3" class="podium">
               <button
                 v-for="slot in podiumStand"
@@ -431,7 +431,7 @@ const goDetail = (item) => {
                   <!-- 13차-q: 시상대 3곳 밖의 지역을 고르면 이 지역이 '1위'도 아니고
                        시상대 강조 링(is-focus)도 안 붙어서, 왜 이 지역이 떠 있는지
                        알 방법이 없었다. 배지와 같은 근거를 여기도 붙인다. -->
-                  <span class="cockpit-title-tag">{{ picked ? '직접 선택' : '운영 여건 1위' }}</span>
+                  <span class="cockpit-title-tag">{{ picked ? '직접 선택' : '기상 대응 우수' }}</span>
                 </h3>
 
                 <!-- 점수 게이지. 원호의 채움 길이와 색이 같은 값을 두 가지로 말한다 -->
@@ -471,12 +471,11 @@ const goDetail = (item) => {
                   </li>
                 </ul>
 
-                <p v-if="focusAlerts.length" class="cockpit-alert">
-                  <el-icon><WarnTriangleFilled /></el-icon> {{ focusAlerts[0].text }}
-                  <template v-if="focusAlerts.length > 1">
-                    외 {{ focusAlerts.length - 1 }}건
-                  </template>
-                </p>
+                <ul v-if="focusAlerts.length" class="cockpit-alerts" aria-label="감지된 기상 리스크">
+                  <li v-for="alert in focusAlerts" :key="alert.text" class="cockpit-alert">
+                    <el-icon><WarnTriangleFilled /></el-icon> {{ alert.text }}
+                  </li>
+                </ul>
 
                 <el-button size="small" type="primary" class="cockpit-go" @click="goDetail(focus)">
                   상세 분석 보기
@@ -522,7 +521,7 @@ const goDetail = (item) => {
                 </button>
               </div>
               <el-select v-model="sortKey" size="small" class="sort-select">
-                <el-option label="운영 여건순" value="score" />
+                <el-option label="기상 대응 지수순" value="score" />
                 <el-option label="기온 높은순" value="temp" />
                 <el-option label="불쾌지수 높은순" value="thi" />
                 <el-option label="이름순" value="name" />
@@ -1190,6 +1189,13 @@ const goDetail = (item) => {
   font-size: 15px;
   line-height: 1.5;
   color: #48484f;
+}
+.cockpit-alerts {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 .cockpit-alert {
   display: flex;

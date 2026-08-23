@@ -962,10 +962,11 @@ export const buildDaylight = (item) => {
   const dayLengthMin = Math.round((sunset - sunrise) / 60)
   const isDay = observedAt >= sunrise && observedAt < sunset
   const progress = isDay ? (observedAt - sunrise) / (sunset - sunrise) : null
+  const nightStart = observedAt < sunrise ? sunset - 86400 : sunset
+  const nightEnd = observedAt < sunrise ? sunrise : sunrise + 86400
+  const nightProgress = isDay ? null : (observedAt - nightStart) / (nightEnd - nightStart)
 
-  // 12차: 밤이면 progress가 null이라 화면의 호 위에 해가 아예 안 그려졌다 —
-  // "해가 없는 일조 그래프"가 됐다. 해가 지평선 어느 쪽에 있는지(일출 전 / 일몰 후)를
-  // 같이 내려보내서, 밤에도 지평선 아래 해당 지점에 표식을 놓는다.
+  // 낮과 밤을 같은 호로 표현하기 위해 야간 진행률도 함께 내려보낸다.
   const phase = isDay ? 'day' : observedAt < sunrise ? 'before-sunrise' : 'after-sunset'
 
   return {
@@ -975,6 +976,7 @@ export const buildDaylight = (item) => {
     isDay,
     phase,
     progress,
+    nightProgress,
     dayLengthLabel: `${Math.floor(dayLengthMin / 60)}시간 ${dayLengthMin % 60}분`,
   }
 }
@@ -1151,7 +1153,7 @@ export const findExecBottleneck = (exec) => {
 // 지역당 60만원이 됐다. 아무 캠페인도 못 돌리는 금액이고, 무엇보다 "%"는 지시가 아니다.
 //
 // 무엇으로 바꿨나
-// 각 지역에 오늘의 **운영 모드**를 내리고, 그 근거를 서비스 마케팅 **7P**로 펼친다.
+// 각 지역에 오늘의 **권장 대응 전략**을 내리고, 그 근거를 서비스 마케팅 **7P**로 펼친다.
 // 기존 4축(마케팅/재고/인력/경보)은 7P 안에 자연스럽게 흡수된다
 // (마케팅→Promotion, 재고→Product, 인력→People). 여기에 Price/Place/Process/
 // Physical Evidence가 더해져서 날씨가 건드리는 경영 레버가 훨씬 넓어진다.
@@ -1163,38 +1165,38 @@ export const findExecBottleneck = (exec) => {
 export const OPS_MODES = {
   normal: {
     key: 'normal',
-    label: '정상 운영',
+    label: '기본 전략 유지',
     tone: 'success',
     color: '#1c7048',
-    summary: '평소대로 운영합니다. 옥외 활동에 제약이 없습니다.',
+    summary: '현재 계획을 유지하되 주요 기상 지표를 계속 관찰합니다.',
   },
   indoor: {
     key: 'indoor',
-    label: '실내 전환',
+    label: '채널 전환',
     tone: 'info',
     color: '#0a53c0',
-    summary: '옥외 동선을 실내·비대면 채널로 옮깁니다.',
+    summary: '대면·옥외 의존도를 낮추고 대체 채널과 업무 방식을 우선합니다.',
   },
   reduced: {
     key: 'reduced',
-    label: '단축 운영',
+    label: '선제 조정',
     tone: 'warning',
     color: '#8a4e00',
-    summary: '체류 시간이 짧아 운영 시간과 인력을 줄입니다.',
+    summary: '일정·인력·자원 집행 강도를 선제적으로 조정합니다.',
   },
   halt: {
     key: 'halt',
-    label: '중단 검토',
+    label: '리스크 대응',
     tone: 'danger',
     color: '#ad251c',
-    summary: '옥외 활동을 중단하고 안전 조치를 우선합니다.',
+    summary: '노출이 큰 활동을 보류하고 안전·손실 방지 조치를 우선합니다.',
   },
 }
 
 const RAINY = ['Rain', 'Drizzle', 'Thunderstorm', 'Snow']
 const feelsOf = (item) => (typeof item.feelsLike === 'number' ? item.feelsLike : item.temp)
 
-// 운영 모드 판정. 운영 여건 점수만으로 자르지 않고, 안전에 직결되는 조건은 점수와 무관하게
+// 권장 대응 전략 판정. 기상 대응 지수만으로 자르지 않고, 안전에 직결되는 조건은 점수와 무관하게
 // 곧바로 상위 모드로 올린다(점수가 높아도 폭염이면 단축이 맞다).
 export const buildOpsMode = (item) => {
   const feels = feelsOf(item)
@@ -1373,15 +1375,15 @@ const buildFinanceImpact = (item) => {
       : Math.round(Math.abs(diff) * HEATING_COST_PER_DEG)
   const energyKind = diff > 0 ? '냉방' : '난방'
 
-  // 매출 영향: 옥외 유동인구에 민감한 사업 기준. 운영 여건 점수를 그대로 대리 지표로 쓴다.
-  // 55점을 기준선으로 두고 위아래로 벌어진 만큼 매출이 움직인다고 본다.
+  // 수요 민감도 시나리오: 실제 매출 예측이 아니라, 옥외 유동에 민감한 업무를 가정한 참고값이다.
+  // 55점을 기준선으로 두고 기상 노출에 따른 방향과 크기만 비교한다.
   const salesDelta = Math.round((item.execScore - 55) * 0.45)
 
   const notes = [
     `${energyKind} 부하로 일 에너지 비용이 약 ${energyDelta}% 증가할 것으로 봅니다.`,
     salesDelta >= 0
-      ? `옥외 유동인구가 늘어 일 매출이 약 +${salesDelta}% 예상됩니다.`
-      : `옥외 이탈로 일 매출이 약 ${salesDelta}% 예상됩니다.`,
+      ? `옥외 유동 민감 업무의 수요 시나리오는 기준 대비 +${salesDelta}%입니다.`
+      : `옥외 유동 민감 업무의 수요 시나리오는 기준 대비 ${salesDelta}%입니다.`,
   ]
   if (isRainy2(item)) notes.push('운송·대체 채널 비용이 늘어 변동비 비중이 올라갑니다.')
 

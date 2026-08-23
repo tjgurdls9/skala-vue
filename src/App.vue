@@ -1,12 +1,53 @@
 <script setup>
-import { onMounted, onBeforeUnmount } from 'vue'
+import { onMounted, onBeforeUnmount, ref } from 'vue'
 import { RouterView, useRoute } from 'vue-router'
 import UnitToggler from './components/weather/UnitToggler.vue'
-import { House, DataAnalysis, MagicStick, Tools } from '@element-plus/icons-vue'
+import OnboardingDialog from './components/OnboardingDialog.vue'
+import { House, DataAnalysis, MagicStick, Tools, Moon, Sunny, InfoFilled } from '@element-plus/icons-vue'
 import { useWeatherStore } from './stores/weatherStore.js'
 
 // el-menu의 default-active를 현재 경로와 맞춰야 새로고침해도 활성 탭이 맞게 표시된다
 const route = useRoute()
+
+const ONBOARDING_KEY = 'weather-desk:onboarding:v1'
+const THEME_KEY = 'weather-desk:theme'
+const showOnboarding = ref(false)
+let savedTheme = null
+try {
+  savedTheme = localStorage.getItem(THEME_KEY)
+} catch {
+  // 저장소를 사용할 수 없으면 기기 설정만 따른다.
+}
+const prefersDark = window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false
+const theme = ref(
+  savedTheme === 'light' || savedTheme === 'dark' ? savedTheme : prefersDark ? 'dark' : 'light',
+)
+
+const applyTheme = () => {
+  document.documentElement.dataset.theme = theme.value
+  document.documentElement.style.colorScheme = theme.value
+}
+
+const toggleTheme = () => {
+  theme.value = theme.value === 'dark' ? 'light' : 'dark'
+  try {
+    localStorage.setItem(THEME_KEY, theme.value)
+  } catch {
+    // 저장이 제한돼도 현재 화면의 테마 전환은 유지한다.
+  }
+  applyTheme()
+}
+
+applyTheme()
+
+const completeOnboarding = () => {
+  try {
+    localStorage.setItem(ONBOARDING_KEY, 'done')
+  } catch {
+    // 저장이 제한된 브라우저에서도 안내를 닫고 서비스는 계속 사용할 수 있어야 한다.
+  }
+  showOnboarding.value = false
+}
 
 // 13차-n: 배경이 날씨를 따라가지 않게 되면서 App은 테마 스토어를 더 쓰지 않는다.
 // (스토어는 남는다 — 콕핏 배지의 날씨 아이콘이 읽는다.)
@@ -60,6 +101,11 @@ const onPointerMove = (event) => {
 }
 
 onMounted(() => {
+  try {
+    showOnboarding.value = localStorage.getItem(ONBOARDING_KEY) !== 'done'
+  } catch {
+    showOnboarding.value = true
+  }
   window.addEventListener('pointermove', onPointerMove, { passive: true })
 })
 onBeforeUnmount(() => {
@@ -213,7 +259,27 @@ onBeforeUnmount(() => {
         >
       </el-menu>
 
-      <UnitToggler />
+      <div class="nav-tools">
+        <el-button
+          class="theme-toggle"
+          circle
+          aria-label="서비스 안내 다시 보기"
+          title="서비스 안내 다시 보기"
+          @click="showOnboarding = true"
+        >
+          <el-icon><InfoFilled /></el-icon>
+        </el-button>
+        <el-button
+          class="theme-toggle"
+          circle
+          :aria-label="theme === 'dark' ? '라이트 모드로 전환' : '다크 모드로 전환'"
+          :title="theme === 'dark' ? '라이트 모드' : '다크 모드'"
+          @click="toggleTheme"
+        >
+          <el-icon><component :is="theme === 'dark' ? Sunny : Moon" /></el-icon>
+        </el-button>
+        <UnitToggler />
+      </div>
     </nav>
 
     <!-- 7차: 모든 라우트가 동적 import(코드 스플리팅)라, 탭을 옮기면 이전 화면이 사라지고
@@ -228,6 +294,8 @@ onBeforeUnmount(() => {
       </RouterView>
     </main>
   </div>
+
+  <OnboardingDialog v-model="showOnboarding" @complete="completeOnboarding" />
 </template>
 
 <style>
@@ -297,15 +365,30 @@ onBeforeUnmount(() => {
 }
 .wordmark-dot {
   margin-left: -7px;
-  color: #4da3ff;
+  color: #0064ff;
   font-weight: 800;
-  text-shadow: 0 0 18px rgba(77, 163, 255, 0.45);
 }
 .brand-sub {
   margin: 0;
   font-size: 15px;
   font-weight: 500;
   color: rgba(214, 226, 244, 0.78);
+}
+:global(html[data-theme='light']) .wordmark {
+  color: #101828;
+}
+:global(html[data-theme='light']) .wordmark-thin {
+  color: #667085;
+}
+:global(html[data-theme='light']) .brand-sub {
+  color: #475467;
+}
+:global(html[data-theme='light']) .brand-mark {
+  border-color: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 4px 16px rgba(25, 46, 84, 0.14);
+}
+:global(html[data-theme='light']) .route-stage :deep(h2) {
+  color: #101828;
 }
 @media (max-width: 640px) {
   .wordmark {
@@ -345,6 +428,23 @@ onBeforeUnmount(() => {
      넓이가 대시보드 카드의 1/24이라 비싼 SVG 필터를 감당할 수 있다. */
   -webkit-backdrop-filter: var(--glass-surface-lens);
   backdrop-filter: var(--glass-surface-lens);
+}
+.nav-tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.theme-toggle {
+  width: 38px;
+  height: 38px;
+  border: 0;
+  color: var(--control-fg);
+  background: var(--control-bg);
+}
+.theme-toggle:hover,
+.theme-toggle:focus-visible {
+  color: var(--control-fg-on);
+  background: var(--control-bg-hover);
 }
 
 /* el-menu 기본 스타일(하단 보더, 흰 배경 강제)이 유리 내비 필과 부딪혀서 걷어낸다 */

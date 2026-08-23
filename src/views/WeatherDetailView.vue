@@ -7,11 +7,7 @@ import { useWeatherStore } from '../stores/weatherStore.js'
 import {
   findCity,
   gradeCity,
-  findWeakest,
   GRADE_STANDARD,
-  MAX_SCORE,
-  HIGH_SCORE,
-  MID_SCORE,
   buildRiskAlerts,
   build7P,
   buildExecScore,
@@ -121,19 +117,9 @@ const displayTemp = computed(() => {
   return configStore.convertTemperature(city.value.temp)
 })
 
-// 과제 3에서 window.alert()로 쏟아내던 해설을 페이지 본문으로 옮겼다.
-const weakest = computed(() => (city.value ? findWeakest(city.value.grade) : null))
-
-const meaning = computed(() => {
-  if (!city.value) return ''
-  const score = city.value.grade.score
-  if (score >= HIGH_SCORE)
-    return '세 지표 모두 적정합니다. 옥외 활동을 포함한 어떤 방식이든 무리가 없습니다.'
-  if (score >= MID_SCORE) return '병목인 지표가 있어 활동 방식을 가려서 정해야 합니다.'
-  return '약한 지표 탓에 옥외 의존 활동의 효율이 낮습니다. 실내 대안 우선 검토가 필요합니다.'
-})
-
-const riskAlerts = computed(() => (city.value ? buildRiskAlerts(city.value) : []))
+const riskAlerts = computed(() =>
+  city.value ? buildRiskAlerts(city.value).filter((alert) => alert.level !== 'success') : [],
+)
 
 // 11차: 마케팅 7P + 경영 기능 5축(인사/재무/회계/생산물류/안전)
 const ops = computed(() => (city.value ? build7P(city.value) : { mode: null, items: [] }))
@@ -163,18 +149,15 @@ const briefing = computed(() =>
 )
 const daylight = computed(() => (city.value ? buildDaylight(city.value) : null))
 
-// 호 위 해의 좌표. 낮이면 진행률만큼 호를 따라 오르고, 밤이면 지평선(y=86) 바로 아래에
-// 일출/일몰 쪽 끝으로 내려앉는다.
-const sunPos = computed(() => {
+// 낮에는 태양, 밤에는 달이 각각의 시간 진행률에 맞춰 같은 호를 지난다.
+const celestialPos = computed(() => {
   const d = daylight.value
   if (!d) return { x: 14, y: 86 }
-  if (d.progress !== null) {
-    return {
-      x: 14 + 272 * d.progress,
-      y: 86 - Math.sin(Math.PI * d.progress) * 63,
-    }
+  const progress = d.isDay ? d.progress : d.nightProgress
+  return {
+    x: 14 + 272 * progress,
+    y: 86 - Math.sin(Math.PI * progress) * 63,
   }
-  return { x: d.phase === 'before-sunrise' ? 14 : 286, y: 97 }
 })
 
 const metrics = computed(() => {
@@ -346,15 +329,19 @@ const goBack = () => {
                    높이를 직접 정할 수 있는 2차 베지에로 바꿔서 얕은 돔을 그린다. -->
               <path d="M14,86 Q150,-40 286,86" class="daylight-path" />
               <line x1="8" y1="86" x2="292" y2="86" class="daylight-ground" />
-              <!-- 12차: 밤에는 해가 아예 안 그려져서 "해 없는 일조 그래프"가 됐었다.
-                   낮이면 호 위 진행 위치에, 밤이면 지평선 아래(일출 전은 왼쪽 끝, 일몰 후는
-                   오른쪽 끝)에 놓아 해가 어디 있는지가 항상 보이게 한다. -->
+              <!-- 낮에는 태양, 밤에는 초승달을 그린다. 문자 이모지가 아니라 같은 SVG 체계다. -->
               <circle
-                :cx="sunPos.x"
-                :cy="sunPos.y"
+                v-if="daylight.isDay"
+                :cx="celestialPos.x"
+                :cy="celestialPos.y"
                 r="8"
                 class="daylight-sun"
-                :class="{ 'is-night': !daylight.isDay }"
+              />
+              <path
+                v-else
+                d="M4,-8A8,8 0 1,0 4,8A6.4,6.4 0 0,1 4,-8Z"
+                class="daylight-moon"
+                :transform="`translate(${celestialPos.x} ${celestialPos.y})`"
               />
             </svg>
             <div class="daylight-row">
@@ -436,17 +423,22 @@ const goBack = () => {
         </template>
 
         <h3 class="section-title">
-          <el-icon><Odometer /></el-icon> 운영 여건 점수
+          <el-icon><Odometer /></el-icon> 기상 대응 지수
         </h3>
         <p class="score-formula">
-          {{ city.grade.temp }} × {{ city.grade.humidity }} × {{ city.grade.dust }} =
-          <strong>{{ city.grade.score }}점</strong> (최고 {{ MAX_SCORE }}점)
+          6개 기상 축의 가중 합계 = <strong>{{ city.execScore }}점</strong> (최고 100점)
         </p>
-        <p>
-          가장 낮은 등급은 <strong>{{ weakest.name }}({{ weakest.lowest }}등급)</strong>입니다. 이
-          지점이 병목입니다.
+        <p class="index-meaning">
+          점수가 높을수록 현재 경영 계획을 유지하기 좋은 기상 조건입니다. 낮을수록
+          일정·채널·인력·안전 계획의 선제 조정이 필요합니다. 이 지수는 성과를 예측하는 값이
+          아니라, 기상 노출에 대응할 우선순위를 정하는 참고 지표입니다.
         </p>
-        <p class="score-verdict">{{ meaning }}</p>
+        <div class="index-parts" aria-label="기상 대응 지수 산출 내역">
+          <span v-for="part in city.exec.parts" :key="part.key">
+            {{ part.label }} <b>{{ part.contribution }}/{{ part.weight }}</b>
+          </span>
+        </div>
+        <p class="footnote">구간: 75–100 우수 · 55–74 양호 · 35–54 주의 · 0–34 미흡</p>
       </BaseDashboardCard>
 
       <!-- 11차: 4개 탭(마케팅/재고/인력/경보)을 서비스 마케팅 7P로 넓혔다.
@@ -505,6 +497,7 @@ const goBack = () => {
         >
           {{ alert.text }}
         </el-alert>
+        <el-empty v-if="!riskAlerts.length" :image-size="48" description="현재 감지된 기상 리스크가 없습니다." />
       </BaseDashboardCard>
     </div>
 
@@ -790,15 +783,30 @@ const goBack = () => {
 .score-formula {
   font-size: 15px;
 }
-/* 13차-o: 결론 한 줄을 '→'로 끌던 자리. 화살표 대신 왼쪽 굵은 선과 굵기로
-   '앞 문장들의 결론'임을 드러낸다 — 기호가 하던 일을 서식이 대신한다. */
-.score-verdict {
-  margin-top: 12px;
-  padding-left: 12px;
-  border-left: 3px solid var(--color-accent);
-  font-weight: 600;
+.index-meaning {
+  margin: 8px 0 14px;
   line-height: 1.55;
-  color: #1c1c1e;
+  color: #48515f;
+}
+.index-parts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.index-parts span {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 9px 11px;
+  border-radius: 10px;
+  background: var(--glass-inset-bg);
+  color: #48515f;
+  font-size: 12px;
+}
+.index-parts b {
+  color: #101828;
+  font-weight: 700;
 }
 
 /* --- 10차: 의사결정 브리핑 --- */
@@ -921,10 +929,11 @@ const goBack = () => {
   stroke-width: 2;
   transition: all 0.4s var(--apple-ease);
 }
-/* 밤에는 지평선 아래로 내려가 있으므로 색도 같이 가라앉힌다 */
-.daylight-sun.is-night {
-  fill: #8a94a6;
-  stroke: rgba(255, 255, 255, 0.6);
+.daylight-moon {
+  fill: #dce8ff;
+  stroke: rgba(94, 142, 229, 0.72);
+  stroke-width: 1.2;
+  filter: drop-shadow(0 0 5px rgba(111, 165, 255, 0.55));
 }
 .daylight-row {
   display: flex;
@@ -1030,5 +1039,10 @@ const goBack = () => {
 }
 .risk-alert:last-child {
   margin-bottom: 0;
+}
+@media (max-width: 640px) {
+  .index-parts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 </style>

@@ -17,7 +17,7 @@ import { DataAnalysis, Odometer, TrendCharts } from '@element-plus/icons-vue'
 
 const router = useRouter()
 
-// 과제 6: 요약 화면도 실시간 날씨로 등급과 운영 여건 점수를 매긴다.
+// 과제 6: 요약 화면도 실시간 날씨로 등급과 기상 대응 지수를 매긴다.
 // 11차: 이 화면이 axios로 17개 도시를 따로 다시 부르고 있었다. 대시보드·상세와 같은 데이터라
 // 스토어 하나만 보면 된다 — 탭을 오갈 때마다 17회씩 재조회하던 걸 없앴다.
 const weatherStore = useWeatherStore()
@@ -33,7 +33,7 @@ const ranked = computed(() => buildRegionalOutlook(weatherList.value))
 // 점수가 붙은 ranked를 넘겨야 둘이 같은 값을 본다.
 const opsCounts = computed(() => summarizeOps(ranked.value))
 
-// 전국 요약 타일. 운영 모드별 지역 수를 OPS_MODES 정의 순서대로 세운다.
+// 전국 요약 타일. 권장 대응 전략별 지역 수를 OPS_MODES 정의 순서대로 세운다.
 const opsSummary = computed(() =>
   Object.values(OPS_MODES).map((mode) => ({
     key: mode.key,
@@ -96,7 +96,7 @@ const goDetail = (item) => {
         </h3>
         <div class="overview">
           <div class="overview-stat">
-            <span class="overview-key">평균 운영 여건 점수</span>
+            <span class="overview-key">평균 기상 대응 지수</span>
             <span class="overview-val">{{ avgScore }}<small>/{{ EXEC_MAX_SCORE }}</small></span>
           </div>
           <div class="overview-stat">
@@ -121,15 +121,25 @@ const goDetail = (item) => {
             <span class="ops-count">{{ mode.count }}</span>
           </div>
         </div>
+
+        <aside class="index-explainer">
+          <strong>기상 대응 지수란?</strong>
+          <p>
+            체감온도 28%, 대기질 20%, 하늘상태 16%, 습도 16%, 바람 10%, 가시거리 10%를
+            합산한 100점 만점 지표입니다. 점수가 높을수록 현재 계획을 유지하기 좋은 기상
+            조건이며, 낮을수록 일정·채널·인력·안전 계획을 먼저 조정해야 한다는 뜻입니다.
+          </p>
+          <span>75–100 우수 · 55–74 양호 · 35–54 주의 · 0–34 미흡</span>
+        </aside>
       </BaseDashboardCard>
 
       <!-- 순위 목록: 숫자를 나열하는 대신 막대 길이로 비교시킨다 -->
       <BaseDashboardCard>
         <h3 class="section-title">
-          <el-icon><TrendCharts /></el-icon> 지역별 운영 여건 순위
+          <el-icon><TrendCharts /></el-icon> 지역별 기상 대응 순위
         </h3>
         <p class="guide">
-          막대가 길수록 옥외 활동에 유리한 조건입니다. 지역을 누르면 상세 분석으로 이동합니다.
+          막대가 길수록 기상 노출에 대응하기 좋은 조건입니다. 지역을 누르면 상세 분석으로 이동합니다.
         </p>
 
         <ul class="rank-list">
@@ -222,6 +232,29 @@ const goDetail = (item) => {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+}
+.index-explainer {
+  margin-top: 14px;
+  padding: 14px 16px;
+  border-radius: var(--control-radius);
+  background: rgba(0, 100, 255, 0.07);
+  color: #344054;
+}
+.index-explainer strong {
+  display: block;
+  margin-bottom: 4px;
+  color: #101828;
+  font-size: 13px;
+}
+.index-explainer p {
+  margin: 0 0 5px;
+  font-size: 13px;
+  line-height: 1.55;
+}
+.index-explainer span {
+  color: #0050cc;
+  font-size: 12px;
+  font-weight: 700;
 }
 .ops-chip {
   display: inline-flex;

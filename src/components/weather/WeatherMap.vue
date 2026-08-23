@@ -114,7 +114,7 @@ const onAreaClick = (event) => {
       class="map-svg"
       :viewBox="VIEW_BOX"
       role="img"
-      aria-label="전국 지역별 운영 여건 점수 지도"
+      aria-label="전국 지역별 기상 대응 지수 지도"
       @mouseover="onAreaOver"
       @mouseleave="hoveredGroup = ''"
       @click="onAreaClick"
