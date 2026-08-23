@@ -6,7 +6,7 @@ const router = useRouter()
 
 // 잘못 들어온 주소는 히스토리에 남길 필요가 없어서 replace로 되돌린다.
 const goHome = () => {
-  router.replace('/')
+  router.replace('/dashboard')
 }
 </script>
 

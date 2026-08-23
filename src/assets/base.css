@@ -110,9 +110,9 @@
      유리는 투명도보다 '뒤의 색을 머금는가'로 판별된다. */
   /* 13차-k: 어두운 배경 위에서는 알파를 조금 올려야 카드 안 진한 글자가 읽힌다.
      그래도 0.8을 넘기지 않는다 — 완전히 불투명해지면 굴절이 보일 여지가 사라진다. */
-  --glass-bg: rgba(246, 249, 255, 0.76);
-  --glass-bg-strong: rgba(248, 250, 255, 0.84);
-  --glass-bg-thin: rgba(246, 249, 255, 0.6);
+  --glass-bg: rgba(240, 246, 255, 0.7);
+  --glass-bg-strong: rgba(244, 248, 255, 0.8);
+  --glass-bg-thin: rgba(236, 244, 255, 0.56);
   /* 12차: 분광(프리즘)과 커서 스페큘러는 둘 다 걷어냈다. 유리 위에 색이든 빛이든
      '얹는' 방식은 얹은 티가 났다 — 유리다움은 투명도·블러·모서리 하이라이트로 낸다.
      호버 반응은 이 파일 아래쪽 '유리 표면의 호버 반응' 절 참고. */
@@ -130,7 +130,7 @@
      블러는 굴절을 뭉개지 않을 만큼만(14px). */
   /* 13차-p: 기본 표면은 GPU 경로(saturate + blur)다. SVG 참조 필터는 느린 경로라
      큰 판에 걸면 호버 한 번에 프레임이 무너진다. */
-  --glass-surface: saturate(200%) blur(14px);
+  --glass-surface: saturate(180%) blur(18px);
   /* 굴절 렌즈. 작고 떠 있는 컨트롤에만 쓴다 — 거기서는 가장자리 띠가 면적의 큰 몫이라
      굴절이 실제로 보이고, 면적이 작아 비용도 감당된다(상단바는 카드의 1/24 넓이다). */
   --glass-surface-lens: url(#lg-refract) saturate(200%) blur(12px);
@@ -139,7 +139,7 @@
   /* 유리 판의 위쪽 모서리에 빛이 걸리도록 흰 헤어라인으로 되돌린다 */
   /* 13차-o: 모서리에 밝은 선이 세 겹(이 테두리 + 아래 inset 두 줄)으로 겹쳐 있었다.
      선은 한 겹이면 족하다 — 나머지는 아래 --shadow-glass에서 줄였다. */
-  --glass-border: rgba(255, 255, 255, 0.5);
+  --glass-border: rgba(255, 255, 255, 0.56);
   /* 12차: 유리 카드 '안'에 놓이는 면 전용. 바깥 카드와 같은 테두리(0.78)를 쓰면
      투명해진 카드 위에서 흰 선으로 도드라져 '박스 안의 박스'가 된다.
      안쪽 면은 선이 아니라 밝기 차와 얇은 상단 하이라이트로 구분한다. */
@@ -168,43 +168,11 @@
   /* 13차-o: 위아래 흰 헤어라인 두 줄이 테두리·광원 링과 겹쳐 모서리를 두껍게 만들었다.
      위 한 줄만, 그것도 옅게 남긴다. 두께감은 바깥 그림자가 맡는다. */
   --shadow-glass:
-    inset 0 1px 0 rgba(255, 255, 255, 0.5),
-    0 2px 6px rgba(6, 12, 30, 0.24), 0 18px 48px rgba(6, 12, 30, 0.34);
+    inset 0 1px 0 rgba(255, 255, 255, 0.52),
+    0 2px 6px rgba(6, 12, 30, 0.2), 0 16px 42px rgba(6, 12, 30, 0.28);
   --shadow-glass-raised:
     inset 0 1px 0 rgba(255, 255, 255, 0.6),
-    0 4px 12px rgba(6, 12, 30, 0.3), 0 28px 64px rgba(6, 12, 30, 0.45);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-background: var(--vt-c-black);
-    --color-background-soft: var(--vt-c-black-soft);
-    --color-background-mute: var(--vt-c-black-mute);
-
-    --color-border: var(--vt-c-divider-dark-2);
-    --color-border-hover: var(--vt-c-divider-dark-1);
-
-    --color-heading: var(--vt-c-text-dark-1);
-    --color-text: var(--vt-c-text-dark-2);
-
-    --glass-sheen: linear-gradient(
-      150deg,
-      rgba(255, 255, 255, 0.16) 0%,
-      rgba(255, 255, 255, 0.04) 40%,
-      rgba(255, 255, 255, 0) 62%
-    );
-
-    --glass-bg: rgba(30, 32, 42, 0.42);
-    --glass-bg-strong: rgba(30, 32, 42, 0.6);
-    --glass-bg-thin: rgba(30, 32, 42, 0.3);
-    --glass-border: rgba(255, 255, 255, 0.18);
-    --shadow-glass:
-      inset 0 1px 0 rgba(255, 255, 255, 0.14), 0 1px 2px rgba(0, 0, 0, 0.3),
-      0 10px 34px rgba(0, 0, 0, 0.42);
-    --shadow-glass-raised:
-      inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 2px 4px rgba(0, 0, 0, 0.34),
-      0 18px 50px rgba(0, 0, 0, 0.5);
-  }
+    0 4px 12px rgba(6, 12, 30, 0.26), 0 24px 58px rgba(6, 12, 30, 0.38);
 }
 
 /* backdrop-filter 미지원 브라우저에서는 반투명이 그냥 "배경 비침"으로 끝나 글씨가 안 읽힌다.
@@ -295,6 +263,20 @@ body {
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+button,
+a,
+[role='button'],
+.el-menu-item,
+.el-switch,
+.weather-card {
+  -webkit-tap-highlight-color: transparent;
+}
+
+:where(button, a, input, textarea, select, [role='button'], .el-menu-item, .el-switch):focus-visible {
+  outline: 3px solid rgba(77, 163, 255, 0.72);
+  outline-offset: 3px;
 }
 
 /* 6차: "입력창 같은 부분도 덜렁 놓지 말고 디자인 먹여라" — Element Plus 폼 컨트롤이 기본 흰
@@ -667,16 +649,14 @@ body {
   /* 13차-p: 호버 때 drop-shadow를 켜고 끄던 걸 걷었다. 마스크가 걸린 conic 링에
      필터를 또 얹으면 프레임마다 필터 두 겹을 돌리게 된다.
      빛의 세기 변화는 불투명도만으로도 충분히 읽힌다. */
-  opacity: 0.4;
+  opacity: 0.28;
   transition: opacity 0.5s var(--apple-ease);
 }
 
 /* (4) 유동 — 호버하면 판이 떠오르고 모서리가 부푼다.
    scale은 뺐다: backdrop-filter가 걸린 면을 확대하면 뒤 그림이 재샘플링되면서
    가장자리가 지글거려 오히려 '끊기는' 인상을 준다. */
-:is(.base-dashboard-card, .weather-card, .navigation-bar, .about-card,
-  .notfound-card, .detail-hero, .hero-glass, .lab-index, .lab-note-list,
-  .practice-section):hover {
+.weather-card:hover {
   /* 13차-p: border-radius 애니메이션을 걷었다. 모서리가 움직이면 유리 뒤 그림을
      매 프레임 다시 잘라내야 해서, 떠오르는 느낌을 얻는 대가로 프레임을 잃었다.
      '떠오름'은 transform과 그림자만으로 충분히 읽힌다. */
@@ -688,18 +668,14 @@ body {
      떠오르지 않고 얕은 회색 그림자만 깔렸다. */
   box-shadow:
     var(--shadow-glass-raised),
-    10px 14px 40px rgba(6, 12, 30, 0.42) !important;
+    8px 12px 36px rgba(6, 12, 30, 0.28) !important;
 }
 /* 호버의 주인공은 이 빛이다 — 굵어지고, 진해지고, 바깥으로 번진다 */
-:is(.base-dashboard-card, .weather-card, .navigation-bar, .about-card,
-  .notfound-card, .detail-hero, .hero-glass, .lab-index, .lab-note-list,
-  .practice-section):hover::before {
+.weather-card:hover::before {
   opacity: 1;
 }
 /* 누르는 동안에는 반대로 눌린다 — 두께가 있는 재질이라는 신호 */
-:is(.base-dashboard-card, .weather-card, .navigation-bar, .about-card,
-  .notfound-card, .detail-hero, .hero-glass, .lab-index, .lab-note-list,
-  .practice-section):active {
+.weather-card:active {
   transform: translateY(calc(var(--hover-lift) / 3));
 }
 
@@ -758,9 +734,7 @@ body {
   .practice-section) {
     transition: box-shadow 0.2s linear;
   }
-  :is(.base-dashboard-card, .weather-card, .navigation-bar, .about-card,
-  .notfound-card, .detail-hero, .hero-glass, .lab-index, .lab-note-list,
-  .practice-section):hover {
+  .weather-card:hover {
     transform: none;
   }
   /* 빛이 커서를 따라 흐르는 것도 '동작'이다 — 세기만 남기고 이동은 끈다 */
@@ -769,9 +743,7 @@ body {
   .practice-section)::before {
     transition: opacity 0.2s linear;
   }
-  :is(.base-dashboard-card, .weather-card, .navigation-bar, .about-card,
-  .notfound-card, .detail-hero, .hero-glass, .lab-index, .lab-note-list,
-  .practice-section):hover::before {
+  .weather-card:hover::before {
     opacity: 0.7;
   }
 }
@@ -780,14 +752,16 @@ body {
    Element Plus 기본 버튼은 32px 높이에 각진 모서리라 이 화면에서 유독 '템플릿'처럼
    보였다. 높이·글자·모서리를 키우고, 유리 위에 놓이는 컨트롤답게 반투명으로 바꾼다. */
 .el-button {
-  height: 38px !important;
+  min-height: 44px !important;
+  height: 44px !important;
   padding: 0 18px !important;
   font-size: 14px !important;
   font-weight: 600 !important;
   border-radius: var(--control-radius) !important;
 }
 .el-button--small {
-  height: 34px !important;
+  min-height: 38px !important;
+  height: 38px !important;
   padding: 0 14px !important;
   font-size: 13px !important;
 }
@@ -811,7 +785,7 @@ body {
 /* 셀렉트/인풋도 버튼과 같은 높이·모서리로 맞춘다 */
 .el-select__wrapper,
 .el-input__wrapper {
-  min-height: 38px !important;
+  min-height: 44px !important;
   border-radius: var(--control-radius) !important;
 }
 

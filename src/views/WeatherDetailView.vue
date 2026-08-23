@@ -118,11 +118,7 @@ onMounted(async () => {
 // 과제 5: 전역 단위 설정에 맞춰 표시용 기온을 계산한다.
 const displayTemp = computed(() => {
   if (!city.value) return 0
-  const rawTemp = city.value.temp // 기본 원본 데이터는 섭씨 숫자
-  if (configStore.unit === 'fahrenheit') {
-    return Math.round((rawTemp * 9) / 5 + 32) // 화씨 변환 연산
-  }
-  return rawTemp // 'celsius'일 때는 원본 그대로 반환
+  return configStore.convertTemperature(city.value.temp)
 })
 
 // 과제 3에서 window.alert()로 쏟아내던 해설을 페이지 본문으로 옮겼다.
@@ -161,7 +157,10 @@ const TONE_ICON = {
   danger: WarnTriangleFilled,
 }
 
-const briefing = computed(() => (city.value ? buildBriefing(city.value) : { headline: '', lines: [] }))
+const formatTemp = (value) => `${configStore.convertTemperature(value)}${configStore.unitSymbol}`
+const briefing = computed(() =>
+  city.value ? buildBriefing(city.value, formatTemp) : { headline: '', lines: [] },
+)
 const daylight = computed(() => (city.value ? buildDaylight(city.value) : null))
 
 // 호 위 해의 좌표. 낮이면 진행률만큼 호를 따라 오르고, 밤이면 지평선(y=86) 바로 아래에
@@ -186,8 +185,8 @@ const metrics = computed(() => {
     {
       label: '체감 온도',
       icon: Sunny,
-      value: c.feelsLike,
-      unit: '°C',
+      value: configStore.convertTemperature(c.feelsLike),
+      unit: configStore.unitSymbol,
       note:
         c.feelsLike > c.temp
           ? '습도와 바람의 영향으로 실제 기온보다 높게 체감됩니다.'
@@ -279,7 +278,9 @@ const goBack = () => {
           {{ displayTemp }}<span class="detail-hero-unit">{{ configStore.unitSymbol }}</span>
         </p>
         <p class="detail-hero-status">
-          {{ city.status }} · 체감 {{ city.feelsLike }}° · ↑{{ city.tempMax }}° ↓{{ city.tempMin }}°
+          {{ city.status }} · 체감 {{ configStore.convertTemperature(city.feelsLike) }}° ·
+          ↑{{ configStore.convertTemperature(city.tempMax) }}°
+          ↓{{ configStore.convertTemperature(city.tempMin) }}°
         </p>
         <div class="badge-row">
           <el-tag :type="city.temp >= 25 ? 'danger' : 'info'">
@@ -387,7 +388,9 @@ const goBack = () => {
             <span class="grade-stat-label">기온</span>
             <span class="grade-stat-value">{{ city.grade.temp }}등급</span>
             <span class="grade-stat-hint"
-              >쾌적 구간 {{ GRADE_STANDARD.temp.bestMin }}–{{ GRADE_STANDARD.temp.bestMax }}°C</span
+              >쾌적 구간 {{ configStore.convertTemperature(GRADE_STANDARD.temp.bestMin) }}–{{
+                configStore.convertTemperature(GRADE_STANDARD.temp.bestMax)
+              }}{{ configStore.unitSymbol }}</span
             >
           </div>
           <div class="grade-stat">
@@ -418,7 +421,9 @@ const goBack = () => {
               <span class="forecast-date">{{ day.label }}</span>
               <el-icon class="forecast-icon"><component :is="forecastIcon(day.weatherMain)" /></el-icon>
               <span class="forecast-temp">
-                {{ day.max }}<span class="forecast-temp-min">/{{ day.min }}°</span>
+                {{ configStore.convertTemperature(day.max) }}<span class="forecast-temp-min"
+                  >/{{ configStore.convertTemperature(day.min) }}{{ configStore.unitSymbol }}</span
+                >
               </span>
               <span class="forecast-humidity">습도 {{ day.humidity }}%</span>
               <span class="forecast-score">{{ day.grade.score }}/{{ FORECAST_MAX_SCORE }}점</span>

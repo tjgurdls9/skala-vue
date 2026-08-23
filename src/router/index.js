@@ -4,6 +4,11 @@ const BASE_TITLE = 'WEATHER DESK'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
+  // 긴 대시보드에서 상세 화면으로 이동할 때 이전 스크롤 위치가 남으면 본문 중간부터 보인다.
+  // 새 화면은 상단에서 시작하고, 뒤로 가기는 브라우저가 저장한 위치를 복원한다.
+  scrollBehavior(to, from, savedPosition) {
+    return savedPosition ?? { top: 0 }
+  },
   // 모든 라우트를 동적 import로 등록해서 해당 화면에 들어갈 때 로드한다. (Lazy Loading)
   routes: [
     {

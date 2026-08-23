@@ -986,7 +986,7 @@ export const aqiLabel = (aqi) => AQI_LABEL[aqi] ?? '—'
 // 지금 상태를 한 문단 + 근거 목록으로 정리한 "의사결정 브리핑".
 // 다른 팀의 'AI 날씨 브리핑'이 수치를 문장으로 바꿔주는 게 인상적이어서, 우리는 그걸
 // 경영 판단 문장으로 옮겼다. 규칙 기반이라 실제로 LLM을 부르지는 않는다 — 이름도 그렇게 안 붙였다.
-export const buildBriefing = (item) => {
+export const buildBriefing = (item, formatTemp = (value) => `${value}°C`) => {
   const discomfort = buildDiscomfort(item)
   const stay = buildStayMinutes(item)
   const daylight = buildDaylight(item)
@@ -1018,7 +1018,7 @@ export const buildBriefing = (item) => {
     lines.push({
       key: 'feels',
       tone: 'info',
-      text: `기온은 ${item.temp}°C지만 체감은 ${item.feelsLike}°C로 ${hotter ? '더' : '덜'} ${
+      text: `기온은 ${formatTemp(item.temp)}지만 체감은 ${formatTemp(item.feelsLike)}로 ${hotter ? '더' : '덜'} ${
         hotter ? '덥게' : '춥게'
       } 느껴집니다.`,
     })
@@ -1031,7 +1031,7 @@ export const buildBriefing = (item) => {
     })
   }
 
-  const headline = `${item.name}은(는) 지금 ${item.temp}°C · 불쾌지수 ${discomfort.value}(${discomfort.label})로, 옥외 체류 적정 시간은 약 ${stay.minutes}분입니다.`
+  const headline = `${item.name}은(는) 지금 ${formatTemp(item.temp)} · 불쾌지수 ${discomfort.value}(${discomfort.label})로, 옥외 체류 적정 시간은 약 ${stay.minutes}분입니다.`
   return { headline, lines }
 }
 

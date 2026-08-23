@@ -180,7 +180,8 @@ onBeforeUnmount(() => {
     <header class="brand">
       <h1 class="wordmark">
         <img class="brand-mark" src="/brand/weather-desk-mark.png" alt="" />
-        <span class="wordmark-thin">WEATHER</span><span class="wordmark-bold">DESK</span>
+        <span class="wordmark-thin">WEATHER</span><span class="wordmark-bold">DESK</span
+        ><span class="wordmark-dot" aria-hidden="true">.</span>
       </h1>
       <p class="brand-sub">기상 데이터를 전사 경영 판단으로 번역합니다</p>
     </header>
@@ -294,6 +295,12 @@ onBeforeUnmount(() => {
 .wordmark-bold {
   font-weight: 800;
 }
+.wordmark-dot {
+  margin-left: -7px;
+  color: #4da3ff;
+  font-weight: 800;
+  text-shadow: 0 0 18px rgba(77, 163, 255, 0.45);
+}
 .brand-sub {
   margin: 0;
   font-size: 15px;
@@ -350,7 +357,7 @@ onBeforeUnmount(() => {
      그 안의 항목은 40px짜리로 위쪽에 붙는다 — 결과적으로 글씨 위 9px / 아래 29px이
      됐다. 11차에 바의 padding을 8px로 맞췄는데도 안 고쳐진 게 이 20px 때문이었다.
      메뉴 높이를 항목 높이와 같게 맞추면 항목이 바 한가운데에 온다. */
-  --el-menu-horizontal-height: 40px;
+  --el-menu-horizontal-height: 44px;
 }
 /* 13차-k 버그: 탭이 "호버하면 회색, 누르면 회색, 다른 곳을 클릭해야 파란색"이었다.
    원인은 Element Plus가 자기 hover 배경(--el-menu-hover-bg-color, 회색)을 우리 .is-active
@@ -365,8 +372,9 @@ onBeforeUnmount(() => {
   font-size: 16px;
   /* 알약 대신 둥근 사각형 — macOS 사이드바/탭 선택 표시가 실제로 이렇다 */
   border-radius: var(--control-radius);
-  height: 40px;
-  line-height: 40px;
+  min-height: 44px;
+  height: 44px;
+  line-height: 44px;
   background-color: transparent !important;
   transition:
     background-color 0.2s var(--apple-ease),
@@ -410,5 +418,53 @@ onBeforeUnmount(() => {
 .route-fade-enter-from,
 .route-fade-leave-to {
   opacity: 0;
+}
+
+@media (max-width: 900px) {
+  .app-container {
+    margin: 24px auto;
+    padding: 0 16px;
+  }
+  .brand {
+    margin-bottom: 18px;
+  }
+  .navigation-bar {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .nav-menu {
+    max-width: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .nav-menu::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .app-container {
+    margin-top: 18px;
+    padding: 0 12px;
+  }
+  .brand-sub {
+    width: 100%;
+    padding-left: 56px;
+    font-size: 13px;
+  }
+  .navigation-bar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
+    padding: 7px;
+    border-radius: 18px;
+  }
+  .nav-menu :deep(.el-menu-item) {
+    padding: 0 13px;
+    font-size: 14px;
+  }
+  .nav-menu :deep(.el-menu-item .el-icon) {
+    display: none;
+  }
 }
 </style>

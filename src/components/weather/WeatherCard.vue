@@ -31,11 +31,7 @@ const emit = defineEmits(['click-detail'])
 const configStore = useConfigStore()
 
 const displayTemp = computed(() => {
-  const rawTemp = props.cityItem.temp // 기본 원본 데이터는 섭씨 숫자
-  if (configStore.unit === 'fahrenheit') {
-    return Math.round((rawTemp * 9) / 5 + 32) // 화씨 변환 연산
-  }
-  return rawTemp // 'celsius'일 때는 원본 그대로 반환
+  return configStore.convertTemperature(props.cityItem.temp)
 })
 
 // 10차: 파생 지표(불쾌지수 / 옥외 체류 시간)
@@ -99,13 +95,14 @@ onBeforeUnmount(() => {
       {{ displayTemp }}<span class="temp-unit">{{ configStore.unitSymbol }}</span>
       <!-- 10차: 같은 응답에 이미 있던 체감/최고최저를 큰 숫자 옆에 붙였다 -->
       <span v-if="cityItem.tempMax !== undefined" class="temp-range">
-        ↑{{ cityItem.tempMax }}° ↓{{ cityItem.tempMin }}°
+        ↑{{ configStore.convertTemperature(cityItem.tempMax) }}°
+        ↓{{ configStore.convertTemperature(cityItem.tempMin) }}°
       </span>
     </p>
     <p class="sub-line">
       {{ cityItem.status }}
       <template v-if="cityItem.feelsLike !== undefined">
-        · 체감 {{ cityItem.feelsLike }}°</template
+        · 체감 {{ configStore.convertTemperature(cityItem.feelsLike) }}°</template
       >
       · 습도 {{ cityItem.humidity }}% · 미세먼지 {{ cityItem.microdust }}
     </p>

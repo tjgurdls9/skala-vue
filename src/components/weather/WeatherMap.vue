@@ -2,6 +2,9 @@
 import { computed, ref } from 'vue'
 import { execGrade } from '../../data/weatherMock.js'
 import koreaMap from '../../data/koreaMap.json'
+import { useConfigStore } from '../../stores/configStore.js'
+
+const configStore = useConfigStore()
 
 // 10차: 손으로 찍은 간이 실루엣을 실제 행정구역 경계로 교체했다.
 // 원본은 southkorea-maps(통계청 2013) GeoJSON이고, 빌드 때가 아니라 미리 한 번만
@@ -151,8 +154,8 @@ const onAreaClick = (event) => {
           {{ activePoint.city.execScore }}점
         </span>
         <span class="map-readout-meta">
-          {{ activePoint.city.temp }}°C · 체감
-          {{ activePoint.city.feelsLike ?? activePoint.city.temp }}°
+          {{ configStore.convertTemperature(activePoint.city.temp) }}{{ configStore.unitSymbol }} · 체감
+          {{ configStore.convertTemperature(activePoint.city.feelsLike ?? activePoint.city.temp) }}°
           <!-- 시군구는 관측 지점이 아니다. 어느 지점 값을 빌려 쓰는지 밝혀둔다 -->
           <template v-if="activePoint.name !== activePoint.city.name">
             · {{ activePoint.city.name }} 관측

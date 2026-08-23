@@ -20,6 +20,7 @@ import {
 } from '../data/weatherMock.js'
 import { fetchHolidays } from '../data/weatherApi.js'
 import { useWeatherStore } from '../stores/weatherStore.js'
+import { useConfigStore } from '../stores/configStore.js'
 import { useWeatherThemeStore, WEATHER_THEME_MAP } from '../stores/weatherThemeStore.js'
 import {
   Cloudy,
@@ -62,7 +63,10 @@ const searchQuery = ref('')
 // 11차: 조회를 스토어로 올렸다. 홈/요약/상세가 같은 데이터를 공유하므로 탭을 옮겨도
 // 다시 부르지 않고, "선택한 지역"도 화면 밖에서 유지된다.
 const weatherStore = useWeatherStore()
+const configStore = useConfigStore()
 const { list: weatherList, isLoading } = storeToRefs(weatherStore)
+
+const formatTemp = (value) => `${configStore.convertTemperature(value)}${configStore.unitSymbol}`
 
 const loadWeather = () => weatherStore.load({ force: true })
 
@@ -288,7 +292,7 @@ const insight = computed(() => {
     (a, b) => buildDiscomfort(b).value - buildDiscomfort(a).value,
   )[0]
   // 13차-o: '이(가)'로 조사를 얼버무리던 문장을 수치 중심으로 다시 썼다.
-  return `오늘 최고기온 ${hottest.name} ${hottest.temp}°C, 최저기온 ${coolest.name} ${coolest.temp}°C. 불쾌지수는 ${worst.name}이 가장 높습니다.`
+  return `오늘 최고기온 ${hottest.name} ${formatTemp(hottest.temp)}, 최저기온 ${coolest.name} ${formatTemp(coolest.temp)}. 불쾌지수는 ${worst.name}이 가장 높습니다.`
 })
 
 // 과제 3의 window.alert()를 걷어내고 상세 페이지로 이동시킨다. (Programmatic Navigation)
@@ -332,7 +336,7 @@ const goDetail = (item) => {
             </div>
             <div class="cockpit-stat">
               <span class="cockpit-stat-label">전국 평균 기온</span>
-              <span class="cockpit-stat-value">{{ avgTemp !== null ? `${avgTemp}°C` : '—' }}</span>
+              <span class="cockpit-stat-value">{{ avgTemp !== null ? formatTemp(avgTemp) : '—' }}</span>
             </div>
             <div class="cockpit-stat">
               <span class="cockpit-stat-label">전국 평균 불쾌지수</span>
@@ -369,12 +373,12 @@ const goDetail = (item) => {
               <span class="cockpit-stat-label">오늘의 기온 폭</span>
               <div class="span-row">
                 <div class="span-end">
-                  <b>{{ extremes.coolest.temp }}<small>°C</small></b>
+                  <b>{{ configStore.convertTemperature(extremes.coolest.temp) }}<small>{{ configStore.unitSymbol }}</small></b>
                   <span>{{ extremes.coolest.name }}</span>
                 </div>
                 <div class="span-track" aria-hidden="true"></div>
                 <div class="span-end is-right">
-                  <b>{{ extremes.hottest.temp }}<small>°C</small></b>
+                  <b>{{ configStore.convertTemperature(extremes.hottest.temp) }}<small>{{ configStore.unitSymbol }}</small></b>
                   <span>{{ extremes.hottest.name }}</span>
                 </div>
               </div>
@@ -571,8 +575,8 @@ const goDetail = (item) => {
       <BaseDashboardCard class="about-inline">
         <h3 class="section-title"><el-icon><InfoFilled /></el-icon> 서비스 소개</h3>
         <p class="about-text">
-          Vue 3와 Vue Router 5로 만든 기상 기반 경영 의사결정 참고 대시보드입니다. 전국 17개
-          시·도의 실시간 날씨를 업종과 무관하게 읽히는 경영 영향으로 번역해, 전사 전략을 짤 때
+          Vue 3와 Vue Router 5로 만든 기상 기반 경영 의사결정 참고 대시보드입니다. 전국 83개
+          관측 지점의 실시간 날씨를 업종과 무관하게 읽히는 경영 영향으로 번역해, 전사 전략을 짤 때
           근거로 쓸 수 있게 정리합니다.
         </p>
         <ul class="about-list">

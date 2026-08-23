@@ -1,6 +1,6 @@
 <script setup>
 import { useRouter } from 'vue-router'
-import { InfoFilled, Back, Check } from '@element-plus/icons-vue'
+import { InfoFilled, Back, Check, Location, DataAnalysis, Connection } from '@element-plus/icons-vue'
 
 const router = useRouter()
 
@@ -18,6 +18,12 @@ const FEATURES = [
   'Catch-all Route로 정의되지 않은 주소 처리',
   'Navigation Guard(afterEach)로 화면별 문서 제목 설정',
 ]
+
+const FACTS = [
+  { value: '83', label: '전국 관측 지점', icon: Location },
+  { value: '7P', label: '마케팅 영향 분석', icon: DataAnalysis },
+  { value: '5', label: '경영 기능 분석', icon: Connection },
+]
 </script>
 
 <template>
@@ -27,24 +33,45 @@ const FEATURES = [
     </h2>
 
     <section class="about-card">
-      <p class="about-lead">
-        Vue 3와 Vue Router 5로 만든 기상 기반 경영 의사결정 참고 대시보드입니다. 전국 17개
-        시·도의 실시간 날씨를 마케팅 믹스 7P와 인사·재무·회계·물류·안전 5개 경영 기능의 영향으로
-        번역해, 업종과 무관하게 전사 전략의 근거로 쓸 수 있게 정리합니다.
-      </p>
+      <div class="about-intro">
+        <p class="about-eyebrow">WEATHER INTELLIGENCE</p>
+        <h3>날씨를 숫자에서 실행 기준으로 바꿉니다.</h3>
+        <p class="about-lead">
+          전국 83개 관측 지점의 실시간 날씨를 운영 여건 점수로 환산하고, 마케팅 믹스 7P와
+          인사·재무·회계·물류·안전 관점의 영향까지 한 화면에서 연결합니다.
+        </p>
+      </div>
 
-      <ul class="about-list">
-        <li v-for="feature in FEATURES" :key="feature" class="about-list-item">
-          <el-icon class="about-check"><Check /></el-icon>
-          <span>{{ feature }}</span>
-        </li>
-      </ul>
+      <div class="about-facts" aria-label="서비스 주요 지표">
+        <div v-for="fact in FACTS" :key="fact.label" class="about-fact">
+          <el-icon><component :is="fact.icon" /></el-icon>
+          <strong>{{ fact.value }}</strong>
+          <span>{{ fact.label }}</span>
+        </div>
+      </div>
 
-      <p class="about-note">
-        날씨 데이터는 OpenWeatherMap API로 실시간 조회하며, 공휴일 정보는 별도 외부 API를 씁니다.
-      </p>
+      <div class="about-body">
+        <div>
+          <p class="about-section-label">구현 범위</p>
+          <ul class="about-list">
+            <li v-for="feature in FEATURES" :key="feature" class="about-list-item">
+              <el-icon class="about-check"><Check /></el-icon>
+              <span>{{ feature }}</span>
+            </li>
+          </ul>
+        </div>
+        <aside class="about-source">
+          <p class="about-section-label">데이터 안내</p>
+          <p>
+            현재 날씨와 대기질은 OpenWeatherMap API에서 조회하고, 공휴일 일정은 별도 외부
+            API로 확인합니다. 분석 결과는 업무 판단을 돕는 참고 지표입니다.
+          </p>
+        </aside>
+      </div>
 
-      <el-button type="primary" :icon="Back" @click="goHome">대시보드 홈으로 이동</el-button>
+      <div class="about-actions">
+        <el-button type="primary" :icon="Back" @click="goHome">날씨 대시보드로 이동</el-button>
+      </div>
     </section>
   </div>
 </template>
@@ -62,8 +89,8 @@ const FEATURES = [
   color: #eef2f8;
 }
 .about-card {
-  max-width: 720px;
-  padding: 26px 28px;
+  width: 100%;
+  padding: clamp(24px, 4vw, 48px);
   border-radius: var(--radius-card);
   background-color: var(--glass-bg);
   background-image: var(--glass-sheen);
@@ -73,13 +100,66 @@ const FEATURES = [
   box-shadow: var(--shadow-glass);
 }
 .about-lead {
-  margin: 0 0 18px;
-  font-size: 15px;
-  line-height: 1.6;
-  color: #1c1c1e;
+  max-width: 760px;
+  margin: 12px 0 0;
+  font-size: clamp(15px, 1.5vw, 18px);
+  line-height: 1.7;
+  color: #3c4655;
+}
+.about-eyebrow,
+.about-section-label {
+  margin: 0;
+  color: var(--color-accent);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+.about-intro h3 {
+  margin: 8px 0 0;
+  font-size: clamp(26px, 3.2vw, 42px);
+  line-height: 1.18;
+  letter-spacing: -0.035em;
+  color: #151923;
+}
+.about-facts {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin: 30px 0;
+}
+.about-fact {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 2px 10px;
+  padding: 18px;
+  border-radius: 16px;
+  background: var(--glass-inset-bg);
+  background-image: var(--glass-inset-sheen);
+}
+.about-fact .el-icon {
+  grid-row: 1 / 3;
+  font-size: 24px;
+  color: var(--color-accent);
+}
+.about-fact strong {
+  font-size: 24px;
+  line-height: 1;
+  color: #151923;
+}
+.about-fact span {
+  font-size: 13px;
+  color: #55606e;
+}
+.about-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(260px, 0.8fr);
+  gap: 28px;
+  padding-top: 26px;
+  border-top: 1px solid rgba(28, 32, 56, 0.1);
 }
 .about-list {
-  margin: 0 0 18px;
+  margin: 14px 0 0;
   padding: 0;
   list-style: none;
   display: flex;
@@ -103,5 +183,29 @@ const FEATURES = [
   margin: 0 0 18px;
   font-size: 13px;
   color: #48515f;
+}
+.about-source {
+  align-self: start;
+  padding: 18px;
+  border-radius: 16px;
+  background: rgba(11, 107, 220, 0.07);
+}
+.about-source p:last-child {
+  margin: 10px 0 0;
+  color: #48515f;
+  font-size: 14px;
+  line-height: 1.65;
+}
+.about-actions {
+  margin-top: 28px;
+}
+@media (max-width: 720px) {
+  .about-facts,
+  .about-body {
+    grid-template-columns: 1fr;
+  }
+  .about-facts {
+    gap: 8px;
+  }
 }
 </style>

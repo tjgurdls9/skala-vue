@@ -3,7 +3,7 @@
 SKALA 4기 Full-Stack Engineering, Frontend-framework: Vue.js 실습 저장소
 (Vue 3 Composition API + Vue Router + Pinia + Vite + Element Plus)
 
-전국 45개 관측 지점의 실시간 날씨를 운영 여건 점수, 위험 경보, 마케팅 7P,
+전국 83개 관측 지점의 실시간 날씨를 운영 여건 점수, 위험 경보, 마케팅 7P,
 기능별 영향으로 정리해 보여준다. 키보드 조작과 동작 줄이기 설정도 지원한다.
 
 ## 과제
@@ -20,7 +20,7 @@ SKALA 4기 Full-Stack Engineering, Frontend-framework: Vue.js 실습 저장소
 여섯 과제가 각각 다른 게 아니라 같은 날씨 대시보드를 단계별로 발전시킨 것이다.
 정적 화면 -> 반응형 계산 -> 컴포넌트 분해 -> 라우팅 -> 전역 상태 -> 실시간 API 순서다.
 
-전국 45개 관측 지점의 실시간 날씨는 OpenWeatherMap API에서 가져온다 (`src/data/weatherApi.js`).
+전국 83개 관측 지점의 실시간 날씨는 OpenWeatherMap API에서 가져온다 (`src/data/weatherApi.js`).
 API 키는 `.env`에 두고 git에는 올리지 않는다. `.env.example`을 `.env`로 복사해 본인 키를 채워 넣으면 된다.
 
 ## 대시보드 사용법
@@ -83,7 +83,7 @@ API 키는 `.env`에 두고 git에는 올리지 않는다. `.env.example`을 `.e
 예보 응답에는 미세먼지가 없어서 이 점수만 기온·습도 2축(최고 9점)으로 계산한다 —
 지금 날씨의 27점과 만점이 다르므로 화면에도 분모를 같이 표기한다.
 
-현재 날씨와 대기질은 지점당 2회 요청한다. 45곳을 한꺼번에 요청하면 무료 티어의 분당 한도를
+현재 날씨와 대기질은 지점당 2회 요청한다. 83곳을 한꺼번에 요청하면 무료 티어의 분당 한도를
 넘길 수 있어 25곳씩 나누어 조회하고, 도착한 결과부터 화면에 반영한다. `weatherStore`가 결과를
 캐시하므로 라우트 이동만으로는 다시 요청하지 않는다. 상세 화면의 5일 예보는 해당 지역을 열 때
 별도로 조회한다.

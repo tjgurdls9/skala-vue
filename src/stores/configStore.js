@@ -10,10 +10,17 @@ export const useConfigStore = defineStore('config', () => {
   // 2. Getters: 현재 단위 상태에 맞는 기호
   const unitSymbol = computed(() => (unit.value === 'fahrenheit' ? '℉' : '℃'))
 
+  // 화면마다 변환식을 따로 쓰면 최고·최저·체감 온도가 섭씨로 남는 문제가 생긴다.
+  // 원본 데이터는 섭씨로 유지하고, 표시 직전에 이 함수 하나로 변환한다.
+  function convertTemperature(value) {
+    if (value === undefined || value === null) return value
+    return unit.value === 'fahrenheit' ? Math.round((value * 9) / 5 + 32) : Math.round(value)
+  }
+
   // 3. Actions: 'celsius'와 'fahrenheit'를 토글(스위칭)하는 함수
   function toggleUnit() {
     unit.value = unit.value === 'celsius' ? 'fahrenheit' : 'celsius'
   }
 
-  return { unit, unitSymbol, toggleUnit }
+  return { unit, unitSymbol, convertTemperature, toggleUnit }
 })
