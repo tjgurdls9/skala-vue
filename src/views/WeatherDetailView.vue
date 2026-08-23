@@ -117,6 +117,7 @@ const riskAlerts = computed(() =>
   city.value ? buildRiskAlerts(city.value).filter((alert) => alert.level !== 'success') : [],
 )
 const weatherTags = computed(() => (city.value ? buildWeatherTags(city.value) : []))
+const gradeStatusLabel = (grade) => (grade === 3 ? '양호' : grade === 2 ? '관리' : '주의')
 
 // 11차: 마케팅 7P + 경영 기능 5축(인사/재무/회계/생산물류/안전)
 const ops = computed(() => (city.value ? build7P(city.value) : { mode: null, items: [] }))
@@ -352,12 +353,12 @@ const goBack = () => {
 
       <BaseDashboardCard>
         <h3 class="section-title">
-          <el-icon><Aim /></el-icon> 등급 판정
+          <WeatherDeskIcon name="observation" /> 기초 환경 기준
         </h3>
         <div class="grade-row">
           <div class="grade-stat">
             <span class="grade-stat-label">기온</span>
-            <span class="grade-stat-value">{{ city.grade.temp }}등급</span>
+            <span class="grade-stat-value">{{ gradeStatusLabel(city.grade.temp) }}</span>
             <span class="grade-stat-hint"
               >쾌적 구간 {{ configStore.convertTemperature(GRADE_STANDARD.temp.bestMin) }}–{{
                 configStore.convertTemperature(GRADE_STANDARD.temp.bestMax)
@@ -366,7 +367,7 @@ const goBack = () => {
           </div>
           <div class="grade-stat">
             <span class="grade-stat-label">습도</span>
-            <span class="grade-stat-value">{{ city.grade.humidity }}등급</span>
+            <span class="grade-stat-value">{{ gradeStatusLabel(city.grade.humidity) }}</span>
             <span class="grade-stat-hint"
               >쾌적 구간 {{ GRADE_STANDARD.humidity.bestMin }}–{{
                 GRADE_STANDARD.humidity.bestMax
@@ -375,12 +376,12 @@ const goBack = () => {
           </div>
           <div class="grade-stat">
             <span class="grade-stat-label">미세먼지</span>
-            <span class="grade-stat-value">{{ city.grade.dust }}등급</span>
+            <span class="grade-stat-value">{{ gradeStatusLabel(city.grade.dust) }}</span>
             <span class="grade-stat-hint">‘좋음’ 기준 {{ GRADE_STANDARD.dust.best }}µg/m³ 미만</span>
           </div>
         </div>
         <p class="grade-explainer">
-          기초 등급은 기온·습도·미세먼지 3개 기준으로 판정합니다. 상단 상태 태그와 기상 대응 지수에는 바람·하늘·시정도 함께 반영합니다.
+          기온·습도·미세먼지의 기본 조건을 양호·관리·주의로 읽습니다. 상단 상태 태그와 기상 대응 지수에는 바람·하늘·시정도 함께 반영합니다.
         </p>
 
         <!-- 예보도 현재 지수와 같은 100점 체계로 읽되, 없는 대기질 축은 분모에서 제외한다. -->
@@ -928,6 +929,15 @@ const goBack = () => {
 .daylight-ground {
   stroke: rgba(28, 32, 56, 0.32);
   stroke-width: 1.5;
+}
+html[data-theme='dark'] .daylight-path {
+  stroke: rgba(198, 219, 255, 0.68);
+}
+html[data-theme='dark'] .daylight-ground {
+  stroke: rgba(198, 219, 255, 0.52);
+}
+html[data-theme='dark'] .daylight-celestial {
+  filter: drop-shadow(0 3px 6px rgba(137, 184, 255, 0.42));
 }
 .daylight-celestial {
   filter: drop-shadow(0 3px 4px rgba(15, 32, 62, 0.18));

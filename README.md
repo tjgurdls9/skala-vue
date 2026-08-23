@@ -117,7 +117,8 @@ SKALA 4기 Full-Stack Engineering, Frontend-framework: Vue.js 실습 저장소
 - 개발·배포: ESLint, Prettier, 환경 변수, 프로덕션 빌드 확인
 
 `/troubleshooting`에는 지표 요약 가독성, 지역 선택 상태, 호버 성능, 카드 전환,
-API 호출 한도, 라우트 전환, 개발 서버 경로, Vercel SPA 라우팅 문제를 정리했다.
+API 호출 한도, 라우트 전환, 개발 서버 경로, Vercel SPA 라우팅, 카드·상세 상태 태그 기준
+불일치, 다크·라이트 모드 대비 문제를 정리했다.
 결과만 적지 않고 처음 시도한 방법과 원인을 찾아간 과정, 해결 뒤 배운 점까지 함께 남겼다.
 
 ## 구조
