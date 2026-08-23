@@ -36,6 +36,7 @@ import {
   Odometer,
   InfoFilled,
   Opportunity,
+  ArrowRight,
 } from '@element-plus/icons-vue'
 
 // Element Plus 아이콘 세트에 눈 결정 아이콘이 없어서 이거 하나만 직접 그린다.
@@ -264,6 +265,21 @@ const opsSpread = computed(() => {
   }))
 })
 
+// 전국 평균만으로는 오늘 무엇을 먼저 봐야 하는지 알기 어렵다.
+// 가장 많이 필요한 운영 방식과 실제 경보 지역 수를 한 문장으로 묶어 왼쪽 패널의 첫 결론으로 둔다.
+const nationalPulse = computed(() => {
+  if (!budgetPlan.value.length) return null
+  const dominant = [...opsSpread.value].sort((a, b) => b.count - a.count)[0]
+  if (!dominant) return null
+  return {
+    isAlert: riskCityCount.value > 0,
+    headline: riskCityCount.value
+      ? `우선 점검이 필요한 지역이 ${riskCityCount.value}곳입니다.`
+      : '즉시 대응이 필요한 경보 지역은 없습니다.',
+    detail: `${dominant.label} 권장 지역이 ${dominant.count}곳으로 가장 많습니다.`,
+  }
+})
+
 // 양 끝 지역. 평균만 보면 "전국이 고만고만하다"로 읽혀서 폭을 같이 보여준다.
 const extremes = computed(() => {
   if (budgetPlan.value.length < 2) return null
@@ -331,6 +347,14 @@ const goDetail = (item) => {
             <div class="cockpit-title-row">
               <WeatherDeskIcon name="observation" class="cockpit-title-art" />
               <h3 class="cockpit-title"><el-icon><Odometer /></el-icon> 전국 요약</h3>
+            </div>
+            <div v-if="nationalPulse" class="national-pulse" :class="{ 'is-alert': nationalPulse.isAlert }">
+              <WeatherDeskIcon :name="nationalPulse.isAlert ? 'risk' : 'observation'" class="national-pulse-art" />
+              <div>
+                <span>전국 운영 브리핑</span>
+                <strong>{{ nationalPulse.headline }}</strong>
+                <p>{{ nationalPulse.detail }}</p>
+              </div>
             </div>
             <div class="cockpit-stat">
               <span class="cockpit-stat-label">평균 기상 대응 지수</span>
@@ -487,8 +511,13 @@ const goDetail = (item) => {
                   </li>
                 </ul>
 
-                <el-button size="small" type="primary" class="cockpit-go" @click="goDetail(focus)">
-                  상세 분석 보기
+                <el-button type="primary" class="cockpit-go" @click="goDetail(focus)">
+                  <WeatherDeskIcon name="observation" class="cockpit-go-art" />
+                  <span class="cockpit-go-copy">
+                    <strong>상세 분석 보기</strong>
+                    <small>지표별 영향과 실행 제안</small>
+                  </span>
+                  <el-icon class="cockpit-go-arrow"><ArrowRight /></el-icon>
                 </el-button>
               </div>
             </Transition>
@@ -1199,6 +1228,48 @@ const goDetail = (item) => {
   flex-direction: column;
   gap: 2px;
 }
+.national-pulse {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  background: var(--glass-inset-bg);
+}
+.national-pulse-art {
+  width: 44px;
+  height: 44px;
+  flex: 0 0 auto;
+}
+.national-pulse > div {
+  min-width: 0;
+}
+.national-pulse span,
+.national-pulse p {
+  display: block;
+  color: var(--text-secondary);
+}
+.national-pulse span {
+  font-size: 11px;
+  font-weight: 700;
+}
+.national-pulse strong {
+  display: block;
+  margin-top: 2px;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 750;
+  line-height: 1.35;
+}
+.national-pulse p {
+  margin: 2px 0 0;
+  font-size: 12px;
+  line-height: 1.4;
+}
+.national-pulse.is-alert strong {
+  color: #ad251c;
+}
 .cockpit-stat-label {
   display: flex;
   align-items: center;
@@ -1256,8 +1327,39 @@ const goDetail = (item) => {
   height: 20px;
 }
 .cockpit-go {
-  align-self: flex-start;
-  margin-top: 2px;
+  align-self: stretch;
+  display: flex;
+  min-height: 72px;
+  margin-top: 4px;
+  padding: 10px 14px;
+  border-radius: 16px;
+  justify-content: flex-start;
+  text-align: left;
+}
+.cockpit-go-art {
+  width: 42px;
+  height: 42px;
+  margin-right: 10px;
+}
+.cockpit-go-copy {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+.cockpit-go-copy strong {
+  font-size: 15px;
+  font-weight: 750;
+}
+.cockpit-go-copy small {
+  font-size: 12px;
+  font-weight: 500;
+  opacity: 0.82;
+}
+.cockpit-go-arrow {
+  margin-left: 8px;
+  font-size: 20px;
 }
 
 /* 상위 3곳 (지역을 고르기 전 기본 화면) */
