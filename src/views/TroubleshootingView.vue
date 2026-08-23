@@ -1,6 +1,7 @@
 <script setup>
 import { computed, ref } from 'vue'
 import { Top, Bottom } from '@element-plus/icons-vue'
+import WeatherDeskIcon from '../components/WeatherDeskIcon.vue'
 
 const cases = [
   {
@@ -97,9 +98,12 @@ const pad = (index) => String(index + 1).padStart(2, '0')
 <template>
   <div class="trouble-page">
     <header id="trouble-top" class="trouble-head">
-      <p class="trouble-eyebrow">TROUBLESHOOTING LOG</p>
-      <h2 class="trouble-title">트러블슈팅</h2>
-      <p class="trouble-sub">막혔던 지점부터 원인을 찾아간 과정, 해결 뒤 남은 배움까지 기록했습니다.</p>
+      <div>
+        <p class="trouble-eyebrow">TROUBLESHOOTING LOG</p>
+        <h2 class="trouble-title">트러블슈팅</h2>
+        <p class="trouble-sub">막혔던 지점부터 원인을 찾아간 과정, 해결 뒤 남은 배움까지 기록했습니다.</p>
+      </div>
+      <WeatherDeskIcon name="risk" class="trouble-hero-art" />
     </header>
 
     <div class="archive-tools">
@@ -148,7 +152,8 @@ const pad = (index) => String(index + 1).padStart(2, '0')
 .archive-tools { position: sticky; top: 10px; z-index: 12; display: grid; grid-template-columns: auto minmax(180px,1fr) minmax(150px,220px); align-items: center; gap: 10px; margin-bottom: 14px; padding: 10px 12px; border: 1px solid var(--glass-border); border-radius: 16px; background: rgba(246,249,253,.88); backdrop-filter: blur(18px) saturate(140%); box-shadow: 0 8px 24px rgba(15,32,62,.1); }
 .archive-tools label { font-size: 12px; font-weight: 750; color: #48515f; }
 .archive-tools input, .archive-tools select { min-height: 38px; padding: 0 12px; border: 1px solid rgba(28,32,56,.14); border-radius: 10px; background: rgba(255,255,255,.78); color: #1c1c1e; font: inherit; }
-.trouble-head { margin-bottom: 18px; scroll-margin-top: 20px; }
+.trouble-head { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-bottom: 18px; scroll-margin-top: 20px; }
+.trouble-hero-art { width: 88px; height: 88px; flex: 0 0 auto; }
 .trouble-eyebrow { margin: 0; font-size: 11px; font-weight: 700; letter-spacing: .14em; color: rgba(206, 221, 243, .82); }
 .trouble-title { margin: 4px 0 0; padding: 0; border: 0; font-size: 30px; font-weight: 800; color: #f2f6fc; }
 .trouble-sub { margin: 6px 0 0; font-size: 14px; color: rgba(214, 226, 244, .86); }
@@ -172,5 +177,5 @@ const pad = (index) => String(index + 1).padStart(2, '0')
 .trouble-detail div:last-child { padding-bottom: 4px; border-bottom: 0; }
 .trouble-detail dt { margin-bottom: 7px; font-size: 11px; font-weight: 800; letter-spacing: .08em; color: #687482; }
 .trouble-detail dd { margin: 0; color: #303946; font-size: 14px; line-height: 1.65; }
-@media (max-width: 760px) { .trouble-index { grid-template-columns: 1fr; } .archive-tools { grid-template-columns: 1fr; } .archive-tools label { position:absolute; width:1px; height:1px; overflow:hidden; } }
+@media (max-width: 760px) { .trouble-index { grid-template-columns: 1fr; } .archive-tools { grid-template-columns: 1fr; } .archive-tools label { position:absolute; width:1px; height:1px; overflow:hidden; } .trouble-hero-art { width: 64px; height: 64px; } }
 </style>

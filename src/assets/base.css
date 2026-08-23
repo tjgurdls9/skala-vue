@@ -1033,7 +1033,8 @@ html[data-theme='dark'] :is(
   .temp-display, .sub-line, .index-label, .ops-summary, .ops-lead-label,
   .ops-lead-text, .rank-num, .rank-name, .rank-grade, .rank-code,
   .overview-key, .overview-val, .overview-val small, .index-explainer,
-  .trouble-index-name, .trouble-detail dd, .archive-tools label
+  .trouble-index-name, .trouble-detail dd, .archive-tools label,
+  .cockpit-map-label strong
 ) {
   color: var(--text-primary) !important;
 }
@@ -1042,7 +1043,7 @@ html[data-theme='dark'] :is(
   .cockpit-stat-value small, .axis-name, .map-readout-meta, .map-readout-hint,
   .sub-line, .index-label, .ops-summary, .ops-lead-label, .ops-lead-text,
   .rank-num, .rank-grade, .rank-code, .overview-key, .overview-val small,
-  .index-explainer span, .archive-tools label
+  .index-explainer span, .archive-tools label, .cockpit-map-label span
 ) {
   color: var(--text-secondary) !important;
 }

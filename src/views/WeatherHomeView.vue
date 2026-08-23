@@ -6,6 +6,7 @@ import BaseDashboardCard from '../components/weather/BaseDashboardCard.vue'
 import SearchBar from '../components/weather/SearchBar.vue'
 import WeatherCard from '../components/weather/WeatherCard.vue'
 import WeatherMap from '../components/weather/WeatherMap.vue'
+import WeatherDeskIcon from '../components/WeatherDeskIcon.vue'
 // 2. 상세/요약 화면과 공유하는 도시 등록 정보와 등급 판정 로직
 import { storeToRefs } from 'pinia'
 import {
@@ -329,7 +330,10 @@ const goDetail = (item) => {
         <div class="cockpit-body">
           <!-- 왼쪽: 전국 한눈 지표 -->
           <aside class="cockpit-side">
-            <h3 class="cockpit-title"><el-icon><Odometer /></el-icon> 전국 요약</h3>
+            <div class="cockpit-title-row">
+              <WeatherDeskIcon name="observation" class="cockpit-title-art" />
+              <h3 class="cockpit-title"><el-icon><Odometer /></el-icon> 전국 요약</h3>
+            </div>
             <div class="cockpit-stat">
               <span class="cockpit-stat-label">평균 기상 대응 지수</span>
               <span class="cockpit-stat-value">{{ avgScore ?? '—' }}<small>/{{ EXEC_MAX_SCORE }}</small></span>
@@ -392,6 +396,13 @@ const goDetail = (item) => {
 
           <!-- 가운데: 지도 -->
           <div class="cockpit-map">
+            <div class="cockpit-map-label">
+              <WeatherDeskIcon name="location" class="cockpit-map-art" />
+              <div>
+                <strong>지역별 대응 지도</strong>
+                <span>지역을 선택해 현재 상황을 비교하세요</span>
+              </div>
+            </div>
             <WeatherMap
               v-if="budgetPlan.length"
               :cities="budgetPlan"
@@ -1123,6 +1134,41 @@ const goDetail = (item) => {
 .cockpit-map {
   min-width: 0;
 }
+.cockpit-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.cockpit-title-art {
+  width: 48px;
+  height: 48px;
+  flex: 0 0 auto;
+}
+.cockpit-map-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.cockpit-map-art {
+  width: 72px;
+  height: 72px;
+  flex: 0 0 auto;
+}
+.cockpit-map-label strong,
+.cockpit-map-label span {
+  display: block;
+}
+.cockpit-map-label strong {
+  color: var(--color-text);
+  font-size: 16px;
+  font-weight: 750;
+}
+.cockpit-map-label span {
+  margin-top: 3px;
+  color: var(--text-secondary, #48515f);
+  font-size: 13px;
+}
 .cockpit-side {
   display: flex;
   flex-direction: column;
@@ -1268,6 +1314,19 @@ const goDetail = (item) => {
   }
   .cockpit-title {
     width: 100%;
+  }
+  .cockpit-title-row {
+    width: 100%;
+  }
+}
+@media (max-width: 640px) {
+  .cockpit-title-art {
+    width: 40px;
+    height: 40px;
+  }
+  .cockpit-map-art {
+    width: 56px;
+    height: 56px;
   }
 }
 /* 6차: practice.css의 div.practice-section 자체가 유리다. 날씨 화면은 그 안에 또 유리 카드

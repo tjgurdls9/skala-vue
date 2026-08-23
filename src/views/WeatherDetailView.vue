@@ -332,10 +332,10 @@ const goBack = () => {
                 :href="daylight.isDay
                   ? '/icons/weather-desk/weather-sun-transparent.png'
                   : '/icons/weather-desk/weather-moon-transparent.png'"
-                :x="celestialPos.x - 14"
-                :y="celestialPos.y - 14"
-                width="28"
-                height="28"
+                :x="celestialPos.x - 22"
+                :y="celestialPos.y - 22"
+                width="44"
+                height="44"
                 class="daylight-celestial"
               />
             </svg>
@@ -918,7 +918,6 @@ const goBack = () => {
   stroke-width: 1.5;
 }
 .daylight-celestial {
-  clip-path: inset(0 round 8px);
   filter: drop-shadow(0 3px 4px rgba(15, 32, 62, 0.18));
   transition: x 0.4s var(--apple-ease), y 0.4s var(--apple-ease);
 }
