@@ -8,7 +8,9 @@ const props = defineProps({
 
 // 투명 배경으로 다시 다듬은 아이콘은 우선 이 목록에서 사용한다.
 // 나머지 아이콘도 기존 경로를 유지해, 추가 교체 전에는 깨지지 않는다.
-const transparentNames = new Set(['risk', 'observation', 'location', 'sun', 'moon'])
+const transparentNames = new Set([
+  'risk', 'observation', 'location', 'sun', 'moon', 'overview', 'priority', 'analysis',
+])
 const src = computed(
   () => `/icons/weather-desk/weather-${props.name}${transparentNames.has(props.name) ? '-transparent' : ''}.png`,
 )

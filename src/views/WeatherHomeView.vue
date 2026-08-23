@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, watch, onMounted, h } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 // 1. 컴포넌트 파일명 국룰 표기법(PascalCase) 매칭 수입
 import BaseDashboardCard from '../components/weather/BaseDashboardCard.vue'
@@ -22,38 +22,16 @@ import {
 import { fetchHolidays } from '../data/weatherApi.js'
 import { useWeatherStore } from '../stores/weatherStore.js'
 import { useConfigStore } from '../stores/configStore.js'
-import { useWeatherThemeStore, WEATHER_THEME_MAP } from '../stores/weatherThemeStore.js'
+import { WEATHER_THEME_MAP } from '../stores/weatherThemeStore.js'
 import {
   Cloudy,
-  Sunny,
-  Pouring,
   Calendar,
   RefreshRight,
   House,
-  Aim,
   CircleCheck,
-  Trophy,
-  Odometer,
   InfoFilled,
   Opportunity,
-  ArrowRight,
 } from '@element-plus/icons-vue'
-
-// Element Plus 아이콘 세트에 눈 결정 아이콘이 없어서 이거 하나만 직접 그린다.
-// viewBox/좌표계를 Element Plus 아이콘과 동일하게(0 0 1024 1024) 맞춰서 <el-icon> 안에서 크기가 똑같이 맞는다.
-const SnowflakeIcon = {
-  name: 'SnowflakeIcon',
-  render: () =>
-    h('svg', { viewBox: '0 0 1024 1024' }, [
-      h('path', {
-        d: 'M512 96v832M176 256l672 512M176 768l672-512',
-        stroke: 'currentColor',
-        'stroke-width': 64,
-        'stroke-linecap': 'round',
-        fill: 'none',
-      }),
-    ]),
-}
 
 // 3. 과제 4: 라우터 이동을 위한 route(수신) / router(송신) 객체
 const route = useRoute()
@@ -122,15 +100,6 @@ const spotlightCity = computed(() => {
   const picked = budgetPlan.value.find((item) => item.id === weatherStore.selectedCityId)
   return picked ?? budgetPlan.value[0]
 })
-
-const WEATHER_THEME_ICON = { clear: Sunny, clouds: Cloudy, rain: Pouring, snow: SnowflakeIcon }
-
-// 11차 구조 수정: 예전에는 이 화면이 배경 테마를 계산해서 스토어에 밀어넣었다. 그래서 다른
-// 탭으로 가면(이 화면이 언마운트되면) 아무도 테마를 갱신하지 않아 배경이 직전 값에 멈췄다.
-// 이제 스토어가 선택된 지역에서 직접 테마를 파생하므로, 이 화면은 결과만 읽어 쓴다.
-const weatherThemeStore = useWeatherThemeStore()
-const heroTheme = computed(() => weatherThemeStore.theme)
-const heroThemeIcon = computed(() => WEATHER_THEME_ICON[heroTheme.value])
 
 const heroBadgeText = computed(() => {
   if (!spotlightCity.value) return '날씨 × 전사 경영 판단'
@@ -336,17 +305,15 @@ const goDetail = (item) => {
              색조가 미세하게 달라질 뿐이라 자리만 차지했다. 배경은 선택 지역의 실제
              날씨를 따라가면 그것으로 충분하다. -->
         <div class="cockpit-head">
-          <span class="hero-badge">
-            <el-icon><component :is="heroThemeIcon" /></el-icon> {{ heroBadgeText }}
-          </span>
+          <span class="hero-badge">{{ heroBadgeText }}</span>
         </div>
 
         <div class="cockpit-body">
           <!-- 왼쪽: 전국 한눈 지표 -->
           <aside class="cockpit-side">
             <div class="cockpit-title-row">
-              <WeatherDeskIcon name="observation" class="cockpit-title-art" />
-              <h3 class="cockpit-title"><el-icon><Odometer /></el-icon> 전국 요약</h3>
+              <WeatherDeskIcon name="overview" class="cockpit-title-art" />
+              <h3 class="cockpit-title">전국 운영 현황</h3>
             </div>
             <div v-if="nationalPulse" class="national-pulse" :class="{ 'is-alert': nationalPulse.isAlert }">
               <WeatherDeskIcon :name="nationalPulse.isAlert ? 'risk' : 'observation'" class="national-pulse-art" />
@@ -442,7 +409,10 @@ const goDetail = (item) => {
           <aside class="cockpit-side">
             <!-- 13차-i: 시상대는 선택과 무관한 전국 정보라 패널 맨 위에 상시로 둔다.
                  눌러서 그 지역으로 초점을 옮길 수도 있어 목록이자 컨트롤이다. -->
-            <h3 class="cockpit-title"><el-icon><Trophy /></el-icon> 기상 대응 상위 3곳</h3>
+            <div class="cockpit-title-row">
+              <WeatherDeskIcon name="priority" class="cockpit-title-art" />
+              <h3 class="cockpit-title">오늘의 운영 안정 지역</h3>
+            </div>
             <div v-if="podiumStand.length === 3" class="podium">
               <button
                 v-for="slot in podiumStand"
@@ -461,7 +431,7 @@ const goDetail = (item) => {
             <Transition name="panel-swap" mode="out-in">
               <div v-if="focus" :key="focus.id" class="cockpit-swap">
                 <h3 class="cockpit-title">
-                  <el-icon><Aim /></el-icon> {{ focus.name }}
+                  {{ focus.name }}
                   <!-- 13차-q: 시상대 3곳 밖의 지역을 고르면 이 지역이 '1위'도 아니고
                        시상대 강조 링(is-focus)도 안 붙어서, 왜 이 지역이 떠 있는지
                        알 방법이 없었다. 배지와 같은 근거를 여기도 붙인다. -->
@@ -512,12 +482,12 @@ const goDetail = (item) => {
                 </ul>
 
                 <el-button type="primary" class="cockpit-go" @click="goDetail(focus)">
-                  <WeatherDeskIcon name="observation" class="cockpit-go-art" />
+                  <WeatherDeskIcon name="analysis" class="cockpit-go-art" />
                   <span class="cockpit-go-copy">
                     <strong>상세 분석 보기</strong>
                     <small>지표별 영향과 실행 제안</small>
                   </span>
-                  <el-icon class="cockpit-go-arrow"><ArrowRight /></el-icon>
+                  <span class="cockpit-go-arrow" aria-hidden="true">›</span>
                 </el-button>
               </div>
             </Transition>
