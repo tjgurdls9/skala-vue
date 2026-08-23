@@ -222,7 +222,11 @@ onBeforeUnmount(() => {
   <!-- 뷰포트 전체를 덮는 고정 배경.
        13차-n: 날씨별로 갈아끼우던 걸 그만뒀다(테마 제거). 갈아끼울 게 없으니
        크로스페이드용 Transition과 key도 함께 걷어낸다 — 한 장으로 고정한다. -->
-  <div class="app-backdrop-layer weather-scene"></div>
+  <div class="app-backdrop-layer weather-scene" aria-hidden="true">
+    <i class="weather-scene-orb orb-one"></i>
+    <i class="weather-scene-orb orb-two"></i>
+    <i class="weather-scene-orb orb-three"></i>
+  </div>
 
   <div class="app-container">
     <header class="brand">

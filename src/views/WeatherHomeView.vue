@@ -1507,10 +1507,11 @@ const goDetail = (item) => {
   align-items: center;
   gap: 2px;
   padding: 14px 10px;
-  border: 1px solid var(--control-border);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: var(--control-radius);
-  background: var(--control-bg);
-  box-shadow: var(--control-shadow);
+  /* 세 칸 모두 어두운 받침을 가져야 흰 글자를 고정해도 순위가 또렷하다. */
+  background: linear-gradient(145deg, #31425d, #1e2c43);
+  box-shadow: 0 8px 18px rgba(13, 24, 45, 0.16);
   cursor: pointer;
   text-align: center;
   transition:
@@ -1519,8 +1520,8 @@ const goDetail = (item) => {
     transform 0.2s var(--apple-ease);
 }
 .podium-slot:hover {
-  background: var(--control-bg-hover);
-  box-shadow: var(--control-shadow-hover);
+  background: linear-gradient(145deg, #3a4f70, #253650);
+  box-shadow: 0 10px 22px rgba(13, 24, 45, 0.22);
   transform: var(--control-lift);
 }
 /* 1위만 더 높고 진하게 — 시상대처럼 보이게 하는 건 결국 높이 차이다.
@@ -1533,12 +1534,12 @@ const goDetail = (item) => {
 .podium-rank {
   font-size: 11px;
   font-weight: 700;
-  color: #48515f;
+  color: #ffffff;
 }
 .podium-name {
   font-size: 17px;
   font-weight: 700;
-  color: #1c1c1e;
+  color: #ffffff;
 }
 .podium-slot.rank-1 .podium-name {
   font-size: 21px;
@@ -1546,12 +1547,12 @@ const goDetail = (item) => {
 .podium-score {
   font-size: 13px;
   font-weight: 700;
-  color: #0a53c0;
+  color: #ffffff;
   font-variant-numeric: tabular-nums;
 }
 .podium-meta {
   font-size: 11px;
-  color: #48515f;
+  color: #ffffff;
 }
 
 /* --- 10차: 목록 필터 / 정렬 / 인사이트 --- */

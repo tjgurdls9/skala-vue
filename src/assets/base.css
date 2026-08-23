@@ -198,9 +198,10 @@ html[data-theme='light'] {
   --color-accent: #0064ff;
   --color-accent-active: #0050cc;
   --control-fg-on: #0050cc;
-  --glass-bg: rgba(250, 252, 255, 0.74);
-  --glass-bg-strong: rgba(252, 253, 255, 0.86);
-  --glass-bg-thin: rgba(247, 250, 255, 0.62);
+  /* 라이트에서도 뒤의 하늘색과 굴절이 읽혀야 유리가 종이처럼 보이지 않는다. */
+  --glass-bg: rgba(244, 250, 255, 0.66);
+  --glass-bg-strong: rgba(248, 252, 255, 0.78);
+  --glass-bg-thin: rgba(238, 247, 255, 0.52);
   --glass-border: rgba(255, 255, 255, 0.86);
   --shadow-glass:
     inset 0 1px 0 rgba(255, 255, 255, 0.9),
@@ -242,6 +243,8 @@ html[data-theme='dark'] {
 .weather-scene {
   position: absolute;
   inset: 0;
+  overflow: hidden;
+  isolation: isolate;
   /* 13차-o: 광원을 하나로 모았다.
      그전에는 비슷한 크기·비슷한 알파의 덩어리 6개가 흩어져 있었는데, 여럿이면
      서로 상쇄돼 '빛이 어디서 오는지'가 사라진다. 화면에는 방향이 없고 얼룩만 남았다.
@@ -251,20 +254,21 @@ html[data-theme='dark'] {
 }
 
 html[data-theme='light'] .weather-scene {
-  background-color: #e8eef7;
+  background-color: #d9ebff;
 }
 
 html[data-theme='light'] .weather-scene::after {
   background:
-    radial-gradient(58% 46% at 18% 2%, rgba(83, 148, 255, 0.28), transparent 66%),
-    radial-gradient(48% 38% at 62% 24%, rgba(142, 181, 242, 0.2), transparent 72%),
-    linear-gradient(180deg, rgba(248, 251, 255, 0.1) 28%, rgba(207, 219, 238, 0.46) 100%);
+    radial-gradient(58% 46% at 18% 2%, rgba(54, 141, 255, 0.38), transparent 66%),
+    radial-gradient(48% 38% at 62% 24%, rgba(118, 187, 255, 0.32), transparent 72%),
+    linear-gradient(180deg, rgba(250, 253, 255, 0.12) 28%, rgba(154, 205, 252, 0.52) 100%);
 }
 
 .weather-scene::after {
   content: '';
   position: absolute;
   inset: 0;
+  z-index: 0;
   background:
     /* 왼쪽 위에서 들어오는 빛 하나 */
     radial-gradient(58% 46% at 18% 2%, rgba(128, 178, 255, 0.5), transparent 66%),
@@ -272,6 +276,58 @@ html[data-theme='light'] .weather-scene::after {
     radial-gradient(48% 38% at 62% 24%, rgba(84, 138, 228, 0.2), transparent 72%),
     /* 아래로 갈수록 깊어진다 — 깊이는 결국 수직 방향의 명도 차다 */
     linear-gradient(180deg, rgba(6, 10, 24, 0) 28%, rgba(6, 10, 24, 0.55) 100%);
+}
+
+/* 유리 뒤를 지나가는 토스 블루 오브제. 실제 난수 이동은 화면을 예측하기 어렵게 하므로,
+   서로 다른 느린 궤도로 움직여 매번 우연히 떠다니는 듯 보이게 한다. */
+.weather-scene-orb {
+  position: absolute;
+  z-index: 1;
+  display: block;
+  border-radius: 48% 52% 55% 45% / 52% 44% 56% 48%;
+  background: linear-gradient(145deg, rgba(91, 165, 255, 0.82), rgba(0, 100, 255, 0.44));
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.55), 0 18px 50px rgba(0, 57, 158, 0.2);
+  opacity: 0.5;
+  pointer-events: none;
+}
+.orb-one {
+  top: 12%;
+  left: -6%;
+  width: clamp(150px, 19vw, 310px);
+  aspect-ratio: 1;
+}
+.orb-two {
+  top: 46%;
+  right: 8%;
+  width: clamp(120px, 15vw, 240px);
+  aspect-ratio: 1.3;
+  border-radius: 56% 44% 48% 52% / 45% 55% 45% 55%;
+  opacity: 0.36;
+}
+.orb-three {
+  right: 34%;
+  bottom: -8%;
+  width: clamp(90px, 11vw, 170px);
+  aspect-ratio: 1;
+  opacity: 0.26;
+}
+html[data-theme='light'] .weather-scene-orb {
+  background: linear-gradient(145deg, rgba(117, 186, 255, 0.76), rgba(0, 100, 255, 0.34));
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.72), 0 18px 50px rgba(0, 100, 255, 0.16);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .orb-one { animation: weather-orb-drift-one 22s ease-in-out infinite alternate; }
+  .orb-two { animation: weather-orb-drift-two 28s ease-in-out infinite alternate; }
+  .orb-three { animation: weather-orb-drift-three 18s ease-in-out infinite alternate; }
+}
+@keyframes weather-orb-drift-one {
+  to { transform: translate(18vw, 8vh) rotate(16deg); }
+}
+@keyframes weather-orb-drift-two {
+  to { transform: translate(-14vw, -12vh) rotate(-18deg); }
+}
+@keyframes weather-orb-drift-three {
+  to { transform: translate(-8vw, -14vh) scale(1.18); }
 }
 
 /* 13차-n: 날씨별 색조(#14213f/#1b2233/…)를 걷어냈다. 차이가 미묘해서 무엇이 왜
@@ -317,7 +373,7 @@ body {
 }
 
 html[data-theme='light'] body {
-  background: #e8eef7;
+  background: #d9ebff;
 }
 
 html[data-theme='light'] .brand .wordmark,
@@ -1085,7 +1141,7 @@ html[data-theme] :is(.practice-section, .about-page, .notfound-page, .trouble-pa
   color: var(--text-primary);
 }
 html[data-theme] :is(.practice-section, .about-page, .notfound-page, .trouble-page, .lab-page)
-  :is(h1, h2, h3, h4, h5, h6, p, li, dt, dd, label, span, a, th, td):not(.el-button):not(.el-button *):not(.el-tag):not(.el-tag *):not(.el-alert):not(.el-alert *) {
+  :is(h1, h2, h3, h4, h5, h6, p, li, dt, dd, label, span, a, th, td):not(.el-button):not(.el-button *):not(.el-tag):not(.el-tag *):not(.el-alert):not(.el-alert *):not(.podium-rank):not(.podium-name):not(.podium-score):not(.podium-meta) {
   color: var(--text-primary) !important;
 }
 /* 버튼·태그·알림은 상태색과 대비가 역할 자체이므로, 본문 안전망의 대상에서 제외한다. */
@@ -1096,4 +1152,42 @@ html[data-theme] :is(.practice-section, .about-page, .notfound-page, .trouble-pa
     .lab-index-desc, .lab-sub, .lab-eyebrow, .lab-section-desc, .lab-toc-link,
     .trouble-sub, .trouble-eyebrow, .trouble-index-area, .trouble-detail dt) {
   color: var(--text-secondary) !important;
+}
+
+/* 시상대는 세 칸 모두 같은 대비 원칙을 쓴다. 흰 글자를 고정했으므로 받침도 충분히 짙게 둔다. */
+.podium-slot {
+  border-color: rgba(255, 255, 255, 0.18) !important;
+  background: linear-gradient(145deg, #31425d, #1e2c43) !important;
+  box-shadow: 0 8px 18px rgba(13, 24, 45, 0.16) !important;
+}
+.podium-slot:hover {
+  background: linear-gradient(145deg, #3a4f70, #253650) !important;
+  box-shadow: 0 10px 22px rgba(13, 24, 45, 0.22) !important;
+}
+.podium-slot.rank-1 {
+  background: linear-gradient(145deg, #1677ff, #0050cc) !important;
+}
+.podium-slot :is(.podium-rank, .podium-name, .podium-score, .podium-meta) {
+  color: #ffffff !important;
+}
+
+/* 온보딩은 항상 짙은 시네마틱 장면이므로 기본 버튼의 라이트 테마 색을 물려받지 않는다. */
+.el-dialog.onboarding-dialog .onboarding-actions .el-button:not(.el-button--primary) {
+  border-color: rgba(255, 255, 255, 0.22) !important;
+  background: rgba(255, 255, 255, 0.12) !important;
+  color: #f5f7fb !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 6px 16px rgba(0, 0, 0, 0.18) !important;
+}
+.el-dialog.onboarding-dialog .onboarding-actions .el-button:not(.el-button--primary):hover,
+.el-dialog.onboarding-dialog .onboarding-actions .el-button:not(.el-button--primary):focus-visible {
+  border-color: rgba(255, 255, 255, 0.42) !important;
+  background: rgba(255, 255, 255, 0.2) !important;
+  color: #ffffff !important;
+}
+
+/* scoped CSS 안의 전역 테마 선택자는 컴파일 과정에서 후손 선택자가 분리될 수 있어, 지도 테마는 공통 시트에서 적용한다. */
+html[data-theme='dark'] .map-frame {
+  background: rgba(10, 18, 35, 0.46) !important;
+  border-color: rgba(172, 204, 250, 0.16) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
 }

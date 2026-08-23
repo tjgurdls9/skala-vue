@@ -90,7 +90,7 @@ const complete = () => emit('complete')
           </div>
 
           <div class="onboarding-actions">
-            <el-button size="large" @click="step = 1">
+            <el-button type="info" size="large" @click="step = 1">
               <el-icon><ArrowLeft /></el-icon> 이전
             </el-button>
             <el-button type="primary" size="large" @click="complete">
@@ -257,6 +257,19 @@ const complete = () => emit('complete')
   display: flex;
   gap: 8px;
   margin-top: 28px;
+}
+/* 다크한 온보딩 위에서 기본 버튼의 연한 글자가 묻히지 않도록, 이전 버튼도 독립된 유리 면으로 만든다. */
+.onboarding-actions .el-button:not(.el-button--primary) {
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  background: rgba(255, 255, 255, 0.12) !important;
+  color: #f5f7fb !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 6px 16px rgba(0, 0, 0, 0.18) !important;
+}
+.onboarding-actions .el-button:not(.el-button--primary):hover,
+.onboarding-actions .el-button:not(.el-button--primary):focus-visible {
+  border-color: rgba(255, 255, 255, 0.42) !important;
+  background: rgba(255, 255, 255, 0.2) !important;
+  color: #ffffff !important;
 }
 .onboarding-note {
   margin: 10px 0 0;
