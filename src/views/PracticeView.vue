@@ -10,6 +10,8 @@ import {
   Box,
   Files,
   Grid,
+  Monitor,
+  Finished,
   Bottom,
   Top,
 } from '@element-plus/icons-vue'
@@ -53,6 +55,8 @@ import StoreCounter from '../components/practice/store/StoreCounter.vue'
 import ElRegisterForm from '../components/practice/uilib/ElRegisterForm.vue'
 import ElProductCounter from '../components/practice/uilib/ElProductCounter.vue'
 import ElFeedbackProgress from '../components/practice/uilib/ElFeedbackProgress.vue'
+import AxiosIntegration from '../components/practice/integration/AxiosIntegration.vue'
+import DeliveryChecks from '../components/practice/integration/DeliveryChecks.vue'
 
 // 8차: 40개 실습을 <br><hr><br>로 끝없이 이어붙인 단일 스크롤이었다. 폴더 구조(basic/render/
 // binding/...)가 이미 단원을 나타내고 있어서, 그걸 그대로 살려 "실습 아카이브"로 재구성한다.
@@ -63,6 +67,7 @@ const CHAPTERS = [
     label: '기초',
     icon: Document,
     desc: '반응성 변수와 템플릿 렌더링의 출발점',
+    topics: ['텍스트 보간 {{ }}', 'JavaScript 표현식', 'ref() 반응성', '이벤트로 상태 변경'],
     items: [
       { name: 'Hello Skala-Vue', comp: SampleOne },
       { name: 'Welcome to Skala-Vue', comp: SampleTwo },
@@ -73,6 +78,7 @@ const CHAPTERS = [
     label: '렌더링',
     icon: Grid,
     desc: 'v-html / v-text와 조건·반복 렌더링',
+    topics: ['v-html · XSS', 'v-text', 'v-if · v-else', 'v-show', 'v-for'],
     items: [
       { name: 'v-html', comp: vHtml },
       { name: 'v-html과 XSS', comp: vHtmlXSS },
@@ -87,6 +93,7 @@ const CHAPTERS = [
     label: '바인딩',
     icon: Connection,
     desc: 'v-bind로 속성·클래스·스타일 잇기',
+    topics: ['v-bind', 'class 바인딩', 'style 바인딩', ': 단축 표기'],
     items: [
       { name: 'v-bind 기본', comp: vBind },
       { name: '클래스 바인딩', comp: vBindClassBinding },
@@ -99,6 +106,7 @@ const CHAPTERS = [
     label: '최적화',
     icon: Lightning,
     desc: 'v-pre / v-cloak / v-once / v-memo',
+    topics: ['v-pre', 'v-cloak', 'v-once', 'v-memo'],
     items: [
       { name: 'v-pre', comp: vPre },
       { name: 'v-cloak', comp: vCloak },
@@ -111,6 +119,7 @@ const CHAPTERS = [
     label: '이벤트 · 폼',
     icon: Pointer,
     desc: 'v-on 핸들러와 v-model 폼 바인딩',
+    topics: ['v-on · 이벤트 객체', '이벤트 수식어', 'v-model', 'v-model 수식어', 'scoped CSS'],
     items: [
       { name: '이벤트 핸들러', comp: vOnEventHandler },
       { name: '이벤트 객체', comp: vOnEventObject },
@@ -125,6 +134,7 @@ const CHAPTERS = [
     label: 'Composition API',
     icon: Refresh,
     desc: 'ref · reactive · computed · watch',
+    topics: ['ref · reactive', 'computed', 'watch', '다중·깊은 감시', 'watchEffect'],
     items: [
       { name: 'ref', comp: vReactiveRef },
       { name: 'reactive', comp: vReactiveReactive },
@@ -141,6 +151,7 @@ const CHAPTERS = [
     label: '컴포넌트',
     icon: Box,
     desc: '생명주기 · props/emits · 슬롯',
+    topics: ['Lifecycle Hooks', 'defineProps · defineEmits', 'Default · Named · Scoped Slot'],
     items: [
       { name: '생명주기 훅', comp: vLifecycleHook },
       { name: 'props / emits', comp: vPropsEmits },
@@ -154,6 +165,7 @@ const CHAPTERS = [
     label: '스토어',
     icon: Files,
     desc: 'Pinia 전역 상태 관리',
+    topics: ['defineStore', 'state', 'getters', 'actions'],
     items: [{ name: 'Pinia 카운터', comp: StoreCounter }],
   },
   {
@@ -161,11 +173,28 @@ const CHAPTERS = [
     label: 'UI 라이브러리',
     icon: MagicStick,
     desc: 'Element Plus 컴포넌트 실습 (교재 231~249p)',
+    topics: ['폼 검증', 'Input Number · Rate', 'MessageBox · Progress'],
     items: [
       { name: '회원가입 폼', comp: ElRegisterForm },
       { name: '상품 수량 카운터', comp: ElProductCounter },
       { name: '피드백 · 진행률', comp: ElFeedbackProgress },
     ],
+  },
+  {
+    id: 'axios',
+    label: '외부 데이터',
+    icon: Monitor,
+    desc: 'Axios 기반 날씨 · 공휴일 API 연동 (교재 220~229p)',
+    topics: ['axios.get', 'axios.all', '환경 변수', '응답 데이터 가공'],
+    items: [{ name: 'WEATHER DESK API 연동', comp: AxiosIntegration }],
+  },
+  {
+    id: 'delivery',
+    label: '개발 · 배포',
+    icon: Finished,
+    desc: '코드 품질과 프로덕션 배포 확인 (교재 270~273p)',
+    topics: ['ESLint', 'Prettier', 'Vite 환경 변수', 'Production Build'],
+    items: [{ name: '품질 · 배포 점검', comp: DeliveryChecks }],
   },
 ]
 
@@ -210,7 +239,7 @@ const pad = (index) => String(index + 1).padStart(2, '0')
       </a>
     </nav>
 
-    <!-- 단원별 상세: 왼쪽에 다루는 문법, 오른쪽에 실제 동작하는 실습 화면 -->
+    <!-- 단원별 상세: 왼쪽에 문법·개념, 오른쪽에 실제 동작하는 실습 화면 -->
     <section v-for="(chapter, i) in chapters" :id="chapter.id" :key="chapter.id" class="lab-section">
       <header class="lab-section-head">
         <span class="lab-section-num">{{ pad(i) }}</span>
@@ -228,9 +257,9 @@ const pad = (index) => String(index + 1).padStart(2, '0')
 
       <div class="lab-section-body">
         <div class="lab-notes">
-          <p class="lab-col-label">다루는 문법</p>
+          <p class="lab-col-label">다루는 문법 · 개념</p>
           <ul class="lab-note-list">
-            <li v-for="item in chapter.items" :key="item.name">{{ item.name }}</li>
+            <li v-for="topic in chapter.topics" :key="topic">{{ topic }}</li>
           </ul>
         </div>
 

@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
-const BASE_TITLE = '날씨 대시보드'
+const BASE_TITLE = 'WEATHER DESK'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -8,6 +8,12 @@ const router = createRouter({
   routes: [
     {
       path: '/',
+      name: 'WeatherSummary',
+      component: () => import('../views/WeatherSummaryView.vue'),
+      meta: { title: '의사결정 보조 지표 요약' },
+    },
+    {
+      path: '/dashboard',
       name: 'WeatherHome',
       component: () => import('../views/WeatherHomeView.vue'),
       meta: { title: '지역별 날씨 현황' },
@@ -25,19 +31,19 @@ const router = createRouter({
       component: () => import('../views/WeatherAboutView.vue'),
       meta: { title: '서비스 소개' },
     },
-    {
-      // 의사결정 보조 지표를 한 표로 요약 (요구사항 6번, 본인 추가 view)
-      path: '/summary',
-      name: 'WeatherSummary',
-      component: () => import('../views/WeatherSummaryView.vue'),
-      meta: { title: '의사결정 보조 지표 요약' },
-    },
+    { path: '/summary', redirect: '/' },
     {
       // 교재 단원별 Code Challenge 실습 모음
       path: '/practice',
       name: 'Practice',
       component: () => import('../views/PracticeView.vue'),
       meta: { title: '실습 아카이브' },
+    },
+    {
+      path: '/troubleshooting',
+      name: 'Troubleshooting',
+      component: () => import('../views/TroubleshootingView.vue'),
+      meta: { title: '트러블슈팅' },
     },
     {
       // 위 라우트와 매칭되지 않는 모든 경로를 받는 Catch-all Route. 반드시 맨 마지막에 둔다.

@@ -2,7 +2,7 @@
 import { onMounted, onBeforeUnmount } from 'vue'
 import { RouterView, useRoute } from 'vue-router'
 import UnitToggler from './components/weather/UnitToggler.vue'
-import { House, DataAnalysis, MagicStick } from '@element-plus/icons-vue'
+import { House, DataAnalysis, MagicStick, Tools } from '@element-plus/icons-vue'
 import { useWeatherStore } from './stores/weatherStore.js'
 
 // el-menu의 default-active를 현재 경로와 맞춰야 새로고침해도 활성 탭이 맞게 표시된다
@@ -25,7 +25,8 @@ useWeatherStore().load()
 // base.css의 유리 판 목록과 같은 목록이어야 한다 — 여기서 빠지면 그 판만 빛이 안 돈다.
 const GLASS_SELECTOR =
   '.base-dashboard-card, .weather-card, .navigation-bar, .about-card, ' +
-  '.notfound-card, .detail-hero, .hero-glass, .lab-index, .lab-note-list, .practice-section'
+  '.notfound-card, .detail-hero, .hero-glass, .lab-index, .lab-note-list, .practice-section, ' +
+  '.trouble-index, .trouble-detail'
 let rafId = 0
 let pending = null
 // 13차-l: atan2는 ±180도에서 값이 튄다. 각도에 전환이 걸린 지금은 그 순간
@@ -198,13 +199,16 @@ onBeforeUnmount(() => {
         class="nav-menu"
       >
         <el-menu-item index="/"
-          ><el-icon><House /></el-icon> 날씨 대시보드</el-menu-item
-        >
-        <el-menu-item index="/summary"
           ><el-icon><DataAnalysis /></el-icon> 지표 요약</el-menu-item
+        >
+        <el-menu-item index="/dashboard"
+          ><el-icon><House /></el-icon> 날씨 대시보드</el-menu-item
         >
         <el-menu-item index="/practice"
           ><el-icon><MagicStick /></el-icon> 실습 아카이브</el-menu-item
+        >
+        <el-menu-item index="/troubleshooting"
+          ><el-icon><Tools /></el-icon> 트러블슈팅</el-menu-item
         >
       </el-menu>
 

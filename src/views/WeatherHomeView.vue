@@ -100,7 +100,7 @@ const filteredWeatherList = computed(() => {
 // 검색어를 주소창 쿼리 스트링에 실시간 동기화한다.
 // push를 쓰면 글자 수만큼 히스토리가 쌓여 뒤로 가기가 먹통이 되므로 replace를 쓴다.
 watch(searchQuery, (keyword) => {
-  router.replace(keyword ? '/?search=' + keyword : '/')
+  router.replace(keyword ? '/dashboard?search=' + keyword : '/dashboard')
 })
 
 // 11차: 예산 개념을 걷어냈다(사유는 weatherMock.js의 buildRegionalOutlook 주석 참고).

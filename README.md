@@ -47,11 +47,13 @@ API 키는 `.env`에 두고 git에는 올리지 않는다. `.env.example`을 `.e
 
 | 경로               | View               | 설명                             |
 | ------------------ | ------------------ | -------------------------------- |
-| `/`                | WeatherHomeView    | 메인 대시보드, `?search=` 동기화 |
+| `/`                | WeatherSummaryView | 첫 화면, 의사결정 보조 지표 요약  |
+| `/dashboard`       | WeatherHomeView    | 날씨 대시보드, `?search=` 동기화  |
 | `/weather/:cityId` | WeatherDetailView  | 도시별 상세 기상 관측 정보       |
 | `/about`           | WeatherAboutView   | 서비스 소개                      |
-| `/summary`         | WeatherSummaryView | 의사결정 보조 지표 요약 표       |
+| `/summary`         | Redirect           | `/`로 이동                       |
 | `/practice`        | PracticeView       | 단원별 Code Challenge 실습 모음  |
+| `/troubleshooting` | TroubleshootingView| 개발 과정의 문제·원인·해결 기록  |
 | `/:pathMatch(.*)*` | NotFoundView       | Catch-all Route                  |
 
 전부 동적 import(Lazy Loading)로 등록해서 화면별로 청크가 분리된다.
@@ -90,6 +92,7 @@ API 키는 `.env`에 두고 git에는 올리지 않는다. `.env.example`을 `.e
 
 교재 단원별 Code Challenge 결과물은 `/practice`에 한 페이지로 모여 있다.
 
+- 기초: 텍스트 보간, JavaScript 표현식, ref 반응성
 - 렌더링: vText, vHtml, vHtmlXSS, vIfElse, vShow, vFor
 - 바인딩: vBindBasic, vBindClassBinding, vBindStyleBinding, vBindShorthand
 - 최적화: vPre, vCloak, vOnce, vMemo
@@ -97,6 +100,11 @@ API 키는 `.env`에 두고 git에는 올리지 않는다. `.env.example`을 `.e
 - Composition API: vReactiveRef, vReactiveReactive, vComputedBasic, vWatchBasic, vWatchMulti, vWatchDeep, vWatchReactive, vWatchEffect
 - Components: vLifecycleHook, vPropsEmits, SlotDefaultParent, SlotNamedParent, SlotScopedParent
 - Pinia: StoreCounter
+- 외부 데이터: Axios 날씨·대기질·예보·공휴일 API 연동
+- 개발·배포: ESLint, Prettier, 환경 변수, 프로덕션 빌드 확인
+
+`/troubleshooting`에는 지표 요약 가독성, 지역 선택 상태, 호버 성능, 카드 전환,
+API 호출 한도, 라우트 전환, Vercel SPA 라우팅 문제를 현상·원인·해결 순서로 정리했다.
 
 ## 구조
 
@@ -116,7 +124,8 @@ src/
 ├─ views/             페이지 단위 컴포넌트
 │  ├─ WeatherHomeView.vue     WeatherDetailView.vue
 │  ├─ WeatherAboutView.vue    WeatherSummaryView.vue
-│  ├─ PracticeView.vue        NotFoundView.vue
+│  ├─ PracticeView.vue        TroubleshootingView.vue
+│  ├─ NotFoundView.vue
 │  └─ HomeView.vue, AboutView.vue   (create-vue 스캐폴드, 미사용)
 ├─ components/
 │  ├─ weather/        BaseDashboardCard, SearchBar, WeatherCard, WeatherMap, UnitToggler

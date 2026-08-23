@@ -5,7 +5,7 @@ import { InfoFilled, Back, Check } from '@element-plus/icons-vue'
 const router = useRouter()
 
 const goHome = () => {
-  router.push('/')
+  router.push('/dashboard')
 }
 
 // 8차: <ul><li> 맨몸 목록이라 유리 카드 안에서 브라우저 기본 불릿만 덩그러니 떠 있었다 —

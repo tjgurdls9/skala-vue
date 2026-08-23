@@ -248,7 +248,7 @@ const metrics = computed(() => {
 })
 
 const goHome = () => {
-  router.push('/')
+  router.push('/dashboard')
 }
 
 const goBack = () => {
