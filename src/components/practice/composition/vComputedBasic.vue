@@ -5,12 +5,12 @@ const count = ref(0)
 const dummy = ref(0)
 
 const getMethodResult = () => {
-  console.log('❌ 일반 함수 실행됨!')
+  console.log('일반 함수 실행됨!')
   return count.value * 2
 }
 
 const doubleCount = computed(() => {
-  console.log('✅ Computed 연산 실행됨!')
+  console.log('Computed 연산 실행됨!')
   return count.value * 2
 })
 </script>

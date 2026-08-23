@@ -1,6 +1,7 @@
 <script setup>
 // 교재 247p 실습 2: 커머스 상품 수량 및 평점 시스템
 import { ref } from 'vue'
+import WeatherDeskIcon from '../../WeatherDeskIcon.vue'
 
 const productQuantity = ref(1) // 수량 카운터 기본값
 const productRate = ref(4) // 별점 기본값 (별 4개)
@@ -11,7 +12,7 @@ const productRate = ref(4) // 별점 기본값 (별 4개)
     <h2>Element Plus 실습 2: 상품 수량 및 평점</h2>
 
     <el-card>
-      <template #header>🛒 실습 2. 커머스 상품 수량 및 평점 시스템</template>
+      <template #header><span class="icon-heading"><WeatherDeskIcon name="commerce" /> 실습 2. 커머스 상품 수량 및 평점 시스템</span></template>
 
       <div class="form-row">
         <span class="form-label">구매 수량 선택:</span>

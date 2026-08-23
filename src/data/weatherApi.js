@@ -7,6 +7,7 @@ const WEATHER_URL = 'https://api.openweathermap.org/data/2.5/weather'
 const FORECAST_URL = 'https://api.openweathermap.org/data/2.5/forecast'
 const AIR_POLLUTION_URL = 'https://api.openweathermap.org/data/2.5/air_pollution'
 const HOLIDAY_URL = 'https://date.nager.at/api/v3/PublicHolidays'
+const useServerProxy = import.meta.env.PROD
 
 // 위도/경도 기반 실시간 날씨 조회 (교재 220p Call current weather data)
 export const fetchCurrentWeather = async (lat, lon) => {
@@ -26,12 +27,14 @@ export const fetchAirPollution = async (lat, lon) => {
 }
 
 // 도시 하나(id, name, region, lat, lon)를 받아 실시간 날씨 + 미세먼지를 합쳐서 돌려준다.
-// 두 요청을 axios.all로 동시에 보낸다. (교재 226p 병렬 요청)
+// 배포 환경은 서버 함수가 두 요청을 묶고, 로컬 실습에서는 교재의 병렬 요청 구조를 그대로 쓴다.
 export const fetchCityWeather = async (city) => {
-  const [weather, air] = await axios.all([
-    fetchCurrentWeather(city.lat, city.lon),
-    fetchAirPollution(city.lat, city.lon),
-  ])
+  const { weather, air } = useServerProxy
+    ? (await axios.get('/api/weather', { params: { lat: city.lat, lon: city.lon } })).data
+    : await Promise.all([
+        fetchCurrentWeather(city.lat, city.lon),
+        fetchAirPollution(city.lat, city.lon),
+      ]).then(([weather, air]) => ({ weather, air }))
   return {
     ...city,
     temp: Math.round(weather.main.temp),
@@ -67,8 +70,10 @@ export const fetchCityWeather = async (city) => {
 // 붙였다. 5 Day / 3 Hour Forecast도 Free Tier에 포함된다(같은 키를 그대로 쓴다).
 // 지금 날씨만 보던 앱이 "며칠 뒤까지" 보게 되면서, 경영 판단이 사후 대응에서 사전 계획이 된다.
 export const fetchForecast = async (lat, lon) => {
-  const response = await axios.get(FORECAST_URL, {
-    params: { lat, lon, appid: API_KEY, units: 'metric', lang: 'kr' },
+  const response = await axios.get(useServerProxy ? '/api/forecast' : FORECAST_URL, {
+    params: useServerProxy
+      ? { lat, lon }
+      : { lat, lon, appid: API_KEY, units: 'metric', lang: 'kr' },
   })
   return response.data
 }

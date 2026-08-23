@@ -831,9 +831,9 @@ export const buildRegionalOutlook = (list) => {
 // --- 9차: 5일 예보를 "하루 단위 옥외 활동 전망"으로 접는다 ---
 // OpenWeatherMap 5 Day / 3 Hour Forecast는 3시간 간격 데이터를 40개쯤 준다. 그대로 보여주면
 // 읽을 수가 없어서 날짜별로 묶고, 그날의 대푯값(최고/최저 기온, 평균 습도, 가장 잦은 날씨)으로 접는다.
-// 미세먼지는 예보 응답에 없다 — 그래서 여기서는 기온/습도 두 축만으로 점수를 낸다.
-// 지금 날씨의 27점 만점(기온×습도×미세먼지)과 섞이면 오해를 부르므로 만점을 따로 노출한다.
-export const FORECAST_MAX_SCORE = 9
+// 미세먼지는 예보 응답에 없다. 나머지 5개 축의 가중치를 100으로 다시 환산해 현재 지수와
+// 같은 100점 체계로 보여준다.
+export const FORECAST_MAX_SCORE = 100
 
 export const buildDailyForecast = (list) => {
   if (!Array.isArray(list)) return []
@@ -868,9 +868,24 @@ export const buildDailyForecast = (list) => {
       }
       const weatherMain = Object.keys(counts).reduce((a, b) => (counts[a] >= counts[b] ? a : b))
 
-      // 낮 기온(최고)을 그날의 활동 기준으로 본다 — 옥외 활동 판단은 낮 기준이라야 맞다
-      const tempGrade = gradeTemp(max)
-      const humidityGrade = gradeHumidity(humidity)
+      const feelsLike = Math.max(...slots.map((s) => s.main.feels_like ?? s.main.temp))
+      const wind = Math.max(...slots.map((s) => s.wind?.speed ?? 0))
+      const visibility = Math.min(...slots.map((s) => (s.visibility ?? 10000) / 1000))
+      const parts = {
+        feels: plateau(feelsLike, 18, 24, 8, 10),
+        sky: SKY_SCORE[weatherMain] ?? 60,
+        humidity: plateau(humidity, 40, 60, 22, 30),
+        wind: inverse(wind, 2, 9),
+        visibility: plateau(visibility, 10, 999, 8, 1),
+      }
+      const availableWeights = EXEC_WEIGHTS.filter((weight) => weight.key !== 'air')
+      const weightTotal = availableWeights.reduce((sum, weight) => sum + weight.weight, 0)
+      const execScore = Math.round(
+        availableWeights.reduce(
+          (sum, weight) => sum + parts[weight.key] * weight.weight,
+          0,
+        ) / weightTotal,
+      )
 
       return {
         date,
@@ -883,7 +898,7 @@ export const buildDailyForecast = (list) => {
         min,
         humidity,
         weatherMain,
-        grade: { temp: tempGrade, humidity: humidityGrade, score: tempGrade * humidityGrade },
+        execScore,
       }
     })
 }

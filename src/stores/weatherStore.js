@@ -1,6 +1,5 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
-import axios from 'axios'
 import { weatherList as cityRegistry, buildRegionalOutlook } from '../data/weatherMock.js'
 import { fetchCityWeather } from '../data/weatherApi.js'
 
@@ -16,6 +15,8 @@ export const useWeatherStore = defineStore('weather', () => {
   const list = ref([])
   const isLoading = ref(false)
   const loadedAt = ref(null)
+  const completedCount = ref(0)
+  const failedCount = ref(0)
   const errorMessage = ref('')
 
   // 사용자가 대시보드에서 직접 고른 지역. 비어 있으면 자동 순환(spotlight)을 따른다.
@@ -28,28 +29,36 @@ export const useWeatherStore = defineStore('weather', () => {
 
     isLoading.value = true
     errorMessage.value = ''
+    completedCount.value = 0
+    failedCount.value = 0
     try {
-      // 12차: 관측 지점을 17곳 → 45곳으로 늘렸다. 한 곳당 API 2회(현재날씨 + 대기질)라
-      // 한 번에 쏘면 90회가 되는데 OpenWeatherMap 무료 티어는 분당 60회다 — 그대로 두면
-      // 뒤쪽 요청이 429로 떨어져 일부 지역만 빈다.
-      // 그래서 25곳(=50회)씩 끊어 보내고 사이를 조금 띄운다. 총 지연은 1초 남짓이고,
+      // 관측 지점을 83곳으로 늘리면서 한꺼번에 보내면 OpenWeatherMap 무료 티어의 호출 제한에
+      // 걸릴 수 있다. 배포 환경에서는 서버가 현재 날씨와 대기질을 묶어 캐시하지만, 서버가
+      // upstream으로 보내는 양은 남아 있으므로 25곳씩 끊어 보낸다.
+      // 앞 묶음과 뒤 묶음 사이를 조금 띄우고,
       // 앞 묶음이 도착하는 대로 화면에 채워지므로 체감 대기는 오히려 짧다.
       const CHUNK = 25
       const GAP_MS = 1100
-      const collected = []
+      const collected = new Map(list.value.map((item) => [item.id, item]))
       for (let i = 0; i < cityRegistry.length; i += CHUNK) {
         if (i > 0) await new Promise((resolve) => setTimeout(resolve, GAP_MS))
-        const part = await axios.all(cityRegistry.slice(i, i + CHUNK).map(fetchCityWeather))
-        collected.push(...part)
-        // 부분 결과를 바로 반영한다 — 다 모일 때까지 빈 화면을 보여줄 이유가 없다
-        list.value = [...collected]
+        const batch = cityRegistry.slice(i, i + CHUNK)
+        const results = await Promise.allSettled(batch.map(fetchCityWeather))
+        results.forEach((result, index) => {
+          if (result.status === 'fulfilled') collected.set(batch[index].id, result.value)
+          else failedCount.value += 1
+        })
+        completedCount.value += batch.length
+        list.value = cityRegistry.map((city) => collected.get(city.id)).filter(Boolean)
       }
-      loadedAt.value = Date.now()
+      if (list.value.length) loadedAt.value = Date.now()
+      if (failedCount.value)
+        errorMessage.value = `${failedCount.value}개 지역을 갱신하지 못해 마지막 정상 데이터를 유지합니다.`
     } catch (error) {
       console.error('통신 중 에러가 발생했습니다:', error)
       // 11차: 여기서 alert()를 띄우면 화면 전환 중에도 모달이 튀어나와 흐름이 끊긴다.
       // 메시지를 상태로 두고 화면이 배너로 보여주게 바꿨다.
-      errorMessage.value = '날씨 데이터를 가져오지 못했습니다. API 키 활성화 여부를 확인하세요.'
+      errorMessage.value = '날씨 데이터를 갱신하지 못해 마지막 정상 데이터를 유지합니다.'
     } finally {
       isLoading.value = false
     }
@@ -68,6 +77,8 @@ export const useWeatherStore = defineStore('weather', () => {
 
   // 전국 기준 점수/우선순위가 붙은 목록. 검색 필터는 화면 쪽 책임이라 여기서는 전체만 만든다.
   const rankedAll = computed(() => buildRegionalOutlook(list.value))
+  const totalCount = computed(() => cityRegistry.length)
+  const progress = computed(() => Math.round((completedCount.value / totalCount.value) * 100))
 
   const selectedCity = computed(
     () => rankedAll.value.find((item) => item.id === selectedCityId.value) ?? null,
@@ -79,6 +90,10 @@ export const useWeatherStore = defineStore('weather', () => {
     list,
     isLoading,
     loadedAt,
+    completedCount,
+    failedCount,
+    totalCount,
+    progress,
     errorMessage,
     selectedCityId,
     rankedAll,

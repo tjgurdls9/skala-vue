@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 import { execGrade } from '../../data/weatherMock.js'
 import koreaMap from '../../data/koreaMap.json'
 import { useConfigStore } from '../../stores/configStore.js'
+import WeatherDeskIcon from '../WeatherDeskIcon.vue'
 
 const configStore = useConfigStore()
 
@@ -102,6 +103,14 @@ const onAreaClick = (event) => {
   const city = cityById.value.get(groupCity[groupOf(event)])
   if (city) emit('select-city', city)
 }
+
+const selectableCities = computed(() =>
+  [...props.cities].sort((a, b) => a.name.localeCompare(b.name, 'ko')),
+)
+const onAccessibleSelect = (event) => {
+  const city = cityById.value.get(event.target.value)
+  if (city) emit('select-city', city)
+}
 </script>
 
 <template>
@@ -144,6 +153,17 @@ const onAreaClick = (event) => {
 
     </svg>
     </div>
+
+    <label class="map-access-select">
+      <WeatherDeskIcon name="location" />
+      <span>키보드·모바일 지역 선택</span>
+      <select :value="spotlightId" @change="onAccessibleSelect">
+        <option value="">지역을 선택하세요</option>
+        <option v-for="city in selectableCities" :key="city.id" :value="city.id">
+          {{ city.name }} · {{ city.execScore }}점
+        </option>
+      </select>
+    </label>
 
     <!-- 호버한 지역 정보. 지도 위에 툴팁을 띄우면 좁은 화면에서 잘리므로 아래 고정 영역에 쓴다 -->
     <div class="map-readout">
@@ -282,6 +302,32 @@ const onAreaClick = (event) => {
   background-color: var(--glass-inset-bg);
   border: 1px solid var(--glass-inset-border);
   box-shadow: var(--glass-inset-shadow);
+}
+.map-access-select {
+  display: grid;
+  grid-template-columns: 28px auto minmax(150px, 1fr);
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: 10px;
+  color: #303946;
+  font-size: 12px;
+  font-weight: 700;
+}
+.map-access-select .weather-desk-icon { width: 28px; height: 28px; }
+.map-access-select select {
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--glass-inset-border);
+  border-radius: 10px;
+  background: var(--glass-inset-bg);
+  color: #1c1c1e;
+  font: inherit;
+}
+.map-access-select select:focus-visible { outline: 3px solid rgba(0, 100, 255, .3); outline-offset: 2px; }
+@media (max-width: 520px) {
+  .map-access-select { grid-template-columns: 28px 1fr; }
+  .map-access-select select { grid-column: 1 / -1; width: 100%; }
 }
 .map-readout-name {
   font-size: 14px;

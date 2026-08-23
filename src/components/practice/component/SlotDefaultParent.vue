@@ -1,5 +1,6 @@
 <script setup>
 import SlotDefaultChild from './SlotDefaultChild.vue'
+import WeatherDeskIcon from '../../WeatherDeskIcon.vue'
 </script>
 
 <template>
@@ -9,7 +10,7 @@ import SlotDefaultChild from './SlotDefaultChild.vue'
       <p>단순한 텍스트 문장을 주입합니다.</p>
     </SlotDefaultChild>
     <SlotDefaultChild>
-      <h2 style="color: #e74c3c">🔥 경고 상태</h2>
+      <h2 class="icon-heading" style="color: #e74c3c"><WeatherDeskIcon name="risk" /> 경고 상태</h2>
       <button>확인</button>
     </SlotDefaultChild>
     <SlotDefaultChild> </SlotDefaultChild>

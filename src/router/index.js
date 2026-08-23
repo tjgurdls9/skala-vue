@@ -65,7 +65,7 @@ const router = createRouter({
 // to: 이동한 목적지, from: 출발지
 router.afterEach((to, from) => {
   document.title = to.meta.title ? `${to.meta.title} | ${BASE_TITLE}` : BASE_TITLE
-  console.log(`🧭 화면 전환 완료: ${from.path} → ${to.path}`)
+  console.log(`화면 전환 완료: ${from.path} → ${to.path}`)
 })
 
 export default router

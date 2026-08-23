@@ -3,6 +3,7 @@ import { onMounted, onBeforeUnmount, ref } from 'vue'
 import { RouterView, useRoute } from 'vue-router'
 import UnitToggler from './components/weather/UnitToggler.vue'
 import OnboardingDialog from './components/OnboardingDialog.vue'
+import WeatherDataStatus from './components/weather/WeatherDataStatus.vue'
 import { House, DataAnalysis, MagicStick, Tools, Moon, Sunny, InfoFilled } from '@element-plus/icons-vue'
 import { useWeatherStore } from './stores/weatherStore.js'
 
@@ -54,7 +55,8 @@ const completeOnboarding = () => {
 // 날씨 데이터는 여전히 앱의 몫으로 부른다. 대시보드에서만 부르면
 // /practice처럼 날씨를 안 쓰는 탭으로 새로고침해 들어왔을 때 배경이 기본값(맑음)으로 굳는다.
 // load()는 스토어에서 캐시되므로 각 화면이 또 불러도 중복 요청이 되지 않는다.
-useWeatherStore().load()
+const weatherStore = useWeatherStore()
+weatherStore.load()
 
 // --- 13차-j: 리퀴드 글래스 (2) 반사 ---------------------------------------
 // 애플의 리퀴드 글래스는 기기를 기울이면 스페큘러가 움직인다. 웹에는 기울기가 없으므로
@@ -281,6 +283,8 @@ onBeforeUnmount(() => {
         <UnitToggler />
       </div>
     </nav>
+
+    <WeatherDataStatus />
 
     <!-- 7차: 모든 라우트가 동적 import(코드 스플리팅)라, 탭을 옮기면 이전 화면이 사라지고
          다음 청크가 로드될 때까지 잠깐 RouterView가 비어 있다 — 그 순간 높이가 0으로
@@ -554,17 +558,29 @@ onBeforeUnmount(() => {
   }
   .navigation-bar {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr);
     gap: 8px;
     padding: 7px;
     border-radius: 18px;
   }
+  .nav-menu {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+    overflow: visible;
+  }
   .nav-menu :deep(.el-menu-item) {
+    justify-content: center;
     padding: 0 13px;
     font-size: 14px;
   }
   .nav-menu :deep(.el-menu-item .el-icon) {
     display: none;
+  }
+  .nav-tools {
+    justify-content: flex-end;
+    padding-top: 7px;
+    border-top: 1px solid rgba(28, 32, 56, 0.08);
   }
 }
 </style>

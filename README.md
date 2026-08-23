@@ -21,7 +21,8 @@ SKALA 4기 Full-Stack Engineering, Frontend-framework: Vue.js 실습 저장소
 정적 화면 -> 반응형 계산 -> 컴포넌트 분해 -> 라우팅 -> 전역 상태 -> 실시간 API 순서다.
 
 전국 83개 관측 지점의 실시간 날씨는 OpenWeatherMap API에서 가져온다 (`src/data/weatherApi.js`).
-API 키는 `.env`에 두고 git에는 올리지 않는다. `.env.example`을 `.env`로 복사해 본인 키를 채워 넣으면 된다.
+로컬에서는 `VITE_OPENWEATHER_KEY`, Vercel에서는 `OPENWEATHER_KEY`를 환경 변수로 쓴다.
+값은 git에 올리지 않고 `.env.example`의 이름만 참고한다.
 
 ## 대시보드 사용법
 
@@ -90,17 +91,19 @@ API 키는 `.env`에 두고 git에는 올리지 않는다. `.env.example`을 `.e
 | Nager.Date Public Holidays     | 대한민국 공휴일 조회        | 불필요                 |
 
 5 Day Forecast는 3시간 간격 데이터를 날짜별로 접어서 상세 화면의 "향후 5일 옥외 활동 전망"에 쓴다.
-예보 응답에는 대기질이 없어서 이 예보 점수만 기온·습도 2축(최고 9점)으로 계산한다.
-현재 기상 대응 지수(100점 만점)와 다른 보조 지표이므로 화면에 분모를 함께 표시한다.
+예보 응답에는 대기질이 없어서 체감온도, 하늘상태, 습도, 바람, 가시거리의 가중치를
+100점으로 다시 환산한다. 현재 지수와 같은 점수 구간으로 읽되, 대기질이 빠졌다는 점은
+상세 화면의 산식 설명에 따로 표시한다.
 
-현재 날씨와 대기질은 지점당 2회 요청한다. 83곳을 한꺼번에 요청하면 무료 티어의 분당 한도를
-넘길 수 있어 25곳씩 나누어 조회하고, 도착한 결과부터 화면에 반영한다. `weatherStore`가 결과를
-캐시하므로 라우트 이동만으로는 다시 요청하지 않는다. 상세 화면의 5일 예보는 해당 지역을 열 때
-별도로 조회한다.
+배포 환경에서는 현재 날씨와 대기질을 Vercel Function 한 곳에서 묶어 요청하고 10분 동안 캐시한다.
+브라우저는 83곳을 25곳씩 나누어 조회하며, 도착한 수와 실패한 수를 바로 표시한다. 일부 요청이
+실패하면 이미 받아 둔 마지막 정상값과 갱신 시각을 유지한다. `weatherStore`가 결과를 보관하므로
+라우트 이동만으로는 다시 요청하지 않는다.
 
 ## 실습 컴포넌트
 
-교재 단원별 Code Challenge 결과물은 `/practice`에 한 페이지로 모여 있다.
+교재 단원별 Code Challenge 결과물은 `/practice`에 한 페이지로 모여 있다. 검색창과 고정
+바로가기로 문법명이나 실습명을 찾을 수 있다.
 
 - 기초: 텍스트 보간, JavaScript 표현식, ref 반응성
 - 렌더링: vText, vHtml, vHtmlXSS, vIfElse, vShow, vFor
@@ -139,12 +142,14 @@ src/
 │  ├─ NotFoundView.vue
 │  └─ HomeView.vue, AboutView.vue   (create-vue 스캐폴드, 미사용)
 ├─ components/
-│  ├─ weather/        BaseDashboardCard, SearchBar, WeatherCard, WeatherMap, UnitToggler
+│  ├─ weather/        BaseDashboardCard, SearchBar, WeatherCard, WeatherMap, UnitToggler, WeatherDataStatus
 │  └─ practice/       basic, render, binding, optimize, event, composition, component, store
 └─ assets/
    ├─ practice.css    실습 공통 스타일
    └─ exercise.css    과제 공통 스타일 (과제 3에서 대부분 컴포넌트 scoped로 이동)
 ```
+
+문자 이모지 대신 사용한 WEATHER DESK 전용 아이콘은 `public/icons/weather-desk/`에 있다.
 
 ## 실행
 

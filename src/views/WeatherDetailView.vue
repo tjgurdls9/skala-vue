@@ -65,13 +65,12 @@ const FORECAST_ICON = {
 }
 const forecastIcon = (main) => FORECAST_ICON[main] ?? PartlyCloudy
 
-// 예보 점수(최고 9점)를 한 줄 코멘트로 옮긴다. 지금 날씨의 27점과 만점이 달라서 헷갈리지
-// 않도록 화면에도 "/9"를 같이 적는다.
+// 현재 지수와 동일한 100점 구간으로 예보를 읽는다.
 const forecastComment = (score) => {
-  if (score >= 9) return '옥외 활동 적기'
-  if (score >= 6) return '제약 없음'
-  if (score >= 3) return '실내 병행 권장'
-  return '옥외 활동 보류 검토'
+  if (score >= 75) return '우수'
+  if (score >= 55) return '양호'
+  if (score >= 35) return '주의'
+  return '미흡'
 }
 
 // 동적 세그먼트 /weather/:cityId 로 들어온 도시 코드로 Mount 시점에 등록된 도시인지 먼저 확인하고
@@ -329,19 +328,15 @@ const goBack = () => {
                    높이를 직접 정할 수 있는 2차 베지에로 바꿔서 얕은 돔을 그린다. -->
               <path d="M14,86 Q150,-40 286,86" class="daylight-path" />
               <line x1="8" y1="86" x2="292" y2="86" class="daylight-ground" />
-              <!-- 낮에는 태양, 밤에는 초승달을 그린다. 문자 이모지가 아니라 같은 SVG 체계다. -->
-              <circle
-                v-if="daylight.isDay"
-                :cx="celestialPos.x"
-                :cy="celestialPos.y"
-                r="8"
-                class="daylight-sun"
-              />
-              <path
-                v-else
-                d="M4,-8A8,8 0 1,0 4,8A6.4,6.4 0 0,1 4,-8Z"
-                class="daylight-moon"
-                :transform="`translate(${celestialPos.x} ${celestialPos.y})`"
+              <image
+                :href="daylight.isDay
+                  ? '/icons/weather-desk/weather-sun.png'
+                  : '/icons/weather-desk/weather-moon.png'"
+                :x="celestialPos.x - 14"
+                :y="celestialPos.y - 14"
+                width="28"
+                height="28"
+                class="daylight-celestial"
               />
             </svg>
             <div class="daylight-row">
@@ -396,9 +391,7 @@ const goBack = () => {
           </div>
         </div>
 
-        <!-- 9차: OpenWeatherMap 5 Day Forecast를 붙여, 지금 판단만 하던 화면이 며칠 앞까지
-             보게 됐다. 예보 응답에는 미세먼지가 없어서 기온·습도 2축(최고 9점)만 쓴다 —
-             지금 날씨의 27점과 만점이 다르므로 화면에도 분모를 같이 적는다. -->
+        <!-- 예보도 현재 지수와 같은 100점 체계로 읽되, 없는 대기질 축은 분모에서 제외한다. -->
         <template v-if="forecast.length">
           <h3 class="section-title">
             <el-icon><Calendar /></el-icon> 향후 {{ forecast.length }}일 옥외 활동 전망
@@ -413,12 +406,13 @@ const goBack = () => {
                 >
               </span>
               <span class="forecast-humidity">습도 {{ day.humidity }}%</span>
-              <span class="forecast-score">{{ day.grade.score }}/{{ FORECAST_MAX_SCORE }}점</span>
-              <span class="forecast-comment">{{ forecastComment(day.grade.score) }}</span>
+              <span class="forecast-score">{{ day.execScore }}/{{ FORECAST_MAX_SCORE }}점</span>
+              <span class="forecast-comment">{{ forecastComment(day.execScore) }}</span>
             </div>
           </div>
           <p class="footnote">
-            예보 응답에는 대기질 항목이 없어 기온·습도 2개 축으로만 산출한 점수입니다.
+            체감온도 28 · 하늘상태 16 · 습도 16 · 바람 10 · 가시거리 10의 가중 합을 100점으로
+            환산합니다. 예보에 없는 대기질 축은 계산에서 제외합니다.
           </p>
         </template>
 
@@ -923,17 +917,10 @@ const goBack = () => {
   stroke: rgba(28, 32, 56, 0.32);
   stroke-width: 1.5;
 }
-.daylight-sun {
-  fill: #f5a623;
-  stroke: rgba(255, 255, 255, 0.85);
-  stroke-width: 2;
-  transition: all 0.4s var(--apple-ease);
-}
-.daylight-moon {
-  fill: #dce8ff;
-  stroke: rgba(94, 142, 229, 0.72);
-  stroke-width: 1.2;
-  filter: drop-shadow(0 0 5px rgba(111, 165, 255, 0.55));
+.daylight-celestial {
+  clip-path: inset(0 round 8px);
+  filter: drop-shadow(0 3px 4px rgba(15, 32, 62, 0.18));
+  transition: x 0.4s var(--apple-ease), y 0.4s var(--apple-ease);
 }
 .daylight-row {
   display: flex;

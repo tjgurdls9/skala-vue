@@ -38,6 +38,22 @@
   --vt-c-text-dark-2: rgba(235, 235, 235, 0.64);
 }
 
+/* WEATHER DESK 전용 3D 아이콘. 문자 이모지 대신 같은 재질과 팔레트로 통일한다. */
+.weather-desk-icon {
+  width: 1.65em;
+  height: 1.65em;
+  flex: 0 0 auto;
+  object-fit: cover;
+  border-radius: 28%;
+  vertical-align: middle;
+}
+
+.icon-heading {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+}
+
 /* semantic color variables for this project */
 :root {
   --color-background: var(--vt-c-white);

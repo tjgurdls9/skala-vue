@@ -6,8 +6,8 @@ const dateType = ref('오늘')
 const apiStatus = ref('대기 중...')
 
 watch([city, dateType], ([newCity, newDate], [oldCity, oldDate]) => {
-  apiStatus.value = `[변경 감지] ${oldCity}(${oldDate}) ➡️ ${newCity}(${newDate})`
-  console.log(`🤖 [통합 API 호출] ${newCity}의 ${newDate} 날씨를 불러옵니다...`)
+  apiStatus.value = `[변경 감지] ${oldCity}(${oldDate}) → ${newCity}(${newDate})`
+  console.log(`[통합 API 호출] ${newCity}의 ${newDate} 날씨를 불러옵니다...`)
 })
 </script>
 
@@ -32,4 +32,3 @@ watch([city, dateType], ([newCity, newDate], [oldCity, oldDate]) => {
     </div>
   </div>
 </template>
-

@@ -1,4 +1,5 @@
 <script setup>
+import { computed, ref } from 'vue'
 import { Top, Bottom } from '@element-plus/icons-vue'
 
 const cases = [
@@ -76,6 +77,20 @@ const cases = [
   },
 ]
 
+const searchQuery = ref('')
+const indexedCases = cases.map((item, index) => ({ ...item, index }))
+const filteredCases = computed(() => {
+  const keyword = searchQuery.value.trim().toLowerCase()
+  if (!keyword) return indexedCases
+  return indexedCases.filter((item) =>
+    [item.area, item.title, item.symptom, item.cause, item.solution, item.lesson]
+      .join(' ')
+      .toLowerCase()
+      .includes(keyword),
+  )
+})
+const jumpTo = (event) => document.getElementById(event.target.value)?.scrollIntoView({ behavior: 'smooth' })
+
 const pad = (index) => String(index + 1).padStart(2, '0')
 </script>
 
@@ -87,9 +102,18 @@ const pad = (index) => String(index + 1).padStart(2, '0')
       <p class="trouble-sub">막혔던 지점부터 원인을 찾아간 과정, 해결 뒤 남은 배움까지 기록했습니다.</p>
     </header>
 
+    <div class="archive-tools">
+      <label for="trouble-search">기록 검색</label>
+      <input id="trouble-search" v-model="searchQuery" type="search" placeholder="증상·원인·해결 검색" />
+      <select aria-label="기록 바로가기" @change="jumpTo">
+        <option value="">기록 바로가기</option>
+        <option v-for="item in filteredCases" :key="item.index" :value="`case-${item.index}`">{{ item.title }}</option>
+      </select>
+    </div>
+
     <nav class="trouble-index" aria-label="트러블슈팅 목차">
-      <a v-for="(item, index) in cases" :key="item.title" class="trouble-index-item" :href="`#case-${index}`">
-        <span class="trouble-index-num">{{ pad(index) }}</span>
+      <a v-for="item in filteredCases" :key="item.title" class="trouble-index-item" :href="`#case-${item.index}`">
+        <span class="trouble-index-num">{{ pad(item.index) }}</span>
         <span class="trouble-index-body">
           <span class="trouble-index-area">{{ item.area }}</span>
           <span class="trouble-index-name">{{ item.title }}</span>
@@ -98,9 +122,9 @@ const pad = (index) => String(index + 1).padStart(2, '0')
       </a>
     </nav>
 
-    <section v-for="(item, index) in cases" :id="`case-${index}`" :key="item.title" class="trouble-section">
+    <section v-for="item in filteredCases" :id="`case-${item.index}`" :key="item.title" class="trouble-section">
       <header class="trouble-section-head">
-        <span class="trouble-section-num">{{ pad(index) }}</span>
+        <span class="trouble-section-num">{{ pad(item.index) }}</span>
         <div>
           <p>{{ item.area }}</p>
           <h3>{{ item.title }}</h3>
@@ -115,11 +139,15 @@ const pad = (index) => String(index + 1).padStart(2, '0')
         <div class="lesson"><dt>배운 점</dt><dd>{{ item.lesson }}</dd></div>
       </dl>
     </section>
+    <el-empty v-if="!filteredCases.length" description="검색 결과가 없습니다." />
   </div>
 </template>
 
 <style scoped>
 .trouble-page { width: 100%; }
+.archive-tools { position: sticky; top: 10px; z-index: 12; display: grid; grid-template-columns: auto minmax(180px,1fr) minmax(150px,220px); align-items: center; gap: 10px; margin-bottom: 14px; padding: 10px 12px; border: 1px solid var(--glass-border); border-radius: 16px; background: rgba(246,249,253,.88); backdrop-filter: blur(18px) saturate(140%); box-shadow: 0 8px 24px rgba(15,32,62,.1); }
+.archive-tools label { font-size: 12px; font-weight: 750; color: #48515f; }
+.archive-tools input, .archive-tools select { min-height: 38px; padding: 0 12px; border: 1px solid rgba(28,32,56,.14); border-radius: 10px; background: rgba(255,255,255,.78); color: #1c1c1e; font: inherit; }
 .trouble-head { margin-bottom: 18px; scroll-margin-top: 20px; }
 .trouble-eyebrow { margin: 0; font-size: 11px; font-weight: 700; letter-spacing: .14em; color: rgba(206, 221, 243, .82); }
 .trouble-title { margin: 4px 0 0; padding: 0; border: 0; font-size: 30px; font-weight: 800; color: #f2f6fc; }
@@ -144,5 +172,5 @@ const pad = (index) => String(index + 1).padStart(2, '0')
 .trouble-detail div:last-child { padding-bottom: 4px; border-bottom: 0; }
 .trouble-detail dt { margin-bottom: 7px; font-size: 11px; font-weight: 800; letter-spacing: .08em; color: #687482; }
 .trouble-detail dd { margin: 0; color: #303946; font-size: 14px; line-height: 1.65; }
-@media (max-width: 760px) { .trouble-index { grid-template-columns: 1fr; } }
+@media (max-width: 760px) { .trouble-index { grid-template-columns: 1fr; } .archive-tools { grid-template-columns: 1fr; } .archive-tools label { position:absolute; width:1px; height:1px; overflow:hidden; } }
 </style>

@@ -38,7 +38,7 @@ import {
   Opportunity,
 } from '@element-plus/icons-vue'
 
-// Element Plus 아이콘 세트에 눈(❄️) 아이콘이 없어서 이거 하나만 직접 그린다.
+// Element Plus 아이콘 세트에 눈 결정 아이콘이 없어서 이거 하나만 직접 그린다.
 // viewBox/좌표계를 Element Plus 아이콘과 동일하게(0 0 1024 1024) 맞춰서 <el-icon> 안에서 크기가 똑같이 맞는다.
 const SnowflakeIcon = {
   name: 'SnowflakeIcon',

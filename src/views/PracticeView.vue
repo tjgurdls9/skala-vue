@@ -1,5 +1,5 @@
 <script setup>
-import { computed, shallowRef } from 'vue'
+import { computed, ref, shallowRef } from 'vue'
 import {
   MagicStick,
   Document,
@@ -199,6 +199,21 @@ const CHAPTERS = [
 ]
 
 const chapters = shallowRef(CHAPTERS)
+const searchQuery = ref('')
+
+const filteredChapters = computed(() => {
+  const keyword = searchQuery.value.trim().toLowerCase()
+  if (!keyword) return chapters.value
+  return chapters.value.filter((chapter) =>
+    [chapter.label, chapter.desc, ...chapter.topics, ...chapter.items.map((item) => item.name)]
+      .join(' ')
+      .toLowerCase()
+      .includes(keyword),
+  )
+})
+
+const chapterNumber = (chapter) => chapters.value.findIndex((item) => item.id === chapter.id)
+const jumpTo = (event) => document.getElementById(event.target.value)?.scrollIntoView({ behavior: 'smooth' })
 
 const totalCount = computed(() =>
   chapters.value.reduce((sum, chapter) => sum + chapter.items.length, 0),
@@ -222,15 +237,24 @@ const pad = (index) => String(index + 1).padStart(2, '0')
       </p>
     </header>
 
+    <div class="archive-tools">
+      <label for="practice-search">실습 검색</label>
+      <input id="practice-search" v-model="searchQuery" type="search" placeholder="문법·실습 이름 검색" />
+      <select aria-label="단원 바로가기" @change="jumpTo">
+        <option value="">단원 바로가기</option>
+        <option v-for="chapter in filteredChapters" :key="chapter.id" :value="chapter.id">{{ chapter.label }}</option>
+      </select>
+    </div>
+
     <!-- 번호 매긴 목차. 클릭하면 해당 단원으로 스크롤한다 -->
     <nav class="lab-index">
       <a
-        v-for="(chapter, i) in chapters"
+        v-for="chapter in filteredChapters"
         :key="chapter.id"
         class="lab-index-item"
         :href="`#${chapter.id}`"
       >
-        <span class="lab-index-num">{{ pad(i) }}</span>
+        <span class="lab-index-num">{{ pad(chapterNumber(chapter)) }}</span>
         <span class="lab-index-body">
           <span class="lab-index-name">{{ chapter.label }}</span>
           <span class="lab-index-desc">{{ chapter.desc }}</span>
@@ -240,9 +264,9 @@ const pad = (index) => String(index + 1).padStart(2, '0')
     </nav>
 
     <!-- 단원별 상세: 왼쪽에 문법·개념, 오른쪽에 실제 동작하는 실습 화면 -->
-    <section v-for="(chapter, i) in chapters" :id="chapter.id" :key="chapter.id" class="lab-section">
+    <section v-for="chapter in filteredChapters" :id="chapter.id" :key="chapter.id" class="lab-section">
       <header class="lab-section-head">
-        <span class="lab-section-num">{{ pad(i) }}</span>
+        <span class="lab-section-num">{{ pad(chapterNumber(chapter)) }}</span>
         <div class="lab-section-titles">
           <h3 class="lab-section-title">
             <el-icon><component :is="chapter.icon" /></el-icon>
@@ -272,12 +296,36 @@ const pad = (index) => String(index + 1).padStart(2, '0')
         </div>
       </div>
     </section>
+    <el-empty v-if="!filteredChapters.length" description="검색 결과가 없습니다." />
   </div>
 </template>
 
 <style scoped>
 .lab-page {
   width: 100%;
+}
+.archive-tools {
+  position: sticky;
+  top: 10px;
+  z-index: 12;
+  display: grid;
+  grid-template-columns: auto minmax(180px, 1fr) minmax(150px, 220px);
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  padding: 10px 12px;
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  background: rgba(246, 249, 253, 0.88);
+  backdrop-filter: blur(18px) saturate(140%);
+  box-shadow: 0 8px 24px rgba(15, 32, 62, 0.1);
+}
+.archive-tools label { font-size: 12px; font-weight: 750; color: #48515f; }
+.archive-tools input,
+.archive-tools select { min-height: 38px; padding: 0 12px; border: 1px solid rgba(28,32,56,.14); border-radius: 10px; background: rgba(255,255,255,.78); color: #1c1c1e; font: inherit; }
+@media (max-width: 640px) {
+  .archive-tools { grid-template-columns: 1fr; }
+  .archive-tools label { position: absolute; width: 1px; height: 1px; overflow: hidden; }
 }
 
 /* --- 머리말 --- */
