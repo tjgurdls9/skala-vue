@@ -178,8 +178,8 @@ onBeforeUnmount(() => {
   <div class="app-container">
     <header class="brand">
       <h1 class="wordmark">
-        <span class="wordmark-thin">WEATHER</span><span class="wordmark-bold">DESK</span
-        ><span class="wordmark-dot">.</span>
+        <img class="brand-mark" src="/brand/weather-desk-mark.png" alt="" />
+        <span class="wordmark-thin">WEATHER</span><span class="wordmark-bold">DESK</span>
       </h1>
       <p class="brand-sub">기상 데이터를 전사 경영 판단으로 번역합니다</p>
     </header>
@@ -254,18 +254,18 @@ onBeforeUnmount(() => {
   padding: 0 24px;
 }
 
-/* --- 13차: 브랜드 ------------------------------------------------------
-   이미지 자산도 웹폰트도 쓰지 않는다. 로고는 굵기 대비 하나로 만든다 —
-   WEATHER는 얇게, DESK는 굵게, 그리고 마침표 하나.
-   사진 배경 위에 유리 없이 얹히므로 흰 글자 + halo(--text-on-photo)가 필요하다. */
+/* --- 브랜드 ------------------------------------------------------------ */
 .brand {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   flex-wrap: wrap;
   gap: 6px 14px;
   margin-bottom: 22px;
 }
 .wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   margin: 0;
   font-size: 34px;
   line-height: 1;
@@ -273,18 +273,22 @@ onBeforeUnmount(() => {
   color: #f2f6fc;
   white-space: nowrap;
 }
+.brand-mark {
+  width: 58px;
+  height: 42px;
+  padding: 5px;
+  object-fit: contain;
+  border: 1px solid rgba(255, 255, 255, 0.46);
+  border-radius: 12px;
+  background: rgba(242, 246, 252, 0.92);
+  box-shadow: 0 4px 14px rgba(6, 12, 30, 0.2);
+}
 .wordmark-thin {
   font-weight: 300;
   color: rgba(226, 236, 250, 0.75);
 }
 .wordmark-bold {
   font-weight: 800;
-}
-/* 로고의 유일한 도형 요소. 마침표 하나가 '문장을 끝맺는' 인상을 준다 */
-.wordmark-dot {
-  color: var(--color-accent);
-  font-weight: 800;
-  margin-left: 1px;
 }
 .brand-sub {
   margin: 0;
@@ -295,6 +299,11 @@ onBeforeUnmount(() => {
 @media (max-width: 640px) {
   .wordmark {
     font-size: 26px;
+    gap: 6px;
+  }
+  .brand-mark {
+    width: 50px;
+    height: 36px;
   }
 }
 

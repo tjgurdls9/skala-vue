@@ -1,4 +1,4 @@
-# skala-vue
+# WEATHER DESK
 
 SKALA 4기 Full-Stack Engineering, Frontend-framework: Vue.js 실습 저장소
 (Vue 3 Composition API + Vue Router + Pinia + Vite + Element Plus)
