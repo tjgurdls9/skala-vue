@@ -1308,6 +1308,43 @@ html[data-theme='dark'] .weather-condition-tag.el-tag--danger {
 html[data-theme='dark'] .weather-condition-tag {
   border-color: rgba(221, 235, 255, 0.16) !important;
 }
+
+/* 상세 화면은 초기에 라이트 기준의 고정 색상을 많이 썼다. 유리 카드의 scoped 규칙보다
+   뒤에서 역할별 토큰을 보장해, 다크 전환 뒤 검정 본문이나 탁한 회색이 남지 않게 한다. */
+html[data-theme='dark'] .practice-section :is(
+  .detail-hero-name, .detail-hero-temp, .grade-stat-value, .mix-label, .func-label,
+  .index-parts b, .briefing-headline, .metric-value, .daylight-val, .forecast-temp,
+  .el-descriptions__content
+) {
+  color: var(--text-primary) !important;
+}
+html[data-theme='dark'] .practice-section :is(
+  .detail-hero-region, .detail-hero-unit, .detail-hero-status, .grade-stat-label,
+  .grade-stat-hint, .mix-p, .mix-text, .mix-level, .func-level, .func-notes,
+  .index-meaning, .index-parts span, .briefing-list li, .metric-label,
+  .metric-value small, .metric-note, .daylight-key, .forecast-date, .forecast-temp-min,
+  .forecast-humidity, .forecast-comment, .footnote, .el-descriptions__label
+) {
+  color: var(--text-secondary) !important;
+}
+html[data-theme='dark'] .practice-section .forecast-score {
+  color: #9ec5ff !important;
+}
+html[data-theme='dark'] .practice-section .mix-tile.tone-success .mix-level,
+html[data-theme='dark'] .practice-section .briefing-list li.tone-success .el-icon {
+  color: #8be5b3 !important;
+}
+html[data-theme='dark'] .practice-section .mix-tile.tone-warning .mix-level,
+html[data-theme='dark'] .practice-section .briefing-list li.tone-warning .el-icon {
+  color: #ffd18a !important;
+}
+html[data-theme='dark'] .practice-section .mix-tile.tone-danger .mix-level,
+html[data-theme='dark'] .practice-section .briefing-list li.tone-danger .el-icon {
+  color: #ffaaa1 !important;
+}
+html[data-theme='dark'] .practice-section .briefing-list li.tone-info .el-icon {
+  color: #a7c9ff !important;
+}
 @media (max-width: 480px) {
   .badge-row {
     grid-template-columns: repeat(2, minmax(0, 1fr));
