@@ -14,6 +14,7 @@ import {
 } from '../data/weatherMock.js'
 import { useWeatherStore } from '../stores/weatherStore.js'
 import { DataAnalysis, Odometer, TrendCharts } from '@element-plus/icons-vue'
+import WeatherDeskIcon from '../components/WeatherDeskIcon.vue'
 
 const router = useRouter()
 
@@ -123,13 +124,16 @@ const goDetail = (item) => {
         </div>
 
         <aside class="index-explainer">
-          <strong>기상 대응 지수란?</strong>
-          <p>
-            체감온도 28%, 대기질 20%, 하늘상태 16%, 습도 16%, 바람 10%, 가시거리 10%를
-            합산한 100점 만점 지표입니다. 점수가 높을수록 현재 계획을 유지하기 좋은 기상
-            조건이며, 낮을수록 일정·채널·인력·안전 계획을 먼저 조정해야 한다는 뜻입니다.
-          </p>
-          <span>75–100 우수 · 55–74 양호 · 35–54 주의 · 0–34 미흡</span>
+          <WeatherDeskIcon name="observation" class="index-explainer-art" />
+          <div>
+            <strong>기상 대응 지수란?</strong>
+            <p>
+              체감온도 28%, 대기질 20%, 하늘상태 16%, 습도 16%, 바람 10%, 가시거리 10%를
+              합산한 100점 만점 지표입니다. 점수가 높을수록 현재 계획을 유지하기 좋은 기상
+              조건이며, 낮을수록 일정·채널·인력·안전 계획을 먼저 조정해야 한다는 뜻입니다.
+            </p>
+            <span>75–100 우수 · 55–74 양호 · 35–54 주의 · 0–34 미흡</span>
+          </div>
         </aside>
       </BaseDashboardCard>
 
@@ -234,11 +238,19 @@ const goDetail = (item) => {
   gap: 8px;
 }
 .index-explainer {
+  display: flex;
+  align-items: center;
+  gap: 16px;
   margin-top: 14px;
   padding: 14px 16px;
   border-radius: var(--control-radius);
   background: rgba(0, 100, 255, 0.07);
   color: #344054;
+}
+.index-explainer-art {
+  width: 76px;
+  height: 76px;
+  flex: 0 0 auto;
 }
 .index-explainer strong {
   display: block;
@@ -374,5 +386,9 @@ const goDetail = (item) => {
   .rank-code {
     display: none;
   }
+}
+@media (max-width: 520px) {
+  .index-explainer { align-items: flex-start; }
+  .index-explainer-art { width: 56px; height: 56px; }
 }
 </style>

@@ -1,6 +1,7 @@
 <script setup>
 import { ref, watch } from 'vue'
-import { ArrowLeft, ArrowRight, Briefcase, DataAnalysis, Location } from '@element-plus/icons-vue'
+import { ArrowLeft, ArrowRight } from '@element-plus/icons-vue'
+import WeatherDeskIcon from './WeatherDeskIcon.vue'
 
 const props = defineProps({
   modelValue: {
@@ -21,18 +22,18 @@ watch(
 
 const points = [
   {
-    icon: Location,
+    icon: 'location',
     title: '전국을 한눈에',
     text: '83개 관측 지점의 현재 기상과 지역별 기상 대응 지수를 비교합니다.',
   },
   {
-    icon: DataAnalysis,
+    icon: 'observation',
     title: '수치에서 판단으로',
     text: '날씨를 점수·경보·실행 제안으로 바꿔 우선순위를 빠르게 찾습니다.',
   },
   {
-    icon: Briefcase,
-    title: '전사 관점으로',
+    icon: 'risk',
+    title: '우선순위를 먼저',
     text: '인사·재무·회계·생산·물류·마케팅·안전 등 모든 경영 기능에 적용합니다.',
   },
 ]
@@ -82,7 +83,7 @@ const complete = () => emit('complete')
 
           <div class="onboarding-points">
             <article v-for="point in points" :key="point.title" class="onboarding-point">
-              <el-icon><component :is="point.icon" /></el-icon>
+              <WeatherDeskIcon :name="point.icon" class="onboarding-point-art" />
               <h3>{{ point.title }}</h3>
               <p>{{ point.text }}</p>
             </article>
@@ -231,9 +232,10 @@ const complete = () => emit('complete')
   background: rgba(255, 255, 255, 0.055);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
-.onboarding-point .el-icon {
-  color: #0064ff;
-  font-size: 24px;
+.onboarding-point-art {
+  width: 58px;
+  height: 58px;
+  object-fit: contain;
 }
 .onboarding-point h3 {
   margin: 12px 0 5px;
@@ -310,8 +312,10 @@ const complete = () => emit('complete')
     gap: 2px 12px;
     padding: 14px;
   }
-  .onboarding-point .el-icon {
+  .onboarding-point-art {
     grid-row: 1 / 3;
+    width: 48px;
+    height: 48px;
   }
   .onboarding-point h3 {
     margin: 0;

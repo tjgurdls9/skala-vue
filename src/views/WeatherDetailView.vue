@@ -330,8 +330,8 @@ const goBack = () => {
               <line x1="8" y1="86" x2="292" y2="86" class="daylight-ground" />
               <image
                 :href="daylight.isDay
-                  ? '/icons/weather-desk/weather-sun.png'
-                  : '/icons/weather-desk/weather-moon.png'"
+                  ? '/icons/weather-desk/weather-sun-transparent.png'
+                  : '/icons/weather-desk/weather-moon-transparent.png'"
                 :x="celestialPos.x - 14"
                 :y="celestialPos.y - 14"
                 width="28"
