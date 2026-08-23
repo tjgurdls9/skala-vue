@@ -139,12 +139,9 @@ const pad = (index) => String(index + 1).padStart(2, '0')
 .trouble-section-head h3 { margin: 0; font-size: 20px; color: #f2f6fc; }
 .trouble-section-head a { display: inline-flex; align-items: center; gap: 3px; color: rgba(200,220,245,.9); font-size: 12px; font-weight: 600; text-decoration: none; }
 .trouble-detail { display: grid; grid-template-columns: 1fr; gap: 0; margin: 0; padding: 18px; border: 1px solid var(--glass-border); border-radius: var(--radius-card); background: var(--glass-sheen), var(--glass-bg); backdrop-filter: var(--glass-surface); box-shadow: var(--shadow-glass); }
-.trouble-detail div { padding: 14px; border-left: 2px solid rgba(28,32,56,.1); border-bottom: 1px solid rgba(28,32,56,.08); }
+.trouble-detail div { padding: 14px; border-bottom: 1px solid rgba(28,32,56,.08); }
 .trouble-detail div:first-child { padding-top: 4px; }
 .trouble-detail div:last-child { padding-bottom: 4px; border-bottom: 0; }
-.trouble-detail .solution { border-left-color: var(--color-accent); }
-.trouble-detail .attempt { border-left-color: rgba(255, 149, 0, .7); }
-.trouble-detail .lesson { border-left-color: rgba(52, 199, 89, .7); }
 .trouble-detail dt { margin-bottom: 7px; font-size: 11px; font-weight: 800; letter-spacing: .08em; color: #687482; }
 .trouble-detail dd { margin: 0; color: #303946; font-size: 14px; line-height: 1.65; }
 @media (max-width: 760px) { .trouble-index { grid-template-columns: 1fr; } }
