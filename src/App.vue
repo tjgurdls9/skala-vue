@@ -3,18 +3,14 @@ import { onMounted, onBeforeUnmount } from 'vue'
 import { RouterView, useRoute } from 'vue-router'
 import UnitToggler from './components/weather/UnitToggler.vue'
 import { House, DataAnalysis, MagicStick } from '@element-plus/icons-vue'
-import { useWeatherThemeStore } from './stores/weatherThemeStore.js'
 import { useWeatherStore } from './stores/weatherStore.js'
 
 // el-menu의 default-active를 현재 경로와 맞춰야 새로고침해도 활성 탭이 맞게 표시된다
 const route = useRoute()
 
-// 6차: 앱 전체 배경이 지금 날씨를 따라간다.
-// 11차: 계산 주체가 WeatherHomeView에서 weatherThemeStore로 옮겨졌다. 배경은 이제 어느 탭에
-// 있든 "지금 보고 있는 지역"의 실제 날씨를 따른다.
-const weatherThemeStore = useWeatherThemeStore()
-
-// 배경이 앱 전체 것이 된 이상, 그 근거 데이터를 부르는 것도 앱의 몫이다. 대시보드에서만 부르면
+// 13차-n: 배경이 날씨를 따라가지 않게 되면서 App은 테마 스토어를 더 쓰지 않는다.
+// (스토어는 남는다 — 콕핏 배지의 날씨 아이콘이 읽는다.)
+// 날씨 데이터는 여전히 앱의 몫으로 부른다. 대시보드에서만 부르면
 // /practice처럼 날씨를 안 쓰는 탭으로 새로고침해 들어왔을 때 배경이 기본값(맑음)으로 굳는다.
 // load()는 스토어에서 캐시되므로 각 화면이 또 불러도 중복 요청이 되지 않는다.
 useWeatherStore().load()
@@ -26,7 +22,10 @@ useWeatherStore().load()
 //
 // 12차에도 커서 추적을 붙였다가 지웠는데, 그때는 판 한가운데에 흰 원을 그려서
 // '원형 그라디언트를 덧댄 티'가 났다. 이번엔 빛이 모서리 링을 따라 돌기만 한다.
-const GLASS_SELECTOR = '.base-dashboard-card, .weather-card, .navigation-bar'
+// base.css의 유리 판 목록과 같은 목록이어야 한다 — 여기서 빠지면 그 판만 빛이 안 돈다.
+const GLASS_SELECTOR =
+  '.base-dashboard-card, .weather-card, .navigation-bar, .about-card, ' +
+  '.notfound-card, .detail-hero, .hero-glass, .lab-index, .lab-note-list, .practice-section'
 let rafId = 0
 let pending = null
 // 13차-l: atan2는 ±180도에서 값이 튄다. 각도에 전환이 걸린 지금은 그 순간
@@ -39,11 +38,9 @@ const flush = () => {
   if (!pending) return
   const { card, angle } = pending
   pending = null
+  // 13차-q: 그림자 오프셋(--lx/--ly) 갱신을 걷었다. 링(conic-gradient, 블러 없음)만
+  // 커서를 따라 돈다 — 그림자(블러 40px)는 base.css에서 고정 광원 기준 상수로 바뀌었다.
   card.style.setProperty('--lightangle', `${angle}deg`)
-  // 광원의 반대쪽으로 그림자를 민다(빛에서 멀어지는 방향)
-  const rad = ((angle - 90) * Math.PI) / 180
-  card.style.setProperty('--lx', `${(-Math.cos(rad) * 16).toFixed(1)}px`)
-  card.style.setProperty('--ly', `${(-Math.sin(rad) * 16).toFixed(1)}px`)
 }
 
 const onPointerMove = (event) => {
@@ -78,42 +75,105 @@ onBeforeUnmount(() => {
        지금은 균질한 블러(--glass-surface) + 가장자리 렌즈 띠 + 스페큘러/분광으로 간다.
        자세한 이유는 base.css의 --glass-surface 주석 참고. -->
 
-  <!-- 13차-j: 리퀴드 글래스의 굴절. 변위 맵은 R=가로 램프, G=세로 램프다.
-       feDisplacementMap은 (채널값/255 - 0.5)만큼 픽셀을 민다 — 그래서 램프를 깔면
-       중앙(0.5)은 0, 왼쪽 끝은 왼쪽으로, 오른쪽 끝은 오른쪽으로 밀린다.
-       즉 판 전체가 바깥으로 벌어지는 볼록 렌즈가 된다. 난수도 아니고 잘라낸 띠도 아니라
-       경계선이 생기지 않는다(앞선 두 번의 실패가 정확히 그 두 가지였다).
-       맵은 data URI SVG로 만든다 — 이미지 파일을 추가하지 않기 위해서다. -->
+  <!-- 리퀴드 글래스의 굴절. 변위 맵은 R=가로 램프, G=세로 램프다.
+       feDisplacementMap은 (채널값/255 - 0.5)만큼 픽셀을 민다 — 램프를 깔면 중앙(0.5)은 0,
+       왼쪽 끝은 왼쪽으로, 오른쪽 끝은 오른쪽으로 밀린다. 즉 판 전체가 바깥으로 벌어지는
+       볼록 렌즈다. 램프는 연속이라 잘라낸 경계가 없다(6차·7차의 실패가 그 두 가지였다).
+
+       13차-n: 여기에 두 가지를 더했다.
+       (1) 표면의 요철 — 진짜 유리는 표면이 평평하지 않아 굴절이 일정하지 않다.
+           낮은 주파수 노이즈를 램프에 '섞어' 굴절량을 자리마다 흔든다.
+           6차에 노이즈만 써서 대리석이 됐던 것과 다르다: 여기서는 램프가 주(85%)고
+           노이즈는 흔들기(25%)이며, 배경도 매끈한 그라디언트라 결이 아니라 물결로 읽힌다.
+       (2) 프리즘 — 파장마다 굴절률이 다르다. 같은 맵으로 R/G/B를 서로 다른 세기로 밀고
+           채널만 뽑아 다시 합친다. 변위는 가장자리로 갈수록 커지므로 색 분리도 가장자리에서만
+           커진다 — 실제 렌즈와 같은 원리라 '덧칠한 무지개'로 안 보인다.
+           (12차에 뺐던 분광은 유리 '위에' 색을 얹는 방식이라 얹은 티가 났던 것이다.) -->
   <svg class="filter-defs" aria-hidden="true">
-    <filter id="lg-refract" x="-10%" y="-10%" width="120%" height="120%">
+    <filter
+      id="lg-refract"
+      x="-14%"
+      y="-14%"
+      width="128%"
+      height="128%"
+      color-interpolation-filters="sRGB"
+    >
       <feImage
         href="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cdefs%3E%3ClinearGradient id='r' x1='0' y1='0' x2='1' y2='0'%3E%3Cstop offset='0' stop-color='rgb(0,128,0)'/%3E%3Cstop offset='1' stop-color='rgb(255,128,0)'/%3E%3C/linearGradient%3E%3ClinearGradient id='g' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='rgb(0,0,0)'/%3E%3Cstop offset='1' stop-color='rgb(0,255,0)'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='120' height='120' fill='url(%23r)'/%3E%3Crect width='120' height='120' fill='url(%23g)' style='mix-blend-mode:screen'/%3E%3C/svg%3E"
         preserveAspectRatio="none"
-        result="rampMap"
+        result="ramp"
+      />
+
+      <!-- 표면의 요철. baseFrequency가 낮을수록 넓고 완만한 물결이 된다 —
+           높이면 곧바로 자글자글한 '결'이 되어 대리석으로 돌아간다. -->
+      <feTurbulence
+        type="fractalNoise"
+        baseFrequency="0.009 0.013"
+        numOctaves="2"
+        seed="11"
+        result="rawNoise"
+      />
+      <!-- 노이즈를 0.5 중심의 절반 진폭으로 눌러 담고 알파를 1로 채운다.
+           (알파가 노이즈인 채로 두면 아래 합성이 프리멀티플라이드에서 뒤틀린다.) -->
+      <feColorMatrix
+        in="rawNoise"
+        type="matrix"
+        values="0.5 0 0 0 0.25  0 0.5 0 0 0.25  0 0 0.5 0 0.25  0 0 0 0 1"
+        result="waves"
+      />
+      <!-- 램프 85% + 물결 25% - 0.05. 중앙이 다시 0.5가 되도록 맞춘 값이다.
+           렌즈의 방향성은 유지하면서 굴절량만 흔들린다. -->
+      <feComposite
+        in="waves"
+        in2="ramp"
+        operator="arithmetic"
+        k1="0"
+        k2="0.25"
+        k3="0.85"
+        k4="-0.05"
+        result="map"
+      />
+
+      <!-- 프리즘: 같은 맵, 다른 세기. 13차-p에서 3패스를 2패스로 줄였다.
+           변위 패스 하나가 이 필터에서 가장 비싼 연산이라, 세 번 돌리면 상단바처럼
+           작은 판에서도 호버가 버벅였다. 빨강 한 패스 + 청록 한 패스면 색수차는
+           그대로 보인다(실제 렌즈도 사람 눈에는 붉은 끝과 푸른 끝으로 갈려 보인다). -->
+      <feDisplacementMap
+        in="SourceGraphic"
+        in2="map"
+        scale="44"
+        xChannelSelector="R"
+        yChannelSelector="G"
+        result="dispWarm"
       />
       <feDisplacementMap
         in="SourceGraphic"
-        in2="rampMap"
-        scale="26"
+        in2="map"
+        scale="24"
         xChannelSelector="R"
         yChannelSelector="G"
+        result="dispCool"
       />
+      <feColorMatrix
+        in="dispWarm"
+        type="matrix"
+        values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0"
+        result="onlyR"
+      />
+      <feColorMatrix
+        in="dispCool"
+        type="matrix"
+        values="0 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 1 0"
+        result="onlyGB"
+      />
+      <feBlend in="onlyR" in2="onlyGB" mode="screen" />
     </filter>
   </svg>
 
-  <!-- 뷰포트 전체를 덮는 고정 배경. 히어로 안에 갇혀 있던 "지금 날씨"를 앱 전체로 끌어올렸다.
-       13차: 지금까지 한 장짜리 div의 클래스만 바꿔 끼웠다. .weather-scene에 걸어둔
-       `transition: background-image 1s`는 background-image가 보간되지 않는 속성이라
-       실제로는 아무 일도 하지 않았고, 지역을 바꾸면 하늘이 그냥 툭 갈아끼워졌다.
-       테마를 key로 준 요소를 Transition으로 감싸면 새 사진이 들어오는 동안 옛 사진이
-       남아 있어 두 장이 겹치고, 불투명도만 교차시키면 진짜 크로스페이드가 된다. -->
-  <Transition name="scene-fade">
-    <div
-      :key="weatherThemeStore.theme"
-      class="app-backdrop-layer weather-scene"
-      :class="`weather-${weatherThemeStore.theme}`"
-    ></div>
-  </Transition>
+  <!-- 뷰포트 전체를 덮는 고정 배경.
+       13차-n: 날씨별로 갈아끼우던 걸 그만뒀다(테마 제거). 갈아끼울 게 없으니
+       크로스페이드용 Transition과 key도 함께 걷어낸다 — 한 장으로 고정한다. -->
+  <div class="app-backdrop-layer weather-scene"></div>
 
   <div class="app-container">
     <header class="brand">
@@ -122,7 +182,6 @@ onBeforeUnmount(() => {
         ><span class="wordmark-dot">.</span>
       </h1>
       <p class="brand-sub">기상 데이터를 전사 경영 판단으로 번역합니다</p>
-      <span class="brand-badge">종합실습 5 · 스토어적용</span>
     </header>
 
     <nav class="navigation-bar">
@@ -233,24 +292,9 @@ onBeforeUnmount(() => {
   font-weight: 500;
   color: rgba(214, 226, 244, 0.78);
 }
-/* 과제 식별자는 지우지 않되, 서비스 이름보다 뒤로 물린다 */
-.brand-badge {
-  margin-left: auto;
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.12);
-  font-size: 12px;
-  font-weight: 600;
-  color: rgba(226, 236, 250, 0.8);
-  white-space: nowrap;
-}
-
 @media (max-width: 640px) {
   .wordmark {
     font-size: 26px;
-  }
-  .brand-badge {
-    margin-left: 0;
   }
 }
 
@@ -276,8 +320,11 @@ onBeforeUnmount(() => {
   background-color: var(--glass-tint, var(--glass-bg));
   border: 1px solid var(--glass-border);
   box-shadow: var(--shadow-glass);
-  -webkit-backdrop-filter: var(--glass-surface);
-  backdrop-filter: var(--glass-surface);
+  /* 13차-p: 상단바는 굴절 렌즈를 쓰는 두 곳 중 하나다. 작고 떠 있는 컨트롤이라
+     가장자리 띠가 면적에서 차지하는 몫이 커서 굴절이 실제로 보이고,
+     넓이가 대시보드 카드의 1/24이라 비싼 SVG 필터를 감당할 수 있다. */
+  -webkit-backdrop-filter: var(--glass-surface-lens);
+  backdrop-filter: var(--glass-surface-lens);
 }
 
 /* el-menu 기본 스타일(하단 보더, 흰 배경 강제)이 유리 내비 필과 부딪혀서 걷어낸다 */
@@ -338,16 +385,6 @@ onBeforeUnmount(() => {
 /* 배경 크로스페이드. 나가는 사진과 들어오는 사진이 같은 자리에 겹쳐야 하므로
    둘 다 position: fixed(.app-backdrop-layer)인 점을 그대로 이용한다.
    들어오는 쪽을 조금 더 길게(1.1s) 잡아 중간에 배경이 옅어지는 구간이 생기지 않게 한다. */
-.scene-fade-enter-active {
-  transition: opacity 1.1s var(--apple-ease);
-}
-.scene-fade-leave-active {
-  transition: opacity 0.9s var(--apple-ease);
-}
-.scene-fade-enter-from,
-.scene-fade-leave-to {
-  opacity: 0;
-}
 
 /* 라우트 전환 중 청크 로딩 공백에도 화면이 0으로 꺼지지 않도록 최소 높이를 잡아둔다 */
 .route-stage {

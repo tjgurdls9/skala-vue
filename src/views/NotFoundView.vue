@@ -19,7 +19,7 @@ const goHome = () => {
       <el-icon class="notfound-icon"><Compass /></el-icon>
       <h2 class="notfound-title">페이지를 찾을 수 없습니다</h2>
       <p class="notfound-text">
-        요청하신 주소가 존재하지 않거나 아직 개발되지 않았습니다. 주소를 다시 확인해 주세요.
+        요청하신 주소가 존재하지 않거나 아직 개발되지 않았습니다. 주소를 확인해 주시기 바랍니다.
       </p>
       <el-button type="primary" :icon="Back" @click="goHome">날씨 대시보드로 이동</el-button>
     </section>

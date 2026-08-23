@@ -17,7 +17,7 @@ import { DataAnalysis, Odometer, TrendCharts } from '@element-plus/icons-vue'
 
 const router = useRouter()
 
-// 과제 6: 요약 화면도 실시간 날씨로 등급과 기상 영향 점수를 매긴다.
+// 과제 6: 요약 화면도 실시간 날씨로 등급과 운영 여건 점수를 매긴다.
 // 11차: 이 화면이 axios로 17개 도시를 따로 다시 부르고 있었다. 대시보드·상세와 같은 데이터라
 // 스토어 하나만 보면 된다 — 탭을 오갈 때마다 17회씩 재조회하던 걸 없앴다.
 const weatherStore = useWeatherStore()
@@ -96,7 +96,7 @@ const goDetail = (item) => {
         </h3>
         <div class="overview">
           <div class="overview-stat">
-            <span class="overview-key">평균 기상 영향 점수</span>
+            <span class="overview-key">평균 운영 여건 점수</span>
             <span class="overview-val">{{ avgScore }}<small>/{{ EXEC_MAX_SCORE }}</small></span>
           </div>
           <div class="overview-stat">
@@ -126,7 +126,7 @@ const goDetail = (item) => {
       <!-- 순위 목록: 숫자를 나열하는 대신 막대 길이로 비교시킨다 -->
       <BaseDashboardCard>
         <h3 class="section-title">
-          <el-icon><TrendCharts /></el-icon> 지역별 기상 영향 순위
+          <el-icon><TrendCharts /></el-icon> 지역별 운영 여건 순위
         </h3>
         <p class="guide">
           막대가 길수록 옥외 활동에 유리한 조건입니다. 지역을 누르면 상세 분석으로 이동합니다.

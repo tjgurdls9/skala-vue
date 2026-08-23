@@ -78,11 +78,14 @@ const hoveredCity = computed(() =>
   hoveredGroup.value ? (cityById.value.get(groupCity[hoveredGroup.value]) ?? null) : null,
 )
 
-// 판독부: 마우스를 올린 시·군이 우선, 없으면 대시보드가 고른 지역을 보여준다.
+// 판독부: 마우스를 올린 시·군이 우선, 없으면 대시보드가 고른 지역(spotlight)으로
+// 돌아간다. isPreview는 '지금 보이는 게 고정된 선택이 아니라 훑어보는 중'이라는 뜻 —
+// 오른쪽 콕핏 패널은 호버로는 안 바뀌므로, 판독부만 다른 지역을 보여줄 때는
+// 그게 일시적이라는 걸 밝혀야 한다.
 const activePoint = computed(() => {
-  if (hoveredCity.value) return { name: hoveredGroup.value, city: hoveredCity.value }
+  if (hoveredCity.value) return { name: hoveredGroup.value, city: hoveredCity.value, isPreview: true }
   const spot = props.cities.find((c) => c.id === props.spotlightId)
-  return spot ? { name: spot.name, city: spot } : null
+  return spot ? { name: spot.name, city: spot, isPreview: false } : null
 })
 
 // svg 하나에서 위임 처리. 이벤트가 어느 도형에서 났는지는 data-group으로 읽는다.
@@ -108,7 +111,7 @@ const onAreaClick = (event) => {
       class="map-svg"
       :viewBox="VIEW_BOX"
       role="img"
-      aria-label="전국 지역별 기상 영향 점수 지도"
+      aria-label="전국 지역별 운영 여건 점수 지도"
       @mouseover="onAreaOver"
       @mouseleave="hoveredGroup = ''"
       @click="onAreaClick"
@@ -142,6 +145,7 @@ const onAreaClick = (event) => {
     <!-- 호버한 지역 정보. 지도 위에 툴팁을 띄우면 좁은 화면에서 잘리므로 아래 고정 영역에 쓴다 -->
     <div class="map-readout">
       <template v-if="activePoint">
+        <span v-if="activePoint.isPreview" class="map-readout-preview">미리보기</span>
         <span class="map-readout-name">{{ activePoint.name }}</span>
         <span class="map-readout-score" :style="{ color: scoreColor(activePoint.city.execScore) }">
           {{ activePoint.city.execScore }}점
@@ -155,7 +159,7 @@ const onAreaClick = (event) => {
           </template>
         </span>
       </template>
-      <span v-else class="map-readout-hint">지도의 지역에 마우스를 올려 보세요</span>
+      <span v-else class="map-readout-hint">지역을 선택하면 상세가 표시됩니다</span>
     </div>
 
     <ul class="map-legend">
@@ -292,6 +296,16 @@ const onAreaClick = (event) => {
 .map-readout-hint {
   font-size: 12px;
   color: #48515f;
+}
+/* 호버 중에만 보인다 — '지금 이건 스쳐 지나가는 미리보기지, 오른쪽 패널의 선택은
+   그대로다'라는 신호. 색은 강조색을 눌러 쓴다(경고가 아니라 상태 안내라서). */
+.map-readout-preview {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(11, 107, 220, 0.12);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-accent);
 }
 
 .map-legend {

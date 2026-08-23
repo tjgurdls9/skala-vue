@@ -1,7 +1,10 @@
 # skala-vue
 
 SKALA 4기 Full-Stack Engineering, Frontend-framework: Vue.js 실습 저장소
-Vue 3 Composition API + Vue Router + Vite
+(Vue 3 Composition API + Vue Router + Pinia + Vite + Element Plus)
+
+전국 45개 관측 지점의 실시간 날씨를 운영 여건 점수, 위험 경보, 마케팅 7P,
+기능별 영향으로 정리해 보여준다. 키보드 조작과 동작 줄이기 설정도 지원한다.
 
 ## 과제
 
@@ -17,8 +20,16 @@ Vue 3 Composition API + Vue Router + Vite
 여섯 과제가 각각 다른 게 아니라 같은 날씨 대시보드를 단계별로 발전시킨 것이다.
 정적 화면 -> 반응형 계산 -> 컴포넌트 분해 -> 라우팅 -> 전역 상태 -> 실시간 API 순서다.
 
-도시 5개의 실시간 날씨는 OpenWeatherMap API에서 가져온다 (`src/data/weatherApi.js`).
+전국 45개 관측 지점의 실시간 날씨는 OpenWeatherMap API에서 가져온다 (`src/data/weatherApi.js`).
 API 키는 `.env`에 두고 git에는 올리지 않는다. `.env.example`을 `.env`로 복사해 본인 키를 채워 넣으면 된다.
+
+## 대시보드 사용법
+
+- 지도에 마우스를 올리면 판독부에 `미리보기`로 표시된다. 오른쪽 패널은 지역을 클릭해야 바뀐다.
+- 선택 지역에는 배지와 콕핏에 `직접 선택`이 표시된다. 선택이 없으면 운영 여건 1위 지역을 보여준다.
+- 운영 여건 상위 3곳과 지역별 막대도 클릭할 수 있으며, 같은 지역을 다시 누르면 선택이 해제된다.
+- 지역 카드의 7P 제안은 자동으로 바뀌며, 카드에 마우스를 올려 읽는 동안에는 멈춘다.
+- `동작 줄이기`가 켜진 환경에서는 카드 순환과 이동 애니메이션을 멈춘다.
 
 소스 위치
 
@@ -47,14 +58,15 @@ API 키는 `.env`에 두고 git에는 올리지 않는다. `.env.example`을 `.e
 
 ## 전역 상태 (Pinia)
 
-| 스토어        | state   | getters       | actions      | 쓰는 곳                                     |
-| ------------- | ------- | ------------- | ------------ | ------------------------------------------- |
-| `configStore` | `unit`  | `unitSymbol`  | `toggleUnit` | UnitToggler, WeatherCard, WeatherDetailView |
-| `budgetStore` | `total` | `totalLabel`  | `setTotal`   | WeatherHomeView, WeatherSummaryView         |
-| `counter`     | `count` | `doubleCount` | `increment`  | StoreCounter (교재 211p 실습)               |
+| 스토어              | 역할                                                   |
+| ------------------- | ------------------------------------------------------ |
+| `configStore`       | 섭씨/화씨 단위 설정                                     |
+| `weatherStore`      | 전국 날씨 조회 캐시, 운영 여건 순위, 현재 선택 지역     |
+| `weatherThemeStore` | 선택 지역의 날씨 분류와 날씨 아이콘 계산               |
+| `counter`           | StoreCounter 교재 실습                                  |
 
-메모리에만 있어서 브라우저를 새로고침하면 초기값(섭씨 / 1000만원)으로 돌아간다.
-링크로 화면을 옮기는 건 SPA라 유지된다.
+메모리에만 있어서 브라우저를 새로고침하면 초기값으로 돌아간다. SPA 안에서 화면을 옮길 때는
+날씨 응답과 선택 지역이 유지되므로 같은 API를 중복 호출하지 않는다.
 
 ## 실시간 API (Axios)
 
@@ -69,8 +81,10 @@ API 키는 `.env`에 두고 git에는 올리지 않는다. `.env.example`을 `.e
 예보 응답에는 미세먼지가 없어서 이 점수만 기온·습도 2축(최고 9점)으로 계산한다 —
 지금 날씨의 27점과 만점이 다르므로 화면에도 분모를 같이 표기한다.
 
-홈·상세·요약 세 화면이 각자 `onMounted`에서 독립적으로 조회한다. 무료 티어 한도는
-분당 60회 / 월 100만 회이며, 새로고침 1회 = 10회 호출(도시 5개 × API 2개)이다.
+현재 날씨와 대기질은 지점당 2회 요청한다. 45곳을 한꺼번에 요청하면 무료 티어의 분당 한도를
+넘길 수 있어 25곳씩 나누어 조회하고, 도착한 결과부터 화면에 반영한다. `weatherStore`가 결과를
+캐시하므로 라우트 이동만으로는 다시 요청하지 않는다. 상세 화면의 5일 예보는 해당 지역을 열 때
+별도로 조회한다.
 
 ## 실습 컴포넌트
 
@@ -92,10 +106,12 @@ src/
 ├─ router/index.js    라우트 정의, Lazy Loading, afterEach 가드
 ├─ stores/            Pinia 전역 상태
 │  ├─ configStore.js  날씨 단위 (섭씨/화씨)
-│  ├─ budgetStore.js  마케팅 총 예산
+│  ├─ weatherStore.js 전국 날씨 캐시, 순위, 선택 지역
+│  ├─ weatherThemeStore.js 날씨 분류와 아이콘
 │  └─ counter.js      교재 211p 실습용
 ├─ data/
-│  ├─ weatherMock.js  도시 등록정보(좌표), 등급 판정, 예산 배분
+│  ├─ weatherMock.js  지역 등록정보, 점수·경보·7P·기능별 영향 계산
+│  ├─ koreaMap.json   전국 지도 도형
 │  └─ weatherApi.js   OpenWeatherMap / Nager.Date axios 호출
 ├─ views/             페이지 단위 컴포넌트
 │  ├─ WeatherHomeView.vue     WeatherDetailView.vue
@@ -103,7 +119,7 @@ src/
 │  ├─ PracticeView.vue        NotFoundView.vue
 │  └─ HomeView.vue, AboutView.vue   (create-vue 스캐폴드, 미사용)
 ├─ components/
-│  ├─ weather/        BaseDashboardCard, SearchBar, WeatherCard, UnitToggler
+│  ├─ weather/        BaseDashboardCard, SearchBar, WeatherCard, WeatherMap, UnitToggler
 │  └─ practice/       basic, render, binding, optimize, event, composition, component, store
 └─ assets/
    ├─ practice.css    실습 공통 스타일
@@ -122,8 +138,7 @@ npm run lint
 npm run format
 ```
 
-`npm run lint`는 `practice/basic/SampleTwo.vue`의 미사용 `ref` 하나를 잡는다.
-반응성 비교 실습 예제라서 그대로 뒀다.
+`npm run lint`와 `npm run build`가 모두 통과하는 상태를 기준으로 유지한다.
 
 ## 개발 환경
 

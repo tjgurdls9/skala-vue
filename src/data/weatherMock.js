@@ -664,7 +664,7 @@ export const buildInventoryAdvice = (item) => {
   return {
     key: 'neutral',
     label: '평시 재고 유지',
-    text: '기온·대기질이 평이합니다. 통상 발주 수준을 유지해도 됩니다.',
+    text: '기온·대기질이 평이합니다. 통상 발주 수준을 유지합니다.',
   }
 }
 
@@ -674,7 +674,7 @@ export const buildStaffingAdvice = (item) => {
     return {
       key: 'rain',
       label: '실내 인력 강화',
-      text: '강수가 예보돼 실외 유동인구가 줄어듭니다. 실내 응대 인력을 늘리고 우산 비치를 준비하세요.',
+      text: '강수가 예보돼 실외 유동인구가 줄어듭니다. 실내 응대 인력 증원과 우산 비치가 필요합니다.',
     }
   }
   if (item.microdust >= GRADE_STANDARD.dust.ok) {
@@ -688,13 +688,13 @@ export const buildStaffingAdvice = (item) => {
     return {
       key: 'heat',
       label: '실외 인력 로테이션',
-      text: '폭염 수준입니다. 실외 근무자는 짧은 주기로 로테이션하고 무더위 쉼터를 안내하세요.',
+      text: '폭염 수준입니다. 실외 근무자 로테이션 주기 단축과 무더위 쉼터 안내가 필요합니다.',
     }
   }
   return {
     key: 'neutral',
     label: '평시 배치 유지',
-    text: '특별한 기상 제약이 없어 평시 인력 배치를 유지해도 됩니다.',
+    text: '특별한 기상 제약이 없어 평시 인력 배치를 유지합니다.',
   }
 }
 
@@ -715,80 +715,80 @@ export const buildRiskAlerts = (item) => {
   else if (feels >= 33)
     alerts.push({
       level: 'warning',
-      text: `폭염 주의보 (체감 ${feels}°C) — 실외 근무는 시간당 10분 이상 휴식을 확보하세요.`,
+      text: `폭염 주의보 (체감 ${feels}°C) — 실외 근무 시 시간당 10분 이상 휴식 확보가 필요합니다.`,
     })
 
   // 한파
   if (feels <= -12)
     alerts.push({
       level: 'error',
-      text: `한파 경보 (체감 ${feels}°C) — 배송 차량 결빙과 실외 근무 동상에 대비하세요.`,
+      text: `한파 경보 (체감 ${feels}°C) — 배송 차량 결빙과 실외 근무 동상에 대한 대비가 필요합니다.`,
     })
   else if (feels <= -5)
     alerts.push({
       level: 'warning',
-      text: `한파 주의보 (체감 ${feels}°C) — 옥외 근무자 방한 장구를 지급하세요.`,
+      text: `한파 주의보 (체감 ${feels}°C) — 옥외 근무자 방한 장구 지급이 필요합니다.`,
     })
 
   // 대기질 (PM2.5 환경부 기준: 36 나쁨 / 76 매우 나쁨)
   if (item.microdust >= 76)
     alerts.push({
       level: 'error',
-      text: `초미세먼지 매우 나쁨 (${item.microdust}) — 실외 활동을 중단하세요.`,
+      text: `초미세먼지 매우 나쁨 (${item.microdust}) — 실외 활동 중단을 권고합니다.`,
     })
   else if (item.microdust >= 36)
     alerts.push({
       level: 'warning',
-      text: `초미세먼지 나쁨 (${item.microdust}) — 옥외 대기줄을 실내로 돌리세요.`,
+      text: `초미세먼지 나쁨 (${item.microdust}) — 옥외 대기 동선의 실내 전환을 권고합니다.`,
     })
 
   // 강풍 (기상청 주의보 14m/s, 경보 21m/s이나 현장 운영 기준으로 낮춰 잡았다)
   if (item.wind >= 14)
     alerts.push({
       level: 'error',
-      text: `강풍 경보 (${item.wind}m/s) — 입간판·배너를 철수하고 적재물을 고정하세요.`,
+      text: `강풍 경보 (${item.wind}m/s) — 입간판·배너 철수와 적재물 고정이 필요합니다.`,
     })
   else if (item.wind >= 9)
     alerts.push({
       level: 'warning',
-      text: `강풍 주의 (${item.wind}m/s) — 옥외 설치물 결박 상태를 점검하세요.`,
+      text: `강풍 주의 (${item.wind}m/s) — 옥외 설치물 결박 상태 점검이 필요합니다.`,
     })
 
   // 강수
   if (item.weatherMain === 'Thunderstorm')
-    alerts.push({ level: 'error', text: '뇌우 — 옥외 전기 설비 사용을 중단하세요.' })
+    alerts.push({ level: 'error', text: '뇌우 — 옥외 전기 설비 사용 중단을 권고합니다.' })
   else if (item.weatherMain === 'Snow')
-    alerts.push({ level: 'warning', text: '강설 — 배송 지연과 보행로 결빙에 대비하세요.' })
+    alerts.push({ level: 'warning', text: '강설 — 배송 지연과 보행로 결빙에 대한 대비가 필요합니다.' })
   else if (RAIN_WEATHER_MAIN.includes(item.weatherMain))
-    alerts.push({ level: 'warning', text: '강수 — 배송 리드타임 증가와 우천 이탈에 대비하세요.' })
+    alerts.push({ level: 'warning', text: '강수 — 배송 리드타임 증가와 우천 이탈에 대한 대비가 필요합니다.' })
 
   // 저시정 (안개·호우)
   if (typeof item.visibility === 'number' && item.visibility > 0 && item.visibility < 1)
     alerts.push({
       level: 'error',
-      text: `가시거리 ${item.visibility}km — 차량 배송을 일시 중단하고 배차를 재조정하세요.`,
+      text: `가시거리 ${item.visibility}km — 차량 배송 일시 중단과 배차 재조정이 필요합니다.`,
     })
   else if (typeof item.visibility === 'number' && item.visibility < 5)
     alerts.push({
       level: 'warning',
-      text: `가시거리 ${item.visibility}km — 배송 속도를 낮추고 배차 간격을 넓히세요.`,
+      text: `가시거리 ${item.visibility}km — 배송 속도 하향과 배차 간격 확대가 필요합니다.`,
     })
 
   // 열대야 / 습도 / 건조
   if (item.tempMin !== undefined && item.tempMin >= 25)
     alerts.push({
       level: 'warning',
-      text: `열대야 (최저 ${item.tempMin}°C) — 야간 냉방 부하와 심야 인력 피로를 점검하세요.`,
+      text: `열대야 (최저 ${item.tempMin}°C) — 야간 냉방 부하와 심야 인력 피로 점검이 필요합니다.`,
     })
   if (item.humidity >= HIGH_HUMIDITY)
     alerts.push({
       level: 'warning',
-      text: `습도 ${item.humidity}% — 지류·식품 보관 상태와 결로를 점검하세요.`,
+      text: `습도 ${item.humidity}% — 지류·식품 보관 상태와 결로 점검이 필요합니다.`,
     })
   else if (item.humidity <= 25)
     alerts.push({
       level: 'warning',
-      text: `건조 (습도 ${item.humidity}%) — 화기 취급과 정전기 관리에 주의하세요.`,
+      text: `건조 (습도 ${item.humidity}%) — 화기 취급과 정전기 관리에 주의가 필요합니다.`,
     })
 
   if (!alerts.length)
@@ -902,10 +902,10 @@ export const buildDiscomfort = (item) => {
   let level, label, tone, text
   if (value >= 80) {
     ;[level, label, tone] = [4, '매우 높음', 'danger']
-    text = '체류 시간이 급격히 짧아집니다. 실내·그늘 동선과 냉방 좌석을 먼저 확보하세요.'
+    text = '체류 시간이 급격히 짧아집니다. 실내·그늘 동선과 냉방 좌석 확보가 우선입니다.'
   } else if (value >= 75) {
     ;[level, label, tone] = [3, '높음', 'warning']
-    text = '옥외 대기가 길어지면 이탈률이 오릅니다. 대기 구역에 그늘과 식수를 확보하세요.'
+    text = '옥외 대기가 길어지면 이탈률이 오릅니다. 대기 구역의 그늘·식수 확보가 필요합니다.'
   } else if (value >= 68) {
     ;[level, label, tone] = [2, '보통', 'info']
     text = '대부분 쾌적하게 느낍니다. 평소대로 운영해도 무리가 없습니다.'
@@ -1003,14 +1003,14 @@ export const buildBriefing = (item) => {
     lines.push({
       key: 'rain',
       tone: 'warning',
-      text: '비가 내리고 있습니다. 옥외 활동은 미루고 실내·비대면 채널로 자원을 옮기세요.',
+      text: '비가 내리고 있습니다. 옥외 활동 연기와 실내·비대면 채널로의 자원 이동이 필요합니다.',
     })
   }
   if (item.microdust >= 50) {
     lines.push({
       key: 'dust',
       tone: 'danger',
-      text: `미세먼지가 ${item.microdust}로 높습니다. 옥외 근무자 교대 주기를 짧게 잡으세요.`,
+      text: `미세먼지가 ${item.microdust}로 높습니다. 옥외 근무자 교대 주기 단축이 필요합니다.`,
     })
   }
   if (typeof item.feelsLike === 'number' && Math.abs(item.feelsLike - item.temp) >= 2) {
@@ -1027,7 +1027,7 @@ export const buildBriefing = (item) => {
     lines.push({
       key: 'night',
       tone: 'info',
-      text: `현지 시각 기준 야간입니다. 옥외 활동은 ${daylight.sunrise} 일출 이후로 잡으세요.`,
+      text: `현지 시각 기준 야간입니다. 옥외 활동은 ${daylight.sunrise} 일출 이후로 계획해야 합니다.`,
     })
   }
 
@@ -1035,7 +1035,7 @@ export const buildBriefing = (item) => {
   return { headline, lines }
 }
 
-// --- 11차: 기상 영향 점수를 연속값으로 재설계 ---
+// --- 11차: 운영 여건 점수를 연속값으로 재설계 ---
 // 문제: 교재식 3단계 등급(기온×습도×미세먼지)에 실데이터를 넣으니 전국이 죄다 3-1-3 = 9점이었다.
 // 한국 여름은 습도가 늘 80% 이상이라 습도는 항상 1등급, 미세먼지는 늘 낮아 항상 3등급이라
 // 실질적으로 변별이 되는 축이 기온 하나뿐이었기 때문이다.
@@ -1194,7 +1194,7 @@ export const OPS_MODES = {
 const RAINY = ['Rain', 'Drizzle', 'Thunderstorm', 'Snow']
 const feelsOf = (item) => (typeof item.feelsLike === 'number' ? item.feelsLike : item.temp)
 
-// 운영 모드 판정. 기상 영향 점수만으로 자르지 않고, 안전에 직결되는 조건은 점수와 무관하게
+// 운영 모드 판정. 운영 여건 점수만으로 자르지 않고, 안전에 직결되는 조건은 점수와 무관하게
 // 곧바로 상위 모드로 올린다(점수가 높아도 폭염이면 단축이 맞다).
 export const buildOpsMode = (item) => {
   const feels = feelsOf(item)
@@ -1238,7 +1238,7 @@ export const build7P = (item) => {
   if (isRainy) price = '옥외 이탈분을 비대면·사전예약 채널의 가격 인센티브로 회수합니다.'
   else if (hot || cold) price = '수요가 몰리는 시간대에 맞춰 할인·번들 시점을 옮깁니다.'
   else if (mode.key === 'normal') price = '가격 조정 불필요. 정가 기준으로 마진을 지킵니다.'
-  else price = '할인해도 전환이 낮은 구간입니다. 가격보다 채널을 먼저 조정하세요.'
+  else price = '할인해도 전환이 낮은 구간입니다. 가격보다 채널 조정이 우선입니다.'
 
   // 3) Place — 채널·동선 비중
   let place
@@ -1279,7 +1279,7 @@ export const build7P = (item) => {
   if (isRainy) physical.push('출입 동선 미끄럼 방지, 우산 처리 동선 확보')
   if (item.wind >= 8) physical.push('입간판·현수막 등 설치물 결박 또는 철수')
   if (dusty) physical.push('출입문 개방 최소화, 실내 공기질 관리')
-  if (!physical.length) physical.push('현장 환경 평시 유지')
+  if (!physical.length) physical.push('평시 상태를 유지합니다')
 
   return {
     mode,
@@ -1373,7 +1373,7 @@ const buildFinanceImpact = (item) => {
       : Math.round(Math.abs(diff) * HEATING_COST_PER_DEG)
   const energyKind = diff > 0 ? '냉방' : '난방'
 
-  // 매출 영향: 옥외 유동인구에 민감한 사업 기준. 기상 영향 점수를 그대로 대리 지표로 쓴다.
+  // 매출 영향: 옥외 유동인구에 민감한 사업 기준. 운영 여건 점수를 그대로 대리 지표로 쓴다.
   // 55점을 기준선으로 두고 위아래로 벌어진 만큼 매출이 움직인다고 본다.
   const salesDelta = Math.round((item.execScore - 55) * 0.45)
 
@@ -1407,9 +1407,9 @@ const buildAccountingImpact = (item) => {
   spoilage = Math.round(spoilage * 10) / 10
 
   const notes = [`온·습도 민감 재고의 예상 손실률 약 ${spoilage}% (평시 1.0%).`]
-  if (spoilage >= 2.5) notes.push('입고량을 줄이고 선입선출 점검 주기를 하루 2회로 늘리세요.')
+  if (spoilage >= 2.5) notes.push('입고량 축소와 선입선출 점검 주기 확대(1일 2회)가 필요합니다.')
   if (isRainy2(item)) notes.push('운송비·포장비가 늘어 판관비 계정에 반영이 필요합니다.')
-  if (item.humidity >= 80) notes.push('지류·라벨 손상으로 인한 재작업 비용을 확인하세요.')
+  if (item.humidity >= 80) notes.push('지류·라벨 손상에 따른 재작업 비용 확인이 필요합니다.')
 
   return {
     key: 'accounting',
@@ -1436,9 +1436,9 @@ const buildScmImpact = (item) => {
   if (delayMin) notes.push(`이동·배송 리드타임이 약 ${delayMin}분 늘어날 것으로 봅니다.`)
   else notes.push('이동·배송 리드타임에 영향이 없습니다.')
 
-  if (delayMin >= 40) notes.push('당일 출고 마감 시간을 앞당기고 수요처에 사전 공지하세요.')
+  if (delayMin >= 40) notes.push('당일 출고 마감 시간 조정과 수요처 사전 공지가 필요합니다.')
   if (item.humidity >= 80) notes.push('창고 습도 관리 — 흡습제 점검과 환기가 필요합니다.')
-  if (feelsOf2(item) >= 30) notes.push('냉장·냉동 체인 온도 이탈 여부를 배차 전후로 확인하세요.')
+  if (feelsOf2(item) >= 30) notes.push('냉장·냉동 체인의 온도 이탈 여부를 배차 전후로 확인해야 합니다.')
 
   // 11차: 리드타임 지연이 0이면 '영향 없음'으로 찍히는데 정작 아래 근거에는 "창고 습도 관리가
   // 필요합니다" 같은 조치가 붙어 있었다 — 레벨과 내용이 서로 반대말을 하던 버그.
@@ -1466,8 +1466,8 @@ const buildSafetyImpact = (item) => {
   if (item.microdust >= 36) risks.push('호흡기 질환')
 
   const notes = risks.length
-    ? [`주의 재해 유형: ${risks.join(', ')}.`, '작업 전 안전교육(TBM)에서 해당 항목을 공지하세요.']
-    : ['특이 재해 위험 요인이 없습니다. 표준 안전수칙을 유지하세요.']
+    ? [`주의 재해 유형: ${risks.join(', ')}.`, '작업 전 안전교육(TBM)에서 해당 항목 공지가 필요합니다.']
+    : ['특이 재해 위험 요인이 없습니다. 표준 안전수칙을 유지합니다.']
 
   return {
     key: 'safety',

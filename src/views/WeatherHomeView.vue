@@ -119,7 +119,6 @@ const spotlightCity = computed(() => {
 })
 
 const WEATHER_THEME_ICON = { clear: Sunny, clouds: Cloudy, rain: Pouring, snow: SnowflakeIcon }
-const WEATHER_THEME_LABEL = { clear: '맑음', clouds: '흐림', rain: '비', snow: '눈' }
 
 // 11차 구조 수정: 예전에는 이 화면이 배경 테마를 계산해서 스토어에 밀어넣었다. 그래서 다른
 // 탭으로 가면(이 화면이 언마운트되면) 아무도 테마를 갱신하지 않아 배경이 직전 값에 멈췄다.
@@ -129,12 +128,11 @@ const heroTheme = computed(() => weatherThemeStore.theme)
 const heroThemeIcon = computed(() => WEATHER_THEME_ICON[heroTheme.value])
 
 const heroBadgeText = computed(() => {
-  if (weatherThemeStore.override !== 'auto') {
-    return `${WEATHER_THEME_LABEL[heroTheme.value]} 테마 미리보기`
-  }
   if (!spotlightCity.value) return '날씨 × 전사 경영 판단'
+  // 13차-q: pinned일 때 태그를 통째로 지웠더니 '왜 이 지역이 여기 있는지' 근거가
+  // 사라졌다. 항상 둘 중 하나를 붙인다 — 직접 골랐거나, 기본값(1위)이거나.
   const pinned = weatherStore.selectedCityId === spotlightCity.value.id
-  return `${spotlightCity.value.name} 기준 실시간 날씨${pinned ? '' : ' (영향 1순위)'}`
+  return `${spotlightCity.value.name} 기준 실시간 날씨 (${pinned ? '직접 선택' : '운영 여건 1위'})`
 })
 
 // 11차: 예산을 걷어낸 자리에 도메인과 무관하게 통하는 지표를 둔다.
@@ -289,7 +287,8 @@ const insight = computed(() => {
   const worst = [...budgetPlan.value].sort(
     (a, b) => buildDiscomfort(b).value - buildDiscomfort(a).value,
   )[0]
-  return `오늘은 ${hottest.name}이(가) 가장 덥고(${hottest.temp}°C), ${coolest.name}이(가) 가장 선선합니다(${coolest.temp}°C). 불쾌지수는 ${worst.name}이(가) 가장 높습니다.`
+  // 13차-o: '이(가)'로 조사를 얼버무리던 문장을 수치 중심으로 다시 썼다.
+  return `오늘 최고기온 ${hottest.name} ${hottest.temp}°C, 최저기온 ${coolest.name} ${coolest.temp}°C. 불쾌지수는 ${worst.name}이 가장 높습니다.`
 })
 
 // 과제 3의 window.alert()를 걷어내고 상세 페이지로 이동시킨다. (Programmatic Navigation)
@@ -328,7 +327,7 @@ const goDetail = (item) => {
           <aside class="cockpit-side">
             <h3 class="cockpit-title"><el-icon><Odometer /></el-icon> 전국 요약</h3>
             <div class="cockpit-stat">
-              <span class="cockpit-stat-label">평균 기상 영향 점수</span>
+              <span class="cockpit-stat-label">평균 운영 여건 점수</span>
               <span class="cockpit-stat-value">{{ avgScore ?? '—' }}<small>/{{ EXEC_MAX_SCORE }}</small></span>
             </div>
             <div class="cockpit-stat">
@@ -365,22 +364,25 @@ const goDetail = (item) => {
               </ul>
             </div>
 
+            <!-- '양 끝'을 말 그대로 두 끝으로 그린다. 가운데 띠가 그 사이의 폭이다. -->
             <div v-if="extremes" class="cockpit-block">
-              <span class="cockpit-stat-label">오늘의 양 끝</span>
-              <ul class="edge-list">
-                <li>
-                  <span>가장 더움</span>
-                  <b>{{ extremes.hottest.name }} {{ extremes.hottest.temp }}°C</b>
-                </li>
-                <li>
-                  <span>가장 선선</span>
-                  <b>{{ extremes.coolest.name }} {{ extremes.coolest.temp }}°C</b>
-                </li>
-                <li>
-                  <span>영향 최저</span>
-                  <b>{{ extremes.worst.name }} {{ extremes.worst.execScore }}점</b>
-                </li>
-              </ul>
+              <span class="cockpit-stat-label">오늘의 기온 폭</span>
+              <div class="span-row">
+                <div class="span-end">
+                  <b>{{ extremes.coolest.temp }}<small>°C</small></b>
+                  <span>{{ extremes.coolest.name }}</span>
+                </div>
+                <div class="span-track" aria-hidden="true"></div>
+                <div class="span-end is-right">
+                  <b>{{ extremes.hottest.temp }}<small>°C</small></b>
+                  <span>{{ extremes.hottest.name }}</span>
+                </div>
+              </div>
+              <!-- 점수 축이라 기온의 두 끝과 같은 줄에 설 수 없다. 아래로 내려 성격을 가른다. -->
+              <p class="span-note">
+                <el-icon><WarnTriangleFilled /></el-icon>
+                운영 여건 최하위 <b>{{ extremes.worst.name }}</b> {{ extremes.worst.execScore }}점
+              </p>
             </div>
           </aside>
 
@@ -402,7 +404,7 @@ const goDetail = (item) => {
           <aside class="cockpit-side">
             <!-- 13차-i: 시상대는 선택과 무관한 전국 정보라 패널 맨 위에 상시로 둔다.
                  눌러서 그 지역으로 초점을 옮길 수도 있어 목록이자 컨트롤이다. -->
-            <h3 class="cockpit-title"><el-icon><Trophy /></el-icon> 기상 영향 상위 3곳</h3>
+            <h3 class="cockpit-title"><el-icon><Trophy /></el-icon> 운영 여건 상위 3곳</h3>
             <div v-if="podiumStand.length === 3" class="podium">
               <button
                 v-for="slot in podiumStand"
@@ -422,6 +424,10 @@ const goDetail = (item) => {
               <div v-if="focus" :key="focus.id" class="cockpit-swap">
                 <h3 class="cockpit-title">
                   <el-icon><Aim /></el-icon> {{ focus.name }}
+                  <!-- 13차-q: 시상대 3곳 밖의 지역을 고르면 이 지역이 '1위'도 아니고
+                       시상대 강조 링(is-focus)도 안 붙어서, 왜 이 지역이 떠 있는지
+                       알 방법이 없었다. 배지와 같은 근거를 여기도 붙인다. -->
+                  <span class="cockpit-title-tag">{{ picked ? '직접 선택' : '운영 여건 1위' }}</span>
                 </h3>
 
                 <!-- 점수 게이지. 원호의 채움 길이와 색이 같은 값을 두 가지로 말한다 -->
@@ -512,7 +518,7 @@ const goDetail = (item) => {
                 </button>
               </div>
               <el-select v-model="sortKey" size="small" class="sort-select">
-                <el-option label="영향 점수순" value="score" />
+                <el-option label="운영 여건순" value="score" />
                 <el-option label="기온 높은순" value="temp" />
                 <el-option label="불쾌지수 높은순" value="thi" />
                 <el-option label="이름순" value="name" />
@@ -531,7 +537,7 @@ const goDetail = (item) => {
                 <el-icon><Calendar /></el-icon>
                 <span
                   ><strong>{{ nextHoliday.date }} {{ nextHoliday.localName }}</strong> — 옥외
-                  유동인구가 평시와 달라집니다. 인력·재고 계획에 반영하세요.</span
+                  유동인구가 평시와 달라집니다. 인력·재고 계획 반영이 필요합니다.</span
                 >
               </p>
             </div>
@@ -762,6 +768,16 @@ const goDetail = (item) => {
 .cockpit-title {
   letter-spacing: -0.01em;
 }
+.cockpit-title-tag {
+  margin-left: auto;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--glass-inset-bg);
+  font-size: 11px;
+  font-weight: 700;
+  color: #48515f;
+}
+
 
 /* 패널 전환: 살짝 올라오면서 나타난다. 위치 이동은 4px로 아주 작게 —
    크게 움직이면 '전환'이 아니라 '튀는 것'으로 읽힌다. */
@@ -964,24 +980,64 @@ const goDetail = (item) => {
 }
 
 /* 오늘의 양 끝 */
-.edge-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
+/* 기온의 두 끝. 숫자를 주인공으로 두고 지역명은 그 아래 받침으로 내린다 —
+   예전엔 '속초 30°C'가 통째로 볼드라 무엇이 주인지 안 잡혔다. */
+.span-row {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
-  font-size: 14px;
-}
-.edge-list li {
-  display: flex;
-  justify-content: space-between;
+  align-items: center;
   gap: 10px;
 }
-.edge-list span {
+.span-end {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.1;
+}
+.span-end.is-right {
+  align-items: flex-end;
+  text-align: right;
+}
+.span-end b {
+  font-size: 21px;
+  font-weight: 800;
+  color: #1c1c1e;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.span-end b small {
+  font-size: 12px;
+  font-weight: 700;
+  margin-left: 1px;
+}
+.span-end > span {
+  margin-top: 3px;
+  font-size: 12px;
+  color: #48515f;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* 두 끝 사이의 폭. 위 '운영 모드 분포' 막대와 같은 두께·같은 라운드로 맞춘다.
+   색은 앱이 이미 쓰는 두 색(찬 파랑·더운 주황)만 잇는다 — 새 색을 들이지 않는다. */
+.span-track {
+  flex: 1;
+  min-width: 20px;
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, rgba(10, 83, 192, 0.7), rgba(138, 78, 0, 0.7));
+}
+.span-note {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 12px 0 0;
+  font-size: 13px;
   color: #48515f;
 }
-.edge-list b {
+.span-note .el-icon {
+  color: #8a4e00;
+}
+.span-note b {
   font-weight: 700;
   color: #1c1c1e;
 }
@@ -1074,6 +1130,7 @@ const goDetail = (item) => {
   display: flex;
   align-items: center;
   gap: 6px;
+  flex-wrap: wrap;
   margin: 0 0 2px;
   font-size: 17px;
   font-weight: 700;
@@ -1405,11 +1462,9 @@ const goDetail = (item) => {
   gap: 10px;
   margin-bottom: 14px;
 }
-@media (min-width: 900px) {
-  .brief-row {
-    grid-template-columns: 1fr 1fr;
-  }
-}
+/* 13차-o: 넓은 화면에서 좌우로 나누던 걸 위아래로 세운다.
+   둘은 시점이 다르다 — 하나는 '오늘', 다른 하나는 '며칠 뒤'다.
+   나란히 두면 같은 시점의 두 사실처럼 읽히고, 길이도 서로 달라 줄이 안 맞았다. */
 .insight-line {
   display: flex;
   align-items: center;

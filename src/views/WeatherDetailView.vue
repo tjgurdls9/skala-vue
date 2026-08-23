@@ -109,7 +109,7 @@ onMounted(async () => {
     }
   } catch (error) {
     console.error('통신 중 에러가 발생했습니다:', error)
-    alert('날씨 데이터를 가져오지 못했습니다. API 키 활성화 여부나 주소를 확인하세요.')
+    alert('날씨 데이터를 가져오지 못했습니다. API 키 활성화 여부와 주소를 확인해 주시기 바랍니다.')
   } finally {
     isLoading.value = false
   }
@@ -134,7 +134,7 @@ const meaning = computed(() => {
   if (score >= HIGH_SCORE)
     return '세 지표 모두 적정합니다. 옥외 활동을 포함한 어떤 방식이든 무리가 없습니다.'
   if (score >= MID_SCORE) return '병목인 지표가 있어 활동 방식을 가려서 정해야 합니다.'
-  return '약한 지표 탓에 옥외 의존 활동의 효율이 낮습니다. 실내 대안을 우선 검토하세요.'
+  return '약한 지표 탓에 옥외 의존 활동의 효율이 낮습니다. 실내 대안 우선 검토가 필요합니다.'
 })
 
 const riskAlerts = computed(() => (city.value ? buildRiskAlerts(city.value) : []))
@@ -143,6 +143,14 @@ const riskAlerts = computed(() => (city.value ? buildRiskAlerts(city.value) : []
 const ops = computed(() => (city.value ? build7P(city.value) : { mode: null, items: [] }))
 const impacts = computed(() => (city.value ? buildFunctionalImpacts(city.value) : []))
 const LEVEL_LABEL = { success: '영향 없음', info: '참고', warning: '주의', danger: '중대' }
+// 7P 타일이 P 이름을 머리글로 다는 것과 같은 자리. 경영 기능도 같은 결로 맞춘다.
+const FUNC_EN = {
+  hr: 'HR',
+  finance: 'Finance',
+  accounting: 'Accounting',
+  scm: 'SCM',
+  safety: 'Safety',
+}
 
 
 // --- 10차: 브리핑 / 일조 / 관측 지표 타일 ---
@@ -423,7 +431,7 @@ const goBack = () => {
         </template>
 
         <h3 class="section-title">
-          <el-icon><Odometer /></el-icon> 기상 영향 점수
+          <el-icon><Odometer /></el-icon> 운영 여건 점수
         </h3>
         <p class="score-formula">
           {{ city.grade.temp }} × {{ city.grade.humidity }} × {{ city.grade.dust }} =
@@ -433,7 +441,7 @@ const goBack = () => {
           가장 낮은 등급은 <strong>{{ weakest.name }}({{ weakest.lowest }}등급)</strong>입니다. 이
           지점이 병목입니다.
         </p>
-        <p>→ {{ meaning }}</p>
+        <p class="score-verdict">{{ meaning }}</p>
       </BaseDashboardCard>
 
       <!-- 11차: 4개 탭(마케팅/재고/인력/경보)을 서비스 마케팅 7P로 넓혔다.
@@ -461,17 +469,19 @@ const goBack = () => {
         </h3>
         <p class="footnote section-lead">
           추정치는 업계 통용 경험칙에 기반합니다. 실제 수치는 각 조직의 실적 데이터로 보정해
-          사용하세요.
+          사용합니다.
         </p>
-        <div class="func-list">
-          <div v-for="fn in impacts" :key="fn.key" class="func-row" :class="`tone-${fn.level}`">
-            <div class="func-head">
-              <span class="func-label">{{ fn.label }}</span>
-              <span class="func-level">{{ LEVEL_LABEL[fn.level] }}</span>
-            </div>
-            <ul class="func-notes">
-              <li v-for="(note, i) in fn.notes" :key="i">{{ note }}</li>
-            </ul>
+        <!-- 13차-p: 세로 목록이던 걸 7P와 같은 타일 그리드로 맞췄다. 두 카드가 같은
+             성격(요소별 영향)인데 어법이 갈려 있어서, 상세 화면 안에서 톤이 두 갈래였다.
+             다섯 개라 2 + 3으로 나눈다. -->
+        <div class="func-grid">
+          <div v-for="fn in impacts" :key="fn.key" class="mix-tile" :class="`tone-${fn.level}`">
+            <span class="mix-p">{{ FUNC_EN[fn.key] }}</span>
+            <span class="mix-label">
+              {{ fn.label }}
+              <em class="mix-level">{{ LEVEL_LABEL[fn.level] }}</em>
+            </span>
+            <span class="mix-text">{{ fn.notes.join(' ') }}</span>
           </div>
         </div>
       </BaseDashboardCard>
@@ -685,6 +695,45 @@ const goBack = () => {
   color: #48484f;
 }
 
+/* 13차-p: 경영 기능 5개를 2 + 3으로. 6칸 그리드에서 앞 둘은 3칸, 뒤 셋은 2칸이다. */
+.func-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 10px;
+}
+.func-grid .mix-tile:nth-child(-n + 2) {
+  grid-column: span 3;
+}
+.func-grid .mix-tile:nth-child(n + 3) {
+  grid-column: span 2;
+}
+@media (max-width: 900px) {
+  .func-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .func-grid .mix-tile:nth-child(-n + 2),
+  .func-grid .mix-tile:nth-child(n + 3) {
+    grid-column: span 1;
+  }
+}
+/* 등급은 라벨 옆 작은 글자로. 타일 배경을 물들이면 유리 톤이 무너진다(11차와 같은 판단). */
+.mix-level {
+  margin-left: 6px;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 700;
+  color: #48515f;
+}
+.mix-tile.tone-success .mix-level {
+  color: #14563a;
+}
+.mix-tile.tone-warning .mix-level {
+  color: #8a4e00;
+}
+.mix-tile.tone-danger .mix-level {
+  color: #ad251c;
+}
+
 /* --- 11차: 경영 기능별 영향 --- */
 .func-list {
   display: flex;
@@ -735,6 +784,16 @@ const goBack = () => {
 
 .score-formula {
   font-size: 15px;
+}
+/* 13차-o: 결론 한 줄을 '→'로 끌던 자리. 화살표 대신 왼쪽 굵은 선과 굵기로
+   '앞 문장들의 결론'임을 드러낸다 — 기호가 하던 일을 서식이 대신한다. */
+.score-verdict {
+  margin-top: 12px;
+  padding-left: 12px;
+  border-left: 3px solid var(--color-accent);
+  font-weight: 600;
+  line-height: 1.55;
+  color: #1c1c1e;
 }
 
 /* --- 10차: 의사결정 브리핑 --- */

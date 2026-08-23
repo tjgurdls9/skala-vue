@@ -5,23 +5,15 @@
 @property --lightangle {
   syntax: '<angle>';
   inherits: true;
-  initial-value: 210deg;
+  /* 배경 광원이 왼쪽 위에 있다 — 커서가 없을 때의 기본 각도도 거기에 맞춘다 */
+  initial-value: 310deg;
 }
 
-/* 광원이 있는 쪽의 '반대'로 밀려나는 그림자 오프셋. el-card는 overflow: hidden이라
-   ::before의 바깥 발광이 잘린다 — 요소 자신의 box-shadow는 잘리지 않으므로,
-   빛의 존재를 그림자의 '방향'으로 드러낸다. 실제로 빛을 옮기면 그림자가 도는 게
-   가장 알아보기 쉬운 광원 신호다. */
-@property --lx {
-  syntax: '<length>';
-  inherits: false;
-  initial-value: 0px;
-}
-@property --ly {
-  syntax: '<length>';
-  inherits: false;
-  initial-value: 0px;
-}
+/* 13차-q: --lx/--ly(커서를 따라 도는 그림자 오프셋)를 걷어냈다. 큰 카드에서
+   커서가 움직일 때마다 40px 블러 그림자를 매 프레임 다시 계산·페인트해야 해서,
+   호버가 진입 이후에도 계속 버벅였다 — 이게 '딱딱 끊김'의 진짜 원인이었다.
+   배경이 이미 고정 광원(310deg, 왼쪽 위)이므로, 그림자도 그 하나의 광원 기준
+   고정값으로 대체한다. 아래 --shadow-lift 참고. */
 
 /* color palette from <https://github.com/vuejs/theme> */
 :root {
@@ -136,11 +128,18 @@
   /* 13차-j: 굴절 필터를 블러보다 먼저 건다. 순서가 중요하다 —
      블러를 먼저 걸면 이미 뭉개진 그림을 미는 셈이라 휘어진 게 안 보인다.
      블러는 굴절을 뭉개지 않을 만큼만(14px). */
-  --glass-surface: url(#lg-refract) saturate(200%) blur(14px);
+  /* 13차-p: 기본 표면은 GPU 경로(saturate + blur)다. SVG 참조 필터는 느린 경로라
+     큰 판에 걸면 호버 한 번에 프레임이 무너진다. */
+  --glass-surface: saturate(200%) blur(14px);
+  /* 굴절 렌즈. 작고 떠 있는 컨트롤에만 쓴다 — 거기서는 가장자리 띠가 면적의 큰 몫이라
+     굴절이 실제로 보이고, 면적이 작아 비용도 감당된다(상단바는 카드의 1/24 넓이다). */
+  --glass-surface-lens: url(#lg-refract) saturate(200%) blur(12px);
   /* 카드의 끝은 선 하나로 충분하다. 그림자는 아주 얕게만 — 떠 있는 느낌이 강하면
      화면이 부산해진다. */
   /* 유리 판의 위쪽 모서리에 빛이 걸리도록 흰 헤어라인으로 되돌린다 */
-  --glass-border: rgba(255, 255, 255, 0.75);
+  /* 13차-o: 모서리에 밝은 선이 세 겹(이 테두리 + 아래 inset 두 줄)으로 겹쳐 있었다.
+     선은 한 겹이면 족하다 — 나머지는 아래 --shadow-glass에서 줄였다. */
+  --glass-border: rgba(255, 255, 255, 0.5);
   /* 12차: 유리 카드 '안'에 놓이는 면 전용. 바깥 카드와 같은 테두리(0.78)를 쓰면
      투명해진 카드 위에서 흰 선으로 도드라져 '박스 안의 박스'가 된다.
      안쪽 면은 선이 아니라 밝기 차와 얇은 상단 하이라이트로 구분한다. */
@@ -166,12 +165,13 @@
   /* 12차: 위/아래 스페큘러를 한 겹씩 더 얹었다. 굴절 노이즈를 걷어낸 만큼
      '유리다움'을 이 모서리 빛으로 벌어야 한다. */
   /* 위 모서리의 흰 선(빛)과 아래 모서리의 옅은 그림자(두께)가 판을 유리로 만든다 */
+  /* 13차-o: 위아래 흰 헤어라인 두 줄이 테두리·광원 링과 겹쳐 모서리를 두껍게 만들었다.
+     위 한 줄만, 그것도 옅게 남긴다. 두께감은 바깥 그림자가 맡는다. */
   --shadow-glass:
-    inset 0 1px 0 rgba(255, 255, 255, 0.95),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
     0 2px 6px rgba(6, 12, 30, 0.24), 0 18px 48px rgba(6, 12, 30, 0.34);
   --shadow-glass-raised:
-    inset 0 1px 0 rgba(255, 255, 255, 1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6),
     0 4px 12px rgba(6, 12, 30, 0.3), 0 28px 64px rgba(6, 12, 30, 0.45);
 }
 
@@ -234,37 +234,29 @@
 .weather-scene {
   position: absolute;
   inset: 0;
-  /* 13차-k: 배경을 깊은 남색으로 내린다. 굴절과 스페큘러는 '유리 뒤와 표면의 밝기 차'로
-     보이는데, 배경이 밝으면 밝은 유리와 밝은 배경이 붙어 효과가 전혀 안 보인다.
-     같은 코드라도 배경을 내리면 유리가 살아난다. */
-  background-color: #16203a;
+  /* 13차-o: 광원을 하나로 모았다.
+     그전에는 비슷한 크기·비슷한 알파의 덩어리 6개가 흩어져 있었는데, 여럿이면
+     서로 상쇄돼 '빛이 어디서 오는지'가 사라진다. 화면에는 방향이 없고 얼룩만 남았다.
+     하나로 모으면 배경의 빛, 카드 그림자, 유리 상단의 스페큘러가 전부 같은 곳을
+     가리켜 화면이 한 덩어리로 읽힌다. 굴절에 필요한 '경계'도 광원 가장자리 하나면 된다. */
+  background-color: #131b30;
 }
 
-/* 색 덩어리. 어두운 바탕 위에서는 이게 곧 '유리 뒤에 비칠 것'이다 —
-   덩어리 위를 지나는 유리 가장자리에서 색이 휘는 게 보인다. */
 .weather-scene::after {
   content: '';
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(65% 55% at 12% 8%, rgba(64, 112, 200, 0.55), transparent 68%),
-    radial-gradient(55% 50% at 90% 18%, rgba(70, 150, 210, 0.42), transparent 70%),
-    radial-gradient(80% 60% at 55% 105%, rgba(40, 70, 140, 0.5), transparent 72%);
+    /* 왼쪽 위에서 들어오는 빛 하나 */
+    radial-gradient(58% 46% at 18% 2%, rgba(128, 178, 255, 0.5), transparent 66%),
+    /* 그 빛이 화면을 가로지르며 남기는 잔광 */
+    radial-gradient(48% 38% at 62% 24%, rgba(84, 138, 228, 0.2), transparent 72%),
+    /* 아래로 갈수록 깊어진다 — 깊이는 결국 수직 방향의 명도 차다 */
+    linear-gradient(180deg, rgba(6, 10, 24, 0) 28%, rgba(6, 10, 24, 0.55) 100%);
 }
 
-/* 날씨별 색조 — 남색의 온도만 바꾼다 */
-.weather-scene.weather-clear {
-  background-color: #14213f;
-}
-.weather-scene.weather-clouds {
-  background-color: #1b2233;
-}
-.weather-scene.weather-rain {
-  background-color: #131c33;
-}
-.weather-scene.weather-snow {
-  background-color: #1a2333;
-}
+/* 13차-n: 날씨별 색조(#14213f/#1b2233/…)를 걷어냈다. 차이가 미묘해서 무엇이 왜
+   바뀌었는지 읽히지 않고, 화면만 조용히 흔들렸다. 배경은 한 벌로 고정한다. */
 
 /* 9차: 실습 아카이브의 목차 앵커(#단원)로 점프할 때 뚝 끊기지 않고 부드럽게 이동한다.
    동작 최소화를 켠 사용자에게는 즉시 이동시켜야 하므로 미디어 쿼리로 감싼다. */
@@ -501,9 +493,14 @@ body {
    를 선언한다. 같은 특이도면 나중 것이 이기므로 우리 전환이 통째로 무시되고 있었다.
    `all`이라 backdrop-filter(url(#lg-refract) 포함, 보간 불가)까지 전환 대상이 되어
    호버할 때마다 유리 표면이 스냅했다. */
-.base-dashboard-card.base-dashboard-card,
-.weather-card.weather-card,
-.navigation-bar.navigation-bar {
+/* 13차-n: 유리 판 목록. :is()로 묶어 한 벌로 관리한다 — 아래 규칙들이 전부 이 목록을 쓴다.
+   두 번 겹친 이유는 13차-l과 같다: EP의 `.el-card`(0,1,0)를 이겨야 하는데
+   :is()의 특이도는 '가장 특이한 인자' 하나뿐이라 그대로 쓰면 동률로 밀린다. */
+:is(.base-dashboard-card, .weather-card, .navigation-bar, .about-card,
+  .notfound-card, .detail-hero, .hero-glass, .lab-index, .lab-note-list,
+  .practice-section):is(.base-dashboard-card, .weather-card, .navigation-bar, .about-card,
+  .notfound-card, .detail-hero, .hero-glass, .lab-index, .lab-note-list,
+  .practice-section) {
   position: relative;
   isolation: isolate;
   /* 전환은 여기 한 곳에서만 정의한다. 예전엔 아래 13차-j 블록에 같은
@@ -511,13 +508,13 @@ body {
      전환 없이 즉시 튀었다(호버가 '툭' 끊기던 이유).
      끝에서 튕기는 스프링 대신 꼬리가 긴 이징을 쓴다 — 멈추는 지점이 안 보여야
      끊긴다는 인상이 사라진다. */
+  /* 13차-q: transform과 box-shadow가 각자 다른 시간(0.55s/0.3s)에 끝나면
+     뜨는 동작과 그림자가 서로 다른 박자로 멈춰서, 하나의 매끄러운 움직임이 아니라
+     두 번 나뉘어 움직이는 것처럼 보인다. 같은 시간·같은 곡선으로 묶는다. */
   transition:
-    transform 0.55s cubic-bezier(0.22, 1, 0.36, 1),
-    border-radius 0.55s cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 0.55s cubic-bezier(0.22, 1, 0.36, 1),
-    --lightangle 0.28s linear,
-    --lx 0.28s linear,
-    --ly 0.28s linear;
+    transform 0.4s var(--apple-ease),
+    box-shadow 0.4s var(--apple-ease),
+    --lightangle 0.28s linear;
 }
 
 /* 13차-l: 여기 있던 호버(흰색 0.88 + backdrop-filter 교체)를 걷어냈다.
@@ -617,21 +614,22 @@ body {
    (1) 굴절은 --glass-surface(url(#lg-refract))가 맡는다.
    (2) 반사·(3) 적응·(4) 유동은 아래에서 처리한다. */
 
-.base-dashboard-card,
-.weather-card,
-.navigation-bar {
+:is(.base-dashboard-card, .weather-card, .navigation-bar, .about-card,
+  .notfound-card, .detail-hero, .hero-glass, .lab-index, .lab-note-list,
+  .practice-section) {
   /* (4) 유동 — 전환은 위쪽 한 곳에서 정의한다(13차-l). 여기서 다시 선언하면
-     그 선언을 통째로 덮어써서 backdrop-filter 전환이 사라진다. */
-  will-change: transform;
+     그 선언을 통째로 덮어써서 backdrop-filter 전환이 사라진다.
+     13차-p: will-change: transform을 뺐다. backdrop-filter가 걸린 요소를 상시 레이어로
+     올려두면 메모리와 합성 비용만 늘 뿐, 정작 비싼 필터 재계산은 줄지 않는다. */
 }
 
 /* (2) 반사 — 가상 광원의 스페큘러. 커서 위치(--mx/--my)를 광원으로 삼아
    판의 '모서리'를 따라 빛이 흐른다. 예전에 실패했던 건 판 한가운데에 흰 원을 그렸기
    때문이다(원형 그라디언트가 그대로 보였다). 이번엔 테두리를 따라가는 conic 그라디언트를
    1px 링에만 입혀서, 유리 모서리에 빛이 걸리는 것으로 보이게 한다. */
-.base-dashboard-card::before,
-.weather-card::before,
-.navigation-bar::before {
+:is(.base-dashboard-card, .weather-card, .navigation-bar, .about-card,
+  .notfound-card, .detail-hero, .hero-glass, .lab-index, .lab-note-list,
+  .practice-section)::before {
   content: '';
   position: absolute;
   inset: 0;
@@ -641,7 +639,7 @@ body {
   /* 13차-l: 빛을 '넓게 깔린 흰 테두리'가 아니라 '한 점에서 번지는 하이라이트'로.
      넓게 퍼져 있으면 그냥 테두리로 읽히고 움직여도 눈에 안 띈다 —
      좁고 강한 심지(46도 부근)와 반대편의 약한 반사(2차 반사) 둘만 남긴다. */
-  padding: 2px;
+  padding: 1.5px;
   background: conic-gradient(
     from var(--lightangle, 210deg),
     rgba(255, 255, 255, 0) 0deg,
@@ -664,22 +662,25 @@ body {
   mask-composite: exclude;
   /* 평소엔 은은한 모서리 빛, 호버하면 심지가 굵어지고 번진다.
      drop-shadow가 0에서 시작해야 보간이 되므로 값을 비워두지 않는다. */
-  opacity: 0.55;
-  filter: drop-shadow(0 0 0 rgba(255, 255, 255, 0));
-  transition:
-    opacity 0.55s var(--apple-ease),
-    padding 0.55s var(--apple-ease),
-    filter 0.55s var(--apple-ease);
+  /* 13차-n: 대상이 3개에서 10개로 늘어 화면에 링이 훨씬 많아졌다. 기본 세기를 낮춰
+     '항상 켜진 흰 테두리'가 아니라 커서를 따라올 때만 존재감이 생기게 한다. */
+  /* 13차-p: 호버 때 drop-shadow를 켜고 끄던 걸 걷었다. 마스크가 걸린 conic 링에
+     필터를 또 얹으면 프레임마다 필터 두 겹을 돌리게 된다.
+     빛의 세기 변화는 불투명도만으로도 충분히 읽힌다. */
+  opacity: 0.4;
+  transition: opacity 0.5s var(--apple-ease);
 }
 
 /* (4) 유동 — 호버하면 판이 떠오르고 모서리가 부푼다.
    scale은 뺐다: backdrop-filter가 걸린 면을 확대하면 뒤 그림이 재샘플링되면서
    가장자리가 지글거려 오히려 '끊기는' 인상을 준다. */
-.base-dashboard-card:hover,
-.weather-card:hover,
-.navigation-bar:hover {
-  transform: translateY(-4px);
-  border-radius: calc(var(--radius-card) + 5px);
+:is(.base-dashboard-card, .weather-card, .navigation-bar, .about-card,
+  .notfound-card, .detail-hero, .hero-glass, .lab-index, .lab-note-list,
+  .practice-section):hover {
+  /* 13차-p: border-radius 애니메이션을 걷었다. 모서리가 움직이면 유리 뒤 그림을
+     매 프레임 다시 잘라내야 해서, 떠오르는 느낌을 얻는 대가로 프레임을 잃었다.
+     '떠오름'은 transform과 그림자만으로 충분히 읽힌다. */
+  transform: translateY(var(--hover-lift));
   /* 뒤 그림자가 광원 반대쪽으로 밀린다 — 카드가 밝아지지 않아도 '어디서 빛이
      오는지'가 읽힌다.
      !important는 EP 때문이다: `.el-card.is-hover-shadow:hover`(특이도 0,3,0)가
@@ -687,73 +688,91 @@ body {
      떠오르지 않고 얕은 회색 그림자만 깔렸다. */
   box-shadow:
     var(--shadow-glass-raised),
-    var(--lx) var(--ly) 40px rgba(6, 12, 30, 0.42) !important;
+    10px 14px 40px rgba(6, 12, 30, 0.42) !important;
 }
 /* 호버의 주인공은 이 빛이다 — 굵어지고, 진해지고, 바깥으로 번진다 */
-.base-dashboard-card:hover::before,
-.weather-card:hover::before,
-.navigation-bar:hover::before {
+:is(.base-dashboard-card, .weather-card, .navigation-bar, .about-card,
+  .notfound-card, .detail-hero, .hero-glass, .lab-index, .lab-note-list,
+  .practice-section):hover::before {
   opacity: 1;
-  padding: 2.5px;
-  filter: drop-shadow(0 0 7px rgba(255, 255, 255, 0.55));
 }
 /* 누르는 동안에는 반대로 눌린다 — 두께가 있는 재질이라는 신호 */
-.base-dashboard-card:active,
-.weather-card:active {
-  transform: translateY(-1px);
-  border-radius: calc(var(--radius-card) - 2px);
+:is(.base-dashboard-card, .weather-card, .navigation-bar, .about-card,
+  .notfound-card, .detail-hero, .hero-glass, .lab-index, .lab-note-list,
+  .practice-section):active {
+  transform: translateY(calc(var(--hover-lift) / 3));
 }
 
-/* (3) 적응 — 뒤에 오는 것에 따라 재질이 조정된다.
-   웹에서는 배후 픽셀을 직접 읽을 수 없으므로, 우리가 배경을 통제한다는 점을 이용한다:
-   지금 날씨 테마가 무엇이냐에 따라 유리의 틴트와 광원 각도를 함께 바꾼다.
-   (맑음은 높고 차가운 빛, 비는 낮고 무거운 빛 — 판 위의 빛도 날씨를 따라간다.) */
-.weather-clear ~ .app-container {
-  --glass-tint: rgba(232, 241, 255, 0.76);
-  --lightangle: 200deg;
+/* 13차-n: 여기 있던 (3) 적응 — 날씨별 --glass-tint / --glass-surface / --lightangle —
+   을 걷어냈다. 웹에서는 배후 픽셀을 못 읽으니 '우리가 통제하는 배경'을 근거로 삼았는데,
+   근거가 화면에 드러나지 않으니 사용자에게는 원인 없는 변화로만 보였다.
+   유리는 이제 한 벌로 고정하고, 재질이 반응하는 대상은 '커서'(2 반사) 하나로 좁힌다. */
+/* 13차-n: 유리가 '꺼져 있는' 판에는 광원도 걸지 않는다.
+   날씨 화면들은 최상위 .practice-section의 유리를 일부러 끈다(유리 위 유리 방지) —
+   그 투명한 껍데기에 링만 남으면 허공에 테두리가 그려진다. */
+.route-stage > .practice-section::before {
+  content: none;
 }
-.weather-clouds ~ .app-container {
-  --glass-tint: rgba(240, 243, 250, 0.76);
-  --lightangle: 235deg;
+
+/* 13차-o: 호버 반응량. 큰 판일수록 적게 든다 — 같은 4px도 상단바에서는 '뜬다'지만
+   1350px 카드에서는 화면 절반이 움직인다. 큰 판은 커서가 아래 가장자리에 있을 때
+   판이 커서 밖으로 도망가 호버가 풀렸다 걸렸다 하며 떠는 문제도 더 잘 생긴다. */
+:is(.base-dashboard-card, .weather-card, .navigation-bar, .about-card,
+  .notfound-card, .detail-hero, .hero-glass, .lab-index, .lab-note-list,
+  .practice-section) {
+  --hover-lift: -3px;
+  --hover-round: 4px;
 }
-.weather-rain ~ .app-container {
-  --glass-tint: rgba(230, 238, 253, 0.78);
-  --lightangle: 255deg;
+:is(.base-dashboard-card, .practice-section, .lab-index) {
+  --hover-lift: -1px;
+  --hover-round: 2px;
 }
-.weather-snow ~ .app-container {
-  --glass-tint: rgba(238, 245, 252, 0.76);
-  --lightangle: 220deg;
+/* 날씨 화면의 최상위 껍데기는 페이지 전체를 감싼다 — 여기가 들썩이면 본문이 통째로 움직인다 */
+.route-stage > .practice-section {
+  --hover-lift: 0px;
+  --hover-round: 0px;
 }
-.base-dashboard-card,
-.weather-card,
-.navigation-bar {
-  background-color: var(--glass-tint, var(--glass-bg));
+
+/* 평소에도 방향 그림자를 알파 0으로 깔아 호버 전후의 '겹 수'를 4겹으로 맞춘다.
+   겹 수가 다르면 box-shadow는 보간되지 않고 그냥 갈아끼워진다 — 호버가 툭 끊기던
+   가장 큰 원인이었다. 특이도 (0,3,0)은 각 컴포넌트의 스코프 스타일을 이기기 위한 것. */
+:is(.base-dashboard-card, .weather-card, .navigation-bar, .about-card,
+  .notfound-card, .detail-hero, .hero-glass, .lab-index, .lab-note-list,
+  .practice-section):is(.base-dashboard-card, .weather-card, .navigation-bar, .about-card,
+  .notfound-card, .detail-hero, .hero-glass, .lab-index, .lab-note-list,
+  .practice-section):is(.base-dashboard-card, .weather-card, .navigation-bar, .about-card,
+  .notfound-card, .detail-hero, .hero-glass, .lab-index, .lab-note-list,
+  .practice-section) {
+  /* 광원(왼쪽 위)에서 멀어지는 방향 = 오른쪽 아래로 고정. 더 이상 커서를 따라
+     돌지 않으니 매 프레임 다시 그릴 이유가 없다 — 페인트 비용이 호버 시작/끝의
+     두 순간에만 든다. */
+  box-shadow:
+    var(--shadow-glass),
+    10px 14px 40px rgba(6, 12, 30, 0);
 }
 
 /* 동작 최소화: 유동(변형)과 반사 이동을 끄고 밝기 변화만 남긴다 */
 @media (prefers-reduced-motion: reduce) {
-  .base-dashboard-card,
-  .weather-card,
-  .navigation-bar {
+  :is(.base-dashboard-card, .weather-card, .navigation-bar, .about-card,
+  .notfound-card, .detail-hero, .hero-glass, .lab-index, .lab-note-list,
+  .practice-section) {
     transition: box-shadow 0.2s linear;
   }
-  .base-dashboard-card:hover,
-  .weather-card:hover,
-  .navigation-bar:hover {
+  :is(.base-dashboard-card, .weather-card, .navigation-bar, .about-card,
+  .notfound-card, .detail-hero, .hero-glass, .lab-index, .lab-note-list,
+  .practice-section):hover {
     transform: none;
-    border-radius: var(--radius-card);
   }
   /* 빛이 커서를 따라 흐르는 것도 '동작'이다 — 세기만 남기고 이동은 끈다 */
-  .base-dashboard-card::before,
-  .weather-card::before,
-  .navigation-bar::before {
+  :is(.base-dashboard-card, .weather-card, .navigation-bar, .about-card,
+  .notfound-card, .detail-hero, .hero-glass, .lab-index, .lab-note-list,
+  .practice-section)::before {
     transition: opacity 0.2s linear;
   }
-  .base-dashboard-card:hover::before,
-  .weather-card:hover::before,
-  .navigation-bar:hover::before {
-    padding: 2px;
-    filter: none;
+  :is(.base-dashboard-card, .weather-card, .navigation-bar, .about-card,
+  .notfound-card, .detail-hero, .hero-glass, .lab-index, .lab-note-list,
+  .practice-section):hover::before {
+    opacity: 0.7;
   }
 }
 
@@ -859,4 +878,57 @@ body {
   --el-text-color-regular: #3c4655 !important;
   --el-text-color-secondary: #55606e !important;
   --el-text-color-placeholder: #6b7280 !important;
+}
+
+/* ═══ 13차-n: 유리의 가장자리 띠 ═══════════════════════════════════
+   틴트를 요소가 아니라 ::after가 칠하게 하고, 그 레이어에 가장자리로 갈수록
+   빠지는 마스크를 씌운다. 요소 자신은 투명해지지만 backdrop-filter는 그대로
+   요소에 걸려 있으므로, 열린 띠에서 굴절·프리즘이 보인다. */
+:is(.base-dashboard-card, .navigation-bar, .about-card, .notfound-card,
+  .detail-hero, .hero-glass, .lab-index):is(.base-dashboard-card, .navigation-bar, .about-card, .notfound-card,
+  .detail-hero, .hero-glass, .lab-index):is(.base-dashboard-card, .navigation-bar, .about-card, .notfound-card,
+  .detail-hero, .hero-glass, .lab-index) {
+  /* 각 컴포넌트의 스코프 스타일(0,2,0)이 나중에 주입되므로 (0,3,0)이 필요하다 */
+  background-color: transparent;
+}
+:is(.base-dashboard-card, .navigation-bar, .about-card, .notfound-card,
+  .detail-hero, .hero-glass, .lab-index)::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  background-color: var(--glass-bg);
+  /* 가로·세로 두 방향의 페이드를 교집합으로 겹쳐 액자 모양을 만든다.
+
+     13차-o: 14px에서 6px으로 좁히고, 끝을 0이 아니라 40%로 남긴다.
+     어두운 배경에서는 띠를 열수록 '밝게 굴절'되는 게 아니라 그냥 어두워진다 —
+     14px을 완전히 비웠더니 모서리마다 두꺼운 회색 띠가 생겨 유리가 아니라
+     지저분한 베벨로 보였다. 얇고 살짝만 열면 유리판의 '두께'로 읽힌다. */
+  -webkit-mask-image:
+    linear-gradient(to right, rgba(0, 0, 0, 0.4) 0, #000 6px, #000 calc(100% - 6px), rgba(0, 0, 0, 0.4) 100%),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.4) 0, #000 6px, #000 calc(100% - 6px), rgba(0, 0, 0, 0.4) 100%);
+  -webkit-mask-composite: source-in;
+  mask-image:
+    linear-gradient(to right, rgba(0, 0, 0, 0.4) 0, #000 6px, #000 calc(100% - 6px), rgba(0, 0, 0, 0.4) 100%),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.4) 0, #000 6px, #000 calc(100% - 6px), rgba(0, 0, 0, 0.4) 100%);
+  mask-composite: intersect;
+}
+/* 날씨 화면의 최상위 .practice-section은 유리를 꺼둔 껍데기다(유리 위 유리 방지).
+   ::before(광원)와 같은 이유로 틴트 레이어도 걸지 않는다. */
+.route-stage > .practice-section::after {
+  content: none;
+}
+
+/* 13차-n: 굴절 띠는 '떠 있는 판'에만 연다.
+   .practice-section(실습 화면에 39개가 세로로 쌓인다)과 .lab-note-list까지 열었더니
+   밝은 렌즈 테두리가 39번 반복돼 유리가 아니라 크롬 도금으로 보였다.
+   여러 개가 줄지어 있는 판은 평평한 간유리로 두고, 커서 광원만 받는다. */
+
+/* 13차-p: 굴절 렌즈를 쓰는 곳. 여기 없는 판은 기본 표면(GPU 블러)을 쓴다. */
+.navigation-bar,
+.hero-glass {
+  -webkit-backdrop-filter: var(--glass-surface-lens);
+  backdrop-filter: var(--glass-surface-lens);
 }

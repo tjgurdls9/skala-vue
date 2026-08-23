@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useConfigStore } from '../../stores/configStore.js'
 import {
   buildRiskAlerts,
@@ -51,10 +51,41 @@ const alertCount = computed(
   () => buildRiskAlerts(props.cityItem).filter((alert) => alert.level !== 'success').length,
 )
 
-// 대표 지시 한 줄 — 운영 모드를 가장 직접적으로 설명하는 판촉(Promotion) 항목을 쓴다.
-const leadAction = computed(
-  () => ops.value.items.find((entry) => entry.p === 'Promotion') ?? ops.value.items[0],
-)
+// 13차-p: 지금까지 이 자리에 판촉(Promotion) 한 줄만 고정으로 띄웠다. 7P를 다 계산해
+// 놓고 하나만 보여준 셈이라, 카드만 보면 '이 서비스는 커뮤니케이션 얘기만 한다'로 읽혔다.
+// 일곱 항목을 차례로 돌린다 — 카드 높이는 그대로 두고 내용만 바뀐다.
+const ROTATE_MS = 4600
+const tipIndex = ref(0)
+const tipPaused = ref(false)
+let tipTimer = 0
+let tipDelay = 0
+
+const currentTip = computed(() => {
+  const list = ops.value.items
+  return list[tipIndex.value % list.length] ?? list[0]
+})
+
+onMounted(() => {
+  // 읽는 중에 글이 바뀌면 곤란하다. 동작 최소화를 켠 사용자에게는 돌리지 않고,
+  // 지금까지와 같은 판촉 항목에 세워둔다.
+  const promotionAt = ops.value.items.findIndex((entry) => entry.p === 'Promotion')
+  tipIndex.value = promotionAt >= 0 ? promotionAt : 0
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+
+  // 한 화면에 카드가 여섯 장이라, 같은 순간에 다 같이 넘어가면 화면이 깜빡이는 것처럼 보인다.
+  // 시작 시점을 흩어 놓으면 각자 다른 박자로 넘어간다.
+  tipDelay = window.setTimeout(() => {
+    tipTimer = window.setInterval(() => {
+      if (tipPaused.value) return
+      tipIndex.value = (tipIndex.value + 1) % ops.value.items.length
+    }, ROTATE_MS)
+  }, Math.random() * ROTATE_MS)
+})
+
+onBeforeUnmount(() => {
+  clearTimeout(tipDelay)
+  clearInterval(tipTimer)
+})
 </script>
 
 <template>
@@ -138,10 +169,25 @@ const leadAction = computed(
       </span>
     </div>
     <p class="ops-summary">{{ ops.mode.summary }}</p>
-    <p class="ops-lead">
-      <span class="ops-lead-label">{{ leadAction.label }}</span>
-      {{ leadAction.text }}
-    </p>
+    <!-- 높이를 고정한 슬롯 안에서만 글이 바뀐다 — 안 그러면 문장 길이가 다를 때마다
+         카드가 늘었다 줄었다 해서 아래 카드들까지 밀린다.
+         마우스를 올리고 있는 동안에는 멈춘다(읽는 중에 바뀌면 안 된다). -->
+    <div
+      class="ops-lead-slot"
+      @mouseenter="tipPaused = true"
+      @mouseleave="tipPaused = false"
+    >
+      <!-- 13차-q: mode="out-in"은 옛 문장이 완전히 사라진 뒤에야 새 문장이 나타나서,
+           그 사이 빈 순간이 "부드러운 전환"이 아니라 "끊기고 다시 나옴"으로 읽혔다.
+           mode 없이(동시 진행) 나가는 문장만 자리에서 빼서(position:absolute)
+           들어오는 문장과 겹쳐 크로스페이드한다. -->
+      <Transition name="tip-swap">
+        <p :key="currentTip.p" class="ops-lead">
+          <span class="ops-lead-label">{{ currentTip.label }}</span>
+          <span class="ops-lead-text">{{ currentTip.text }}</span>
+        </p>
+      </Transition>
+    </div>
 
     <el-button class="btn-detail" size="small" @click.stop="emit('click-detail', cityItem)">
       상세보기
@@ -360,6 +406,46 @@ const leadAction = computed(
   font-size: 13px;
   line-height: 1.5;
   color: #48484f;
+}
+/* 13차-p: 7P가 돌아가는 슬롯. 두 줄 높이로 못 박아 카드가 들썩이지 않게 한다.
+   min-height만으로는 좁은 화면에서 세 줄짜리 문장이 들어오면 다시 늘어난다 —
+   본문을 두 줄로 잘라 어떤 폭에서도 높이가 같게 만든다. */
+.ops-lead-slot {
+  position: relative;
+  min-height: 62px;
+}
+.ops-lead-slot .ops-lead {
+  margin: 8px 0 12px;
+}
+.ops-lead-slot .ops-lead-text {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  line-clamp: 2;
+  overflow: hidden;
+  min-width: 0;
+}
+.tip-swap-enter-active,
+.tip-swap-leave-active {
+  transition:
+    opacity 0.5s var(--apple-ease),
+    transform 0.5s var(--apple-ease);
+}
+.tip-swap-enter-from {
+  opacity: 0;
+  transform: translateY(6px);
+}
+/* 나가는 문장을 자리에서 빼내 들어오는 문장과 같은 자리에 겹친다 —
+   슬롯 높이는 이미 min-height로 고정돼 있어 겹쳐도 아래 내용이 흔들리지 않는다. */
+.tip-swap-leave-active {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+}
+.tip-swap-leave-to {
+  opacity: 0;
+  transform: translateY(-6px);
 }
 .ops-lead-label {
   flex-shrink: 0;
