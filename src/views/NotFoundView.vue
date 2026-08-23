@@ -1,6 +1,7 @@
 <script setup>
 import { useRouter } from 'vue-router'
-import { Compass, Back } from '@element-plus/icons-vue'
+import { Back } from '@element-plus/icons-vue'
+import WeatherDeskIcon from '../components/WeatherDeskIcon.vue'
 
 const router = useRouter()
 
@@ -16,7 +17,7 @@ const goHome = () => {
        화면 하나를 꽉 채우던 빈 카드도 내용에 맞는 크기로 줄였다. -->
   <div class="notfound-page">
     <section class="notfound-card">
-      <el-icon class="notfound-icon"><Compass /></el-icon>
+      <WeatherDeskIcon name="location" class="notfound-icon" />
       <h2 class="notfound-title">페이지를 찾을 수 없습니다</h2>
       <p class="notfound-text">
         요청하신 주소가 존재하지 않거나 아직 개발되지 않았습니다. 주소를 확인해 주시기 바랍니다.
@@ -46,8 +47,8 @@ const goHome = () => {
   box-shadow: var(--shadow-glass-raised);
 }
 .notfound-icon {
-  font-size: 34px;
-  color: var(--color-accent);
+  width: 56px;
+  height: 56px;
 }
 .notfound-title {
   margin: 12px 0 0;

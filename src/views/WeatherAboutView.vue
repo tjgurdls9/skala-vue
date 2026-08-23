@@ -1,6 +1,7 @@
 <script setup>
 import { useRouter } from 'vue-router'
-import { InfoFilled, Back, Check, Location, DataAnalysis, Connection } from '@element-plus/icons-vue'
+import { Back, Check } from '@element-plus/icons-vue'
+import WeatherDeskIcon from '../components/WeatherDeskIcon.vue'
 
 const router = useRouter()
 
@@ -20,16 +21,16 @@ const FEATURES = [
 ]
 
 const FACTS = [
-  { value: '83', label: '전국 관측 지점', icon: Location },
-  { value: '6', label: '기상 판단 축', icon: DataAnalysis },
-  { value: '7', label: '경영 분석 관점', icon: Connection },
+  { value: '83', label: '전국 관측 지점', icon: 'location' },
+  { value: '6', label: '기상 판단 축', icon: 'observation' },
+  { value: '7', label: '경영 분석 관점', icon: 'analysis' },
 ]
 </script>
 
 <template>
   <div class="about-page">
     <h2 class="about-heading">
-      <el-icon><InfoFilled /></el-icon> 서비스 소개
+      <WeatherDeskIcon name="overview" /> 서비스 소개
     </h2>
 
     <section class="about-card">
@@ -44,7 +45,7 @@ const FACTS = [
 
       <div class="about-facts" aria-label="서비스 주요 지표">
         <div v-for="fact in FACTS" :key="fact.label" class="about-fact">
-          <el-icon><component :is="fact.icon" /></el-icon>
+          <WeatherDeskIcon :name="fact.icon" />
           <strong>{{ fact.value }}</strong>
           <span>{{ fact.label }}</span>
         </div>
@@ -137,10 +138,10 @@ const FACTS = [
   background: var(--glass-inset-bg);
   background-image: var(--glass-inset-sheen);
 }
-.about-fact .el-icon {
+.about-fact .weather-desk-icon {
   grid-row: 1 / 3;
-  font-size: 24px;
-  color: var(--color-accent);
+  width: 36px;
+  height: 36px;
 }
 .about-fact strong {
   font-size: 24px;

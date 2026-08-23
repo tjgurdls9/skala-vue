@@ -24,10 +24,8 @@ import { useWeatherStore } from '../stores/weatherStore.js'
 import { useConfigStore } from '../stores/configStore.js'
 import { WEATHER_THEME_MAP } from '../stores/weatherThemeStore.js'
 import {
-  Cloudy,
   Calendar,
   RefreshRight,
-  House,
   CircleCheck,
   InfoFilled,
   Opportunity,
@@ -293,7 +291,7 @@ const goDetail = (item) => {
 <template>
   <div class="practice-section">
     <h2>
-      <el-icon><Cloudy /></el-icon> 지역별 날씨 대시보드
+      지역별 날씨 대시보드
     </h2>
     <div class="dashboard-wrapper">
       <!-- 13차: 지도를 화면의 중심으로. 우리나라 지도는 세로로 길어(가로세로비 0.70)
@@ -499,7 +497,7 @@ const goDetail = (item) => {
            같이 걷어냈다. 이제 지도가 끝나는 지점부터 목록이 한 단으로 이어진다. -->
       <BaseDashboardCard>
             <h3 class="section-title">
-              <el-icon><House /></el-icon> 지역별 날씨 현황
+              지역별 날씨 현황
               <el-button
                 class="btn-refresh"
                 size="small"

@@ -23,12 +23,7 @@ import {
 } from '../data/weatherMock.js'
 import { fetchCityWeather, fetchForecast } from '../data/weatherApi.js'
 import {
-  DataAnalysis,
-  Location,
   Aim,
-  // 12차: 템플릿에서 <Promotion />을 쓰면서 import를 빠뜨려
-  // 콘솔에 "Failed to resolve component: Promotion"이 계속 찍히고 아이콘이 안 그려졌다
-  Promotion,
   Odometer,
   Flag,
   Briefcase,
@@ -241,7 +236,7 @@ const goBack = () => {
 <template>
   <div class="practice-section">
     <h2>
-      <el-icon><DataAnalysis /></el-icon> 지역별 상세 기상 관측 정보
+      <WeatherDeskIcon name="analysis" /> 지역별 상세 기상 관측 정보
     </h2>
 
     <!-- 실 데이터가 오기 전 회색 뼈대로 체감 로딩속도를 높인다 (교재 241p Skeleton) -->
@@ -253,7 +248,7 @@ const goBack = () => {
       <section class="detail-hero">
         <div class="detail-hero-head">
           <span class="detail-hero-region"
-            ><el-icon><Location /></el-icon> {{ city.region }}</span
+            ><WeatherDeskIcon name="location" class="detail-region-art" /> {{ city.region }}</span
           >
           <h3 class="detail-hero-name">{{ city.name }}</h3>
         </div>
@@ -291,7 +286,7 @@ const goBack = () => {
            규칙 기반이라 실제로 모델을 부르지 않는다 — 그래서 이름에 AI를 붙이지 않았다. -->
       <BaseDashboardCard class="briefing-card">
         <h3 class="section-title">
-          <el-icon><Promotion /></el-icon> 의사결정 브리핑
+          <WeatherDeskIcon name="analysis" /> 의사결정 브리핑
         </h3>
         <p class="briefing-headline">{{ briefing.headline }}</p>
         <ul class="briefing-list">
@@ -304,7 +299,7 @@ const goBack = () => {
 
       <BaseDashboardCard>
         <h3 class="section-title">
-          <el-icon><Odometer /></el-icon> 관측 지표
+          <WeatherDeskIcon name="observation" /> 관측 지표
         </h3>
         <!-- 각 수치 밑에 "그래서 무슨 뜻인지" 한 줄을 붙였다. 숫자만 있으면 판단이 안 된다. -->
         <div class="metric-grid">
@@ -321,7 +316,7 @@ const goBack = () => {
 
         <template v-if="daylight">
           <h3 class="section-title">
-            <el-icon><Sunny /></el-icon> 일조 시간
+            <WeatherDeskIcon name="sun" /> 일조 시간
           </h3>
           <div class="daylight">
             <!-- 해가 뜨고 지는 호. 지금이 낮이면 해 위치가 호 위에 놓인다 -->
@@ -569,6 +564,10 @@ const goBack = () => {
   gap: 4px;
   font-size: 12px;
   color: #48515f;
+}
+.detail-region-art {
+  width: 20px;
+  height: 20px;
 }
 .detail-hero-name {
   margin: 0;

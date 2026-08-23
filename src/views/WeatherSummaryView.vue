@@ -13,7 +13,6 @@ import {
   EXEC_MAX_SCORE,
 } from '../data/weatherMock.js'
 import { useWeatherStore } from '../stores/weatherStore.js'
-import { DataAnalysis, Odometer, TrendCharts } from '@element-plus/icons-vue'
 import WeatherDeskIcon from '../components/WeatherDeskIcon.vue'
 
 const router = useRouter()
@@ -84,7 +83,7 @@ const goDetail = (item) => {
 <template>
   <div class="practice-section">
     <h2>
-      <el-icon><DataAnalysis /></el-icon> 의사결정 보조 지표 요약
+      <WeatherDeskIcon name="analysis" /> 의사결정 보조 지표 요약
     </h2>
 
     <el-skeleton v-if="isLoading && !ranked.length" :rows="6" animated />
@@ -93,7 +92,7 @@ const goDetail = (item) => {
       <!-- 전국 한 줄 요약: 개별 지역을 보기 전에 "전국이 지금 어떤 상태인가"부터 답한다 -->
       <BaseDashboardCard>
         <h3 class="section-title">
-          <el-icon><Odometer /></el-icon> 전국 요약
+          <WeatherDeskIcon name="overview" /> 전국 요약
         </h3>
         <div class="overview">
           <div class="overview-stat">
@@ -140,7 +139,7 @@ const goDetail = (item) => {
       <!-- 순위 목록: 숫자를 나열하는 대신 막대 길이로 비교시킨다 -->
       <BaseDashboardCard>
         <h3 class="section-title">
-          <el-icon><TrendCharts /></el-icon> 지역별 기상 대응 순위
+          <WeatherDeskIcon name="priority" /> 지역별 기상 대응 순위
         </h3>
         <p class="guide">
           막대가 길수록 기상 노출에 대응하기 좋은 조건입니다. 지역을 누르면 상세 분석으로 이동합니다.
